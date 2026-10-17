@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "MiroFish AI Copilot for Dhan Terminal",
+  "version": "2.0.0",
+  "description": "Permanent AI Trading Copilot, Pre-Breakout Radar, Option Buyer/Seller Engine & Anti-Loss Guard directly inside Dhan Terminal (web.dhan.co & tv.dhan.co).",
+  "permissions": [
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8000/*",
+    "https://*.dhan.co/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.dhan.co/*",
+        "https://tv.dhan.co/*",
+        "https://options-trader.dhan.co/*"
+      ],
+      "js": ["content.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+/* MiroFish AI Copilot Floating HUD Inside Dhan Terminal */
+#mirofish-dhan-hud {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 350px;
+  max-height: 82vh;
+  background: rgba(13, 18, 30, 0.96);
+  border: 1.5px solid rgba(99, 102, 241, 0.65);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(99, 102, 241, 0.25);
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: height 0.25s ease, width 0.25s ease;
+}
+
+#mirofish-dhan-hud.minimized {
+  width: 240px;
+  height: 46px !important;
+}
+
+.mf-hud-header {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mf-hud-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #e0e7ff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mf-hud-controls button {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.mf-hud-controls button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.mf-hud-body {
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.mf-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  padding: 9px 11px;
+}
+
+.mf-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.mf-green { color: #4ade80; }
+.mf-red { color: #f87171; }
+.mf-yellow { color: #fbbf24; }
+.mf-blue { color: #38bdf8; }
+
+.mf-btn {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mf-btn:hover {
+  opacity: 0.92;
+}

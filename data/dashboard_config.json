@@ -1,0 +1,307 @@
+{
+  "headerTitle": "JYOTI SINGH • Personal AI Super Trading Terminal",
+  "headerSubtitle": "Real-Time Multi-Asset Analytics • Live Market Scanner • Options Studio (ID: 1000659782)",
+  "colorTheme": "default",
+  "goldenRules": [
+    {
+      "icon": "🚫",
+      "title": "Rule #1: No Averaging Losers",
+      "sub": "Girte hue CE/PE ko kabhi average mat karo",
+      "color": "#fda4af",
+      "border": "rgba(244, 63, 94, 0.4)"
+    },
+    {
+      "icon": "🚀",
+      "title": "Rule #2: Fast Move = Buy CE/PE",
+      "sub": "Jab Momentum > 48 ho tab hi Option Buy karo",
+      "color": "#34d399",
+      "border": "rgba(16, 185, 129, 0.4)"
+    },
+    {
+      "icon": "🛡️",
+      "title": "Rule #3: Slow Market = Sell Options",
+      "sub": "12:00–2:30 PM chop me Theta Decay khao",
+      "color": "#7dd3fc",
+      "border": "rgba(56, 189, 248, 0.4)"
+    },
+    {
+      "icon": "🏆",
+      "title": "Rule #4: Lock Morning Profits",
+      "sub": "Subah 2-3 winning trades ke baad Kill-Switch ON!",
+      "color": "#fde68a",
+      "border": "rgba(251, 191, 36, 0.4)"
+    }
+  ],
+  "watchlist": [
+    {
+      "symbol": "NIFTY",
+      "label": "NIFTY 50",
+      "hindi": "निफ्टी 50",
+      "star": false
+    },
+    {
+      "symbol": "BANKNIFTY",
+      "label": "BANK NIFTY",
+      "hindi": "बैंक निफ्टी",
+      "star": false
+    },
+    {
+      "symbol": "SENSEX",
+      "label": "SENSEX",
+      "hindi": "सेंसेक्स",
+      "star": false
+    },
+    {
+      "symbol": "RELIANCE",
+      "label": "RELIANCE",
+      "hindi": "रिलायंस",
+      "star": false
+    },
+    {
+      "symbol": "HDFCBANK",
+      "label": "HDFCBANK",
+      "hindi": "एचडीएफसी",
+      "star": false
+    },
+    {
+      "symbol": "TATASTEEL",
+      "label": "TATASTEEL",
+      "hindi": "टाटा स्टील",
+      "star": false
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "label": "BAJFINANCE",
+      "hindi": "बजाज फाइनेंस",
+      "star": false
+    },
+    {
+      "symbol": "SBIN",
+      "label": "SBIN",
+      "hindi": "एसबीआई",
+      "star": false
+    },
+    {
+      "symbol": "TCS",
+      "label": "TCS",
+      "hindi": "टीसीएस",
+      "star": false
+    },
+    {
+      "symbol": "LT",
+      "label": "LT",
+      "hindi": "एलएंडटी",
+      "star": false
+    }
+  ],
+  "tvChannels": [
+    {
+      "id": "cnbc_awaaz_hls",
+      "name": "📺 बिज़नेस चैनल 1 (हिंदी 1080p HD)",
+      "type": "hls",
+      "quality": "1080p Full HD • 2.8 Mbps",
+      "stream_url": "https://n18syndication.akamaized.net/bpk-tv/CNBC_Awaaz_NW18_MOB/output01/CNBC_Awaaz_NW18_MOB-audio_98835_hin=98800-video=2293600.m3u8"
+    },
+    {
+      "id": "zee_business_yt",
+      "name": "📺 बिज़नेस चैनल 2 (हिंदी HD)",
+      "type": "hls",
+      "quality": "High-Bitrate HD • 1.8 Mbps",
+      "stream_url": "https://dwby15d04agvq.cloudfront.net/index_5.m3u8"
+    },
+    {
+      "id": "cnbc_tv18_hls",
+      "name": "📺 बिज़नेस चैनल 3 (CNBC-TV18 HD)",
+      "type": "hls",
+      "quality": "1080p Full HD • 2.8 Mbps",
+      "stream_url": "https://n18syndication.akamaized.net/bpk-tv/CNBC_TV18_NW18_MOB/output01/CNBC_TV18_NW18_MOB-audio_98835_hin=98800-video=2293600.m3u8"
+    },
+    {
+      "id": "ndtv_profit_hls",
+      "name": "📺 मार्केट चैनल 4 (NDTV प्रॉफिट HD)",
+      "type": "hls",
+      "quality": "HD Stream • Max Level",
+      "stream_url": "https://ndtvprofit.akamaized.net/hls/live/2107404/ndtvprofit/chunklist_5.m3u8"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "widget_momentum",
+      "title": "⚡ Pre-Breakout & Momentum Radar",
+      "zone": "leftSubRow1",
+      "visible": true
+    },
+    {
+      "id": "widget_optionsStudio",
+      "title": "⚡ Smart Options Studio (Buyer vs Seller)",
+      "zone": "leftSubRow1",
+      "visible": true
+    },
+    {
+      "id": "widget_heavyweights",
+      "title": "🏋️ Top 10 Heavyweights Pulse",
+      "zone": "rightSubRow1",
+      "visible": true
+    },
+    {
+      "id": "widget_investingGauge",
+      "title": "🧭 Live Technical Speedometer",
+      "zone": "rightSubRow1",
+      "visible": true
+    },
+    {
+      "id": "widget_swarmPanel",
+      "title": "🧠 AI Swarm & Pattern Radar",
+      "zone": "rightSubRow3",
+      "visible": true
+    },
+    {
+      "id": "widget_vixPanel",
+      "title": "📈 India VIX Volatility Meter",
+      "zone": "rightSubRow3",
+      "visible": true
+    },
+    {
+      "id": "widget_dhanAccount",
+      "title": "👑 Jyoti's Live Trading Account",
+      "zone": "rightSubRow3",
+      "visible": true
+    },
+    {
+      "id": "widget_sniperPlan",
+      "title": "🎯 Jyoti's Sniper Trade Plan",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
+      "id": "widget_oiPanel",
+      "title": "🔥 Live OI / PCR / Max Pain",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
+      "id": "widget_calculator",
+      "title": "🧮 Jyoti's Position Size & SL Guard",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
+      "id": "widget_chart",
+      "title": "📊 Live Pro Candlestick Chart",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
+      "id": "widget_histPanel",
+      "title": "🗄️ 10-Yr Historical Archive",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
+      "id": "widget_mtfPivots",
+      "title": "⏱️ Multi-Timeframe Alignment & Pivots",
+      "zone": "leftSubRow2",
+      "visible": true
+    },
+    {
+      "id": "widget_heroStats",
+      "title": "📊 4 Hero Summary Cards",
+      "zone": "leftSubRow1",
+      "visible": true
+    },
+    {
+      "id": "widget_moneycontrolPulse",
+      "title": "💹 Live Market Action & Sectors",
+      "zone": "leftSubRow2",
+      "visible": true
+    },
+    {
+      "id": "widget_rediff360",
+      "title": "🏢 360° Fundamental & Range X-Ray",
+      "zone": "leftSubRow2",
+      "visible": true
+    },
+    {
+      "id": "widget_investingPortfolio",
+      "title": "💼 Jyoti's Live Equity & F&O Portfolio Tracker",
+      "zone": "leftSubRow2",
+      "visible": true
+    },
+    {
+      "id": "widget_liveTv",
+      "title": "मेरा टीवी",
+      "zone": "heroRightCol",
+      "visible": true
+    },
+    {
+      "id": "widget_alertBanner",
+      "title": "🚨 Pre-Breakout Alert Banner",
+      "zone": "leftSubRow2",
+      "visible": true
+    }
+  ],
+  "customWidgets": [],
+  "globalFontFamily": "",
+  "globalFontScale": 1,
+  "widgetStyles": {
+    "widget_liveTv": {
+      "fullWidth": true,
+      "freeX": 0,
+      "freeY": 0,
+      "borderColor": "#38bdf8"
+    },
+    "widget_momentum": {
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_heavyweights": {
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_investingGauge": {
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_sniperPlan": {
+      "fullWidth": false,
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_oiPanel": {
+      "freeX": 0,
+      "freeY": 0,
+      "fullWidth": false
+    },
+    "widget_alertBanner": {
+      "freeX": 0,
+      "freeY": 0,
+      "fullWidth": false
+    },
+    "widget_investingPortfolio": {
+      "fullWidth": false,
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_mtfPivots": {
+      "fullWidth": false,
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_searchBar": {
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_moneycontrolPulse": {
+      "fullWidth": false,
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_rediff360": {
+      "fullWidth": false,
+      "freeX": 0,
+      "freeY": 0
+    }
+  },
+  "layoutPackedVersion": 5,
+  "configured": true
+}

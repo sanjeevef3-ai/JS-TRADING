@@ -1,0 +1,26 @@
+{
+  "generation": 535,
+  "total_evaluations": 362,
+  "verified_wins": 219,
+  "verified_losses": 143,
+  "overall_accuracy_pct": 60.5,
+  "last_learned_at": "2026-10-17 16:09:19",
+  "regime_weights": {
+    "FAST_MOMENTUM_BUY_CE_PE": 1.18,
+    "PRE_BREAKOUT_SQUEEZE": 1.22,
+    "SLOW_CHOP_THETA_SELL": 1.15,
+    "CONTRA_REVERSAL_GUARD": 0.92
+  },
+  "agent_weights": {
+    "Aarav (Price Action)": 1.16,
+    "Vikram (Multi-Timeframe)": 1.2,
+    "Priya (Momentum & OI)": 1.24,
+    "Rajesh (Smart Money)": 1.18,
+    "Kavita (Risk Sentinel)": 1.25
+  },
+  "recent_lessons": [
+    "Boosted Pre-Breakout Squeeze + RSI > 58 weight after high NIFTY/BANKNIFTY continuation accuracy.",
+    "Penalized counter-trend option buying when 15m & 1H Supertrend conflict (Chop Filter active).",
+    "Calibrated Stop-Loss buffer using ATR volatility to prevent premature wick stop-outs."
+  ]
+}

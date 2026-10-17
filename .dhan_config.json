@@ -1,0 +1,7 @@
+{
+  "client_id": "1000659782",
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ1c2VyUmVnaW9uIjoiUjEiLCJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzkxODE2MjU1LCJpYXQiOjE3OTE3Mjk4NTUsInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMDAwNjU5NzgyIn0.iV6cm1WFcZNL8ur9pfGsOIltk4ckxQZKA5rllXSIp2L1pQbutZsJxgdb-vTUTVv59qpjLmA7n7Zerc7wG-hnpQ",
+  "last_renewed_at": "2026-10-11 20:15:14",
+  "token_expiry": "2026-10-12T20:14:15 (Auto-Renew ON)",
+  "auto_renew_enabled": true
+}

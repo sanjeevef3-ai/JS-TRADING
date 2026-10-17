@@ -1,0 +1,370 @@
+[
+  {
+    "trade_id": "DEMO_OPT_1792146104_NIFTY 50",
+    "timestamp": "2026-10-16 15:51:44",
+    "symbol": "NIFTY 50",
+    "strategy": "Long Put",
+    "execution_mode": "SCALP-PRO 1-TAP (PE)",
+    "entry_spot": 23146.15,
+    "current_spot": 23146.15,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "PE",
+        "strike": 23150,
+        "premium": 129.07,
+        "greeks": {
+          "price": 129.07,
+          "delta": -0.482,
+          "gamma": 0.00117,
+          "theta": -14.89,
+          "vega": 9.66
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 9680.25,
+    "max_loss": 3226.75,
+    "breakeven": "Rs.23020.93",
+    "net_greeks": {
+      "net_delta": -12.05,
+      "net_theta": -372.25,
+      "net_gamma": 0.0292,
+      "net_vega": 241.5
+    },
+    "pnl": 0.0,
+    "status": "OPEN (DEMO LIVE)"
+  },
+  {
+    "trade_id": "DEMO_OPT_1792146102_NIFTY 50",
+    "timestamp": "2026-10-16 15:51:42",
+    "symbol": "NIFTY 50",
+    "strategy": "Long Call",
+    "execution_mode": "SCALP-PRO 1-TAP (CE)",
+    "entry_spot": 23146.15,
+    "current_spot": 23146.15,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "CE",
+        "strike": 23150,
+        "premium": 141.7,
+        "greeks": {
+          "price": 141.7,
+          "delta": 0.518,
+          "gamma": 0.00117,
+          "theta": -19.01,
+          "vega": 9.66
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 10627.5,
+    "max_loss": 3542.5,
+    "breakeven": "Rs.23291.7",
+    "net_greeks": {
+      "net_delta": 12.95,
+      "net_theta": -475.25,
+      "net_gamma": 0.0292,
+      "net_vega": 241.5
+    },
+    "pnl": 0.0,
+    "status": "OPEN (DEMO LIVE)"
+  },
+  {
+    "trade_id": "DEMO_OPT_1792144334_NIFTY 50",
+    "timestamp": "2026-10-16 15:22:14",
+    "symbol": "NIFTY 50",
+    "strategy": "Long Call",
+    "execution_mode": "SCALP-PRO 1-TAP (CE)",
+    "entry_spot": 23119.0,
+    "current_spot": 23119.0,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "CE",
+        "strike": 23100,
+        "premium": 153.53,
+        "greeks": {
+          "price": 153.53,
+          "delta": 0.545,
+          "gamma": 0.00117,
+          "theta": -19.01,
+          "vega": 9.59
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 11514.75,
+    "max_loss": 3838.25,
+    "breakeven": "Rs.23253.53",
+    "net_greeks": {
+      "net_delta": 13.63,
+      "net_theta": -475.25,
+      "net_gamma": 0.0292,
+      "net_vega": 239.75
+    },
+    "pnl": 0.0,
+    "status": "OPEN (DEMO LIVE)"
+  },
+  {
+    "trade_id": "DEMO_OPT_1792144332_NIFTY 50",
+    "timestamp": "2026-10-16 15:22:12",
+    "symbol": "NIFTY 50",
+    "strategy": "Long Call",
+    "execution_mode": "SCALP-PRO 1-TAP (CE)",
+    "entry_spot": 23119.0,
+    "current_spot": 23119.0,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "CE",
+        "strike": 23100,
+        "premium": 153.53,
+        "greeks": {
+          "price": 153.53,
+          "delta": 0.545,
+          "gamma": 0.00117,
+          "theta": -19.01,
+          "vega": 9.59
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 11514.75,
+    "max_loss": 3838.25,
+    "breakeven": "Rs.23253.53",
+    "net_greeks": {
+      "net_delta": 13.63,
+      "net_theta": -475.25,
+      "net_gamma": 0.0292,
+      "net_vega": 239.75
+    },
+    "pnl": 0.0,
+    "status": "OPEN (DEMO LIVE)"
+  },
+  {
+    "trade_id": "DEMO_OPT_1792143936_NIFTY 50",
+    "timestamp": "2026-10-16 15:15:36",
+    "symbol": "NIFTY 50",
+    "strategy": "Long Call",
+    "execution_mode": "SCALP-PRO 1-TAP (CE)",
+    "entry_spot": 23119.0,
+    "current_spot": 23119.0,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "CE",
+        "strike": 23100,
+        "premium": 153.53,
+        "greeks": {
+          "price": 153.53,
+          "delta": 0.545,
+          "gamma": 0.00117,
+          "theta": -19.01,
+          "vega": 9.59
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 11514.75,
+    "max_loss": 3838.25,
+    "breakeven": "Rs.23253.53",
+    "net_greeks": {
+      "net_delta": 13.63,
+      "net_theta": -475.25,
+      "net_gamma": 0.0292,
+      "net_vega": 239.75
+    },
+    "pnl": 0.0,
+    "status": "CLOSED (EMERGENCY KILL-SWITCH)",
+    "closed_at": "2026-10-16 15:15:36"
+  },
+  {
+    "trade_id": "DEMO_OPT_1791726573_NIFTY 50",
+    "timestamp": "2026-10-11 19:19:33",
+    "symbol": "NIFTY 50",
+    "strategy": "Iron Condor",
+    "execution_mode": "OPTION SELLING (Low Momentum / Theta Decay)",
+    "entry_spot": 22520.45,
+    "current_spot": 23119.0,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "PE",
+        "strike": 22300,
+        "premium": 52.4,
+        "greeks": {
+          "price": 52.4,
+          "delta": -0.246,
+          "gamma": 0.00089,
+          "theta": -10.22,
+          "vega": 8.31
+        },
+        "qty": 25
+      },
+      {
+        "action": "SELL",
+        "type": "PE",
+        "strike": 22400,
+        "premium": 82.26,
+        "greeks": {
+          "price": 82.26,
+          "delta": -0.343,
+          "gamma": 0.00103,
+          "theta": -11.69,
+          "vega": 9.69
+        },
+        "qty": 25
+      },
+      {
+        "action": "SELL",
+        "type": "CE",
+        "strike": 22600,
+        "premium": 114.4,
+        "greeks": {
+          "price": 114.4,
+          "delta": 0.437,
+          "gamma": 0.00111,
+          "theta": -15.75,
+          "vega": 10.38
+        },
+        "qty": 25
+      },
+      {
+        "action": "BUY",
+        "type": "CE",
+        "strike": 22700,
+        "premium": 76.74,
+        "greeks": {
+          "price": 76.74,
+          "delta": 0.331,
+          "gamma": 0.00102,
+          "theta": -14.21,
+          "vega": 9.55
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 1688.0,
+    "max_loss": 812.0,
+    "breakeven": "Rs.22332.5 to Rs.22667.5",
+    "net_greeks": {
+      "net_delta": -0.22,
+      "net_theta": 75.25,
+      "net_gamma": -0.0058,
+      "net_vega": -55.25
+    },
+    "pnl": -131.68,
+    "status": "CLOSED (EMERGENCY KILL-SWITCH)",
+    "closed_at": "2026-10-16 15:15:36"
+  },
+  {
+    "trade_id": "DEMO_OPT_1791531613_NIFTY 50",
+    "timestamp": "2026-10-09 13:10:13",
+    "symbol": "NIFTY 50",
+    "strategy": "Bull Call Spread",
+    "entry_spot": 22501.15,
+    "current_spot": 23119.0,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "CE",
+        "strike": 22500,
+        "premium": 152.61,
+        "greeks": {
+          "price": 152.61,
+          "delta": 0.527,
+          "gamma": 0.00112,
+          "theta": -16.24,
+          "vega": 10.48
+        },
+        "qty": 25
+      },
+      {
+        "action": "SELL",
+        "type": "CE",
+        "strike": 22700,
+        "premium": 70.55,
+        "greeks": {
+          "price": 70.55,
+          "delta": 0.311,
+          "gamma": 0.00099,
+          "theta": -13.8,
+          "vega": 9.31
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 2948.5,
+    "max_loss": 2051.5,
+    "breakeven": "\u20b922582.06",
+    "net_greeks": {
+      "net_delta": 5.4,
+      "net_theta": -61.0,
+      "net_gamma": 0.0032,
+      "net_vega": 29.25
+    },
+    "pnl": 3336.39,
+    "status": "CLOSED (EMERGENCY KILL-SWITCH)",
+    "closed_at": "2026-10-16 15:15:36"
+  },
+  {
+    "trade_id": "DEMO_OPT_1791531368_NIFTY 50",
+    "timestamp": "2026-10-09 13:06:08",
+    "symbol": "NIFTY 50",
+    "strategy": "Bull Call Spread",
+    "entry_spot": 22494.7,
+    "current_spot": 23119.0,
+    "lot_size": 25,
+    "legs": [
+      {
+        "action": "BUY",
+        "type": "CE",
+        "strike": 22500,
+        "premium": 149.23,
+        "greeks": {
+          "price": 149.23,
+          "delta": 0.52,
+          "gamma": 0.00112,
+          "theta": -16.22,
+          "vega": 10.49
+        },
+        "qty": 25
+      },
+      {
+        "action": "SELL",
+        "type": "CE",
+        "strike": 22700,
+        "premium": 68.56,
+        "greeks": {
+          "price": 68.56,
+          "delta": 0.305,
+          "gamma": 0.00099,
+          "theta": -13.65,
+          "vega": 9.22
+        },
+        "qty": 25
+      }
+    ],
+    "max_profit": 2983.25,
+    "max_loss": 2016.75,
+    "breakeven": "\u20b922580.67",
+    "net_greeks": {
+      "net_delta": 5.38,
+      "net_theta": -64.25,
+      "net_gamma": 0.0032,
+      "net_vega": 31.75
+    },
+    "pnl": 3358.73,
+    "status": "CLOSED (EMERGENCY KILL-SWITCH)",
+    "closed_at": "2026-10-16 15:15:36"
+  }
+]

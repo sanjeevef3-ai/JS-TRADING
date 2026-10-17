@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>👑 JYOTI SINGH • Personal AI Super Trading Terminal</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+  <link rel="stylesheet" href="/static/style.css?v=20261016_v35">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1"></script>
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    .vix-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
+    .vix-low    { background: rgba(16,185,129,0.2);  color: #34d399; border:1px solid #10b981; }
+    .vix-med    { background: rgba(251,191,36,0.2); color: #fbbf24; border:1px solid #f59e0b; }
+    .vix-high   { background: rgba(244,63,94,0.2);  color: #fb7185; border:1px solid #f43f5e; }
+    .vix-panic  { background: rgba(168,85,247,0.3); color: #e879f9; border:1px solid #a855f7; }
+    .mover-bar-bg { background: rgba(255,255,255,0.07); border-radius: 6px; height: 7px; overflow: hidden; }
+    .mover-bar-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+    .oi-level-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12.5px; }
+    .hw-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+    .dhan-setup-box { background: rgba(99,102,241,0.08); border: 1px dashed rgba(99,102,241,0.4); border-radius: 10px; padding: 12px; font-size: 12px; line-height: 1.6; }
+    .trap-alert { background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.35); border-radius: 8px; padding: 7px 10px; color: #fda4af; font-size: 11.5px; margin-top: 6px; }
+    .jyoti-shield-bar {
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: stretch;
+    }
+    .shield-pill {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88));
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 11.5px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.18s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      text-align: left;
+      width: 100%;
+      min-width: 0;
+    }
+    .shield-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.28);
+      filter: brightness(1.12);
+    }
+    .shield-pill:active,
+    .shield-pill.active-rule-btn {
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 0 18px rgba(251, 191, 36, 0.45);
+    }
+    .shield-icon {
+      font-size: 15px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .range-slider-track {
+      height: 8px;
+      background: linear-gradient(90deg, #f43f5e, #fbbf24, #10b981);
+      border-radius: 99px;
+      position: relative;
+      margin: 8px 0;
+    }
+    .range-slider-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #6366f1;
+      position: absolute;
+      top: -3px;
+      transform: translateX(-50%);
+      box-shadow: 0 0 8px rgba(255,255,255,0.9);
+    }
+    .sector-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .sector-tile {
+      padding: 7px 8px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    /* Exact Mockup Main 2-Half Grid (Left 50% | Right 50% — Zero Empty Space, Equal Column Height) */
+    .mockup-main-board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: stretch;
+    }
+    .mockup-half-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-width: 0;
+      height: 100%;
+      align-items: stretch;
+    }
+    .mockup-half-col > .mockup-subgrid-2col,
+    .mockup-half-col > .mockup-subgrid-right-top,
+    .mockup-half-col > .mockup-subgrid-3col,
+    .mockup-half-col > #customWidgetsLeft,
+    .mockup-half-col > #customWidgetsRight {
+      grid-column: 1 / -1;
+    }
+    #fullWidthBottomZone {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 12px;
+    }
+    #fullWidthBottomZone > #customWidgetsBottom {
+      grid-column: 1 / -1;
+    }
+    .mockup-subgrid-2col {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .mockup-subgrid-right-top {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .mockup-subgrid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+    .mockup-half-col > .widget-box:not(#widget_heroStats),
+    #fullWidthBottomZone > .widget-box:not(#widget_heroStats),
+    .mockup-subgrid-2col > .widget-box:not(#widget_heroStats),
+    .mockup-subgrid-right-top > .widget-box:not(#widget_heroStats),
+    .mockup-subgrid-3col > .widget-box:not(#widget_heroStats),
+    #supplementaryDockZone > .widget-box:not(#widget_heroStats) {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      margin: 0 !important;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+    #supplementaryDockZone {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 14px;
+      width: 100%;
+    }
+    .pro-quad-suite-grid {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 10px !important;
+      align-items: stretch !important;
+      width: 100% !important;
+      margin-bottom: 14px !important;
+    }
+    .pro-quad-suite-grid > .card.widget-box {
+      height: 310px !important;
+      max-height: 310px !important;
+      min-height: 310px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+      min-width: 0 !important;
+      padding: 10px 12px !important;
+      border-radius: 14px !important;
+      overflow: hidden !important;
+    }
+    @media (max-width: 767px) {
+      .pro-quad-suite-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      .pro-quad-suite-grid > .card.widget-box {
+        height: auto !important;
+        max-height: unset !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .pro-quad-suite-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+    #supplementaryDockZone .card-header h2 {
+      font-size: 13px;
+    }
+    /* 📊 4 HERO SUMMARY CARDS AS 4 SLEEK BUTTONS IN 1 SINGLE LINE */
+    #widget_heroStats,
+    .stats-grid#widget_heroStats {
+      grid-column: 1 / -1 !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      flex-direction: unset !important;
+      gap: 10px !important;
+      align-items: stretch !important;
+      height: auto !important;
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    #widget_heroStats .stat-card {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      border-radius: 14px !important;
+      padding: 10px 14px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 10px !important;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.88)) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+      transition: all 0.18s ease !important;
+      min-width: 0 !important;
+      width: 100% !important;
+      text-align: left !important;
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+    #widget_heroStats .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.32) !important;
+      filter: brightness(1.12);
+    }
+    #widget_heroStats .stat-card:active {
+      transform: translateY(0) scale(0.98);
+    }
+    #widget_heroStats .hero-btn-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      background: rgba(255, 255, 255, 0.07);
+      flex-shrink: 0;
+    }
+    #widget_heroStats .hero-btn-content {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+    #widget_heroStats .stat-card .label {
+      margin-bottom: 2px !important;
+      font-size: 10px !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #widget_heroStats .stat-card .value {
+      font-size: 14.5px !important;
+      font-weight: 800 !important;
+      margin-bottom: 1px !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #widget_heroStats .stat-card .sub-value {
+      font-size: 10px !important;
+      color: var(--text-muted) !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* 4 Live TV Channel Buttons in 1 Single Horizontal Line */
+    .tv-channel-tabs {
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 6px !important;
+      margin: 8px 0 !important;
+      width: 100%;
+    }
+    .tv-ch-btn {
+      width: 100%;
+      justify-content: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 6px 8px !important;
+      font-size: 11px !important;
+      border-radius: 999px !important;
+      text-align: center;
+    }
+    .live-sync-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: livePulseDot 1.2s infinite ease-in-out;
+      margin-right: 4px;
+    }
+    @keyframes livePulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.55; }
+    }
+    /* 1080p HD Video Clarity & Unsharp Mask Enhancement */
+    #liveTvHlsVideo.hd-clarity-boost {
+      filter: url(#hdSharpFilter) contrast(1.07) saturate(1.10) brightness(1.02);
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       🖐️ VISUAL DRAG-AND-DROP, MOUSE CORNER RESIZE & FONT STUDIO STYLES
+    ═══════════════════════════════════════════════════════════════════════ */
+    #visualStudioTopBar {
+      display: none;
+      position: sticky;
+      top: 8px;
+      z-index: 9990;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(30, 41, 59, 0.97));
+      border: 2px solid #f59e0b;
+      border-radius: 14px;
+      padding: 10px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 22px rgba(245, 158, 11, 0.35);
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      backdrop-filter: blur(14px);
+    }
+    body.visual-studio-mode #visualStudioTopBar {
+      display: flex;
+    }
+    body.visual-studio-mode .widget-box {
+      position: relative !important;
+      border: 2px dashed rgba(251, 191, 36, 0.75) !important;
+      padding-top: 42px !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    body.visual-studio-mode .widget-box:hover {
+      box-shadow: 0 0 22px rgba(251, 191, 36, 0.32) !important;
+    }
+    body.visual-studio-mode .widget-box.dragging-now {
+      opacity: 0.45 !important;
+      transform: scale(0.98);
+      border: 2px solid #38bdf8 !important;
+    }
+    body.visual-studio-mode .widget-box.drag-over-target {
+      border: 2.5px solid #10b981 !important;
+      box-shadow: 0 0 28px rgba(16, 185, 129, 0.65) !important;
+      transform: scale(1.01);
+    }
+    .vbox-toolbar {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 34px;
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96));
+      border-bottom: 1px solid rgba(251, 191, 36, 0.45);
+      border-radius: 12px 12px 0 0;
+      padding: 0 8px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      z-index: 60;
+      user-select: none;
+    }
+    body.visual-studio-mode .widget-box > .vbox-toolbar {
+      display: flex;
+    }
+    .vbox-drag-grip {
+      cursor: grab;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fde68a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .vbox-drag-grip:active {
+      cursor: grabbing;
+    }
+    .vbox-mini-btns {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .vbox-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .vbox-btn:hover {
+      background: rgba(56, 189, 248, 0.28);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+    /* Bottom-Right Corner Mouse Resize Grip */
+    .vbox-resize-grip {
+      display: none;
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      width: 24px;
+      height: 24px;
+      cursor: nwse-resize;
+      background: linear-gradient(135deg, transparent 40%, rgba(251, 191, 36, 0.9) 40%);
+      border-radius: 0 0 10px 0;
+      z-index: 65;
+      align-items: flex-end;
+      justify-content: flex-end;
+      font-size: 11px;
+      color: #0f172a;
+      font-weight: 900;
+      padding: 1px 3px;
+      user-select: none;
+    }
+    body.visual-studio-mode .widget-box > .vbox-resize-grip {
+      display: flex;
+    }
+    body.visual-studio-mode .card-header h2,
+    body.visual-studio-mode .mera-tv-heading {
+      outline: 1px dashed rgba(56, 189, 248, 0.55);
+      padding: 1px 5px;
+      border-radius: 5px;
+      cursor: text;
+    }
+    .widget-span-full {
+      grid-column: 1 / -1 !important;
+    }
+    /* Empty Space Drop Slots shown in Visual Studio Mode */
+    .empty-drop-slot {
+      display: none;
+      border: 2px dashed rgba(56, 189, 248, 0.55);
+      background: rgba(56, 189, 248, 0.06);
+      border-radius: 12px;
+      min-height: 68px;
+      padding: 12px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #7dd3fc;
+      font-size: 12px;
+      font-weight: 800;
+      transition: all 0.18s ease;
+      grid-column: 1 / -1;
+      cursor: copy;
+    }
+    body.visual-studio-mode .empty-drop-slot {
+      display: flex;
+    }
+    .empty-drop-slot.slot-drag-over,
+    .zone-drag-highlight {
+      border-color: #10b981 !important;
+      background: rgba(16, 185, 129, 0.18) !important;
+      color: #6ee7b7 !important;
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.45) !important;
+      transform: scale(1.01);
+    }
+  </style>
+</head>
+<body>
+<!-- SVG Convolution Unsharp-Mask Filter for Crystal-Clear Live TV Text & Numbers -->
+<svg width="0" height="0" style="position:absolute; pointer-events:none;">
+  <defs>
+    <filter id="hdSharpFilter">
+      <feConvolveMatrix order="3 3" preserveAlpha="true" kernelMatrix="0 -0.45 0 -0.45 2.8 -0.45 0 -0.45 0" />
+    </filter>
+  </defs>
+</svg>
+
+<!-- 🚨 MAIN SCREEN POP-UP FLASH OVERLAY (High-Conviction Trades & Breaking News with [✕] Button) -->
+<div id="mainPopFlashContainer" class="pop-flash-container" aria-live="assertive"></div>
+
+<div class="container">
+  <!-- 🖐️ FLOATING VISUAL DRAG, RESIZE & FONT STUDIO BAR (Shown when Easy Edit is ON) -->
+  <div id="visualStudioTopBar">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span style="background:#f59e0b; color:#0f172a; font-weight:900; font-size:12px; padding:4px 10px; border-radius:8px;">🖐️ EASY VISUAL EDIT MODE: ON</span>
+      <span style="font-size:12px; color:#fde68a; font-weight:600;">
+        💡 <strong>Box par Drop = <span style="color:#34d399;">Jagah Swap</span></strong> • <strong>Khali Jagah (<span style="color:#38bdf8;">➕ Empty Slot</span>) par Drop = <span style="color:#38bdf8;">Wahan Set</span></strong> • <strong><span style="color:#f472b6;">📌 Free Move</span></strong> se kahi bhi rakhein • Kona <strong><span style="color:#34d399;">↘️</span></strong> khich kar Bada/Chota karein!
+      </span>
+    </div>
+    <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
+      <!-- Global Font Family Picker -->
+      <select id="globalFontFamilySelect" onchange="changeGlobalDashboardFont(this.value)" class="select-control" style="padding:4px 8px; font-size:11.5px; border-color:#38bdf8;">
+        <option value="">🔤 Global Font: Default Modern</option>
+        <option value="'Inter', 'Segoe UI', sans-serif">🔤 Clean Sans (Inter)</option>
+        <option value="'Poppins', 'Segoe UI', sans-serif">🔤 Bold Rounded (Poppins)</option>
+        <option value="'JetBrains Mono', 'Consolas', monospace">🔤 Terminal Mono (Pro Numbers)</option>
+        <option value="Georgia, 'Times New Roman', serif">🔤 Royal Serif (Classic)</option>
+        <option value="'Trebuchet MS', 'Arial Black', sans-serif">🔤 Heavy Impact</option>
+      </select>
+      <!-- Global Font Zoom -->
+      <button class="pill-btn" onclick="changeGlobalFontScale(-0.06)" style="padding:4px 8px; font-size:11.5px; border-color:#38bdf8; color:#7dd3fc;" title="All Text Smaller">🔠 Global A-</button>
+      <button class="pill-btn" onclick="changeGlobalFontScale(0.06)" style="padding:4px 8px; font-size:11.5px; border-color:#38bdf8; color:#7dd3fc;" title="All Text Bigger">🔠 Global A+</button>
+      <button class="pill-btn" onclick="resetAllFreePositions()" style="padding:4px 9px; font-size:11.5px; border-color:#f472b6; color:#fbcfe8;" title="Snap all free-moved boxes back into clean grid">📐 Align Grid</button>
+      <button class="pill-btn" onclick="restoreAllHiddenBoxes()" style="padding:4px 9px; font-size:11.5px; border-color:#a855f7; color:#e9d5ff;" title="Show any hidden boxes">👁️ Show All Boxes</button>
+      <button class="pill-btn" onclick="openAdminBackPanel()" style="padding:4px 10px; font-size:11.5px; border-color:#fbbf24; color:#fde68a;">⚙️ Full Back Panel</button>
+      <button class="btn-primary" onclick="saveVisualStudioAndExit()" style="background:linear-gradient(135deg,#10b981,#059669); padding:5px 14px; font-size:12px;">💾 Save &amp; Finish</button>
+    </div>
+  </div>
+
+  <!-- ROW 1: 👑 PERSONALIZED LUXURY HEADER FOR JYOTI SINGH (ZERO COMPANY LOGOS/NAMES) -->
+  <header>
+    <div class="brand-profile">
+      <div class="avatar-crown" id="editAvatar">👑</div>
+      <div class="logo-area">
+        <h1 id="editMainTitle">JYOTI SINGH • Personal AI Super Trading Terminal</h1>
+        <p id="editSubTitle">Real-Time Multi-Asset Analytics • Live Market Scanner • Options Studio <span class="client-id-tag">(<strong style="color:#fde68a;">ID: 1000659782</strong>)</span></p>
+      </div>
+    </div>
+    <div class="badges-area">
+      <!-- 🛡️ PRIVACY / GUEST SHIELD BADGE BUTTON -->
+      <button type="button" class="pill-btn" id="privacyShieldBtn" onclick="togglePrivacyModal()" style="padding: 5px 11px; font-weight: 800; font-size: 11px; border: 1.5px solid #10b981; background: rgba(16,185,129,0.18); color: #6ee7b7; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;" title="Privacy Shield: Mask Dhan &amp; Broker Details on Shared Devices">
+        <span id="privacyIcon">🛡️</span>
+        <span id="privacyStatusLabel">Privacy: ON</span>
+      </button>
+
+      <!-- 📲 1-CLICK APP INSTALL BUTTON (MOBILE & DESKTOP) -->
+      <button type="button" class="pill-btn" id="pwaInstallBtn" onclick="triggerPwaInstall()" style="padding: 5px 11px; font-weight: 800; font-size: 11px; border: 1.5px solid #38bdf8; background: linear-gradient(135deg, rgba(2,132,199,0.25), rgba(56,189,248,0.2)); color: #7dd3fc; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;" title="1-Click Install App on Android Mobile or PC">
+        <span>📲</span>
+        <span>Install App</span>
+      </button>
+
+      <!-- 1. LIVE INDIA VIX BADGE -->
+      <div class="badge" id="vixLiveBadge" style="background:rgba(251,191,36,0.16);border:1px solid #f59e0b;color:#fde68a;">📊 India VIX: --</div>
+
+      <!-- 2. 🔔 NOTIFICATION BELL BUTTON WITH DIRECT DROPDOWN POPOVER "NICHE" -->
+      <div class="alerts-wrapper">
+        <button type="button" class="pill-btn notif-bell-btn" id="headerNotifBellBtn" onclick="toggleAlertsDropdown(event)" style="padding: 6px 13px; background: linear-gradient(135deg, rgba(245,158,11,0.22), rgba(239,68,68,0.28)); border: 1.5px solid #f59e0b; color: #fde68a; font-weight: 800;" title="Live Notifications &amp; Alerts Archive (Date &amp; Time-wise)">
+          <span id="bellIconGraphic" style="font-size:15px;">🔔</span>
+          <span>Alerts</span>
+          <span id="notifUnreadBadge" class="notif-badge-pill" style="display:none;">0</span>
+          <span id="alertsDropdownArrow" style="font-size:9px; margin-left:2px; transition:transform 0.2s;">▼</span>
+        </button>
+
+        <!-- DROPDOWN PANEL OPENING DIRECTLY "NICHE" (BELOW) -->
+        <div id="alertsDropdownPanel" class="alerts-dropdown-popover" style="display: none;">
+          <!-- Header -->
+          <div class="alerts-popover-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">🔔</span>
+              <div>
+                <div style="font-size:13px; font-weight:800; color:#ffffff; display:flex; align-items:center; gap:6px;">
+                  Live Alerts &amp; Notifications
+                  <span id="drawerUnreadCountBadge" class="badge warning" style="font-size:10px; padding:1px 6px;">0 New</span>
+                </div>
+                <div style="font-size:10px; color:#94a3b8;">Organized Date &amp; Time-Wise Archive</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:5px;">
+              <button type="button" class="pill-btn" onclick="markAllNotificationsAsRead()" style="padding:3px 7px; font-size:10px; background:rgba(16,185,129,0.18); border-color:#10b981; color:#34d399;" title="Mark all as read">✓ Read</button>
+              <button type="button" class="pill-btn" onclick="clearAllNotificationHistory()" style="padding:3px 7px; font-size:10px; background:rgba(239,68,68,0.18); border-color:#ef4444; color:#f87171;" title="Clear history">🗑️</button>
+              <button type="button" class="quick-tools-popover-close" onclick="closeAlertsDropdown()" title="Close (✕)">✕</button>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="notif-filter-bar" style="padding: 6px 10px; gap: 4px;">
+            <button type="button" class="notif-filter-chip active" data-filter="DIAMOND" onclick="filterNotificationsByType('DIAMOND')" style="border-color:#38bdf8; color:#7dd3fc; font-weight:800; background:rgba(56,189,248,0.15);">💎 90%+ Diamond (<span id="notifCountDiamond">0</span>)</button>
+            <button type="button" class="notif-filter-chip" data-filter="ALL" onclick="filterNotificationsByType('ALL')">All (<span id="notifCountAll">0</span>)</button>
+            <button type="button" class="notif-filter-chip" data-filter="TRADE" onclick="filterNotificationsByType('TRADE')">🚀 Trades (<span id="notifCountTrade">0</span>)</button>
+            <button type="button" class="notif-filter-chip" data-filter="PRE_BREAKOUT" onclick="filterNotificationsByType('PRE_BREAKOUT')">⚡ Breakouts (<span id="notifCountBreakout">0</span>)</button>
+            <button type="button" class="notif-filter-chip" data-filter="NEWS" onclick="filterNotificationsByType('NEWS')">📰 News (<span id="notifCountNews">0</span>)</button>
+            <button type="button" class="notif-filter-chip" data-filter="VIX" onclick="filterNotificationsByType('VIX')">📊 VIX (<span id="notifCountVix">0</span>)</button>
+          </div>
+
+          <!-- Notification Items List (Strictly Date & Time Wise) -->
+          <div id="notificationListContainer" class="notif-list-scroll" style="max-height: 420px; overflow-y: auto; padding: 6px 10px;">
+            <!-- Dynamically filled by app.js -->
+          </div>
+
+          <!-- Footer -->
+          <div class="alerts-popover-footer" style="padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10.5px; color: #94a3b8;">
+            <span>Auto-Sync: <span id="notifLastSyncTime" style="color:#fde68a; font-family:monospace;">Live</span></span>
+            <button type="button" class="pill-btn" onclick="fetchLiveNotifications(true)" style="padding:2px 8px; font-size:10px; background:rgba(56,189,248,0.18); border-color:#38bdf8; color:#7dd3fc;">🔄 Refresh</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 🎛️ UNIFIED QUICK TOOLS BUTTON (1 Button ke andar saare 9 Tools!) -->
+      <div class="quick-tools-wrapper">
+        <button type="button" class="pill-btn quick-tools-trigger-btn" id="quickToolsTriggerBtn" onclick="toggleQuickToolsDropdown(event)" title="Click to open Mobile QR, Easy Drag &amp; Resize, Back Panel, Lock, Auto-Sync, Auto-Renew, Sound, Push Alerts &amp; Self-Learn Gen">
+          <span>🎛️ Quick Tools</span>
+          <span id="quickToolsArrow" style="font-size:9px; transition: transform 0.2s;">▼</span>
+        </button>
+
+        <!-- DROPDOWN POPOVER MENU -->
+        <div id="quickToolsDropdownMenu" class="quick-tools-popover" style="display: none;">
+          <div class="quick-tools-popover-header">
+            <div class="quick-tools-popover-title">
+              <span>🎛️</span>
+              <span>Terminal Quick Tools</span>
+            </div>
+            <button type="button" class="quick-tools-popover-close" onclick="closeQuickToolsDropdown()" title="Close menu">✕</button>
+          </div>
+
+          <div class="quick-tools-list">
+            <!-- 1. Mobile QR -->
+            <button type="button" class="quick-tool-item" onclick="openMobileAccessModal(); closeQuickToolsDropdown();">
+              <span class="qmi-icon" style="background: linear-gradient(135deg, #10b981, #0284c7);">📱</span>
+              <div class="qmi-text">
+                <div class="qmi-title">Mobile QR</div>
+                <div class="qmi-sub">Open terminal on smartphone</div>
+              </div>
+            </button>
+
+            <!-- 2, 3, 4: Owner Controls Group (Easy Drag, Back Panel, Lock) -->
+            <div id="ownerControlsGroup" class="qmi-owner-group">
+              <button type="button" class="quick-tool-item" id="visualStudioToggleBtn" onclick="toggleVisualStudioMode(); closeQuickToolsDropdown();">
+                <span class="qmi-icon" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">🖐️</span>
+                <div class="qmi-text">
+                  <div class="qmi-title" id="visualStudioText">Easy Drag &amp; Resize</div>
+                  <div class="qmi-sub">Customize layout &amp; widget positions</div>
+                </div>
+              </button>
+              <button type="button" class="quick-tool-item" id="adminBackPanelBtn" onclick="openAdminBackPanel(); closeQuickToolsDropdown();">
+                <span class="qmi-icon" style="background: linear-gradient(135deg, #f59e0b, #ea580c);">⚙️</span>
+                <div class="qmi-text">
+                  <div class="qmi-title">Back Panel</div>
+                  <div class="qmi-sub">Admin PIN, API keys &amp; settings</div>
+                </div>
+              </button>
+              <button type="button" class="quick-tool-item" id="ownerLockNowBtn" onclick="lockOwnerSession(); closeQuickToolsDropdown();">
+                <span class="qmi-icon" style="background: rgba(244,63,94,0.3); border:1px solid #f43f5e;">🔒</span>
+                <div class="qmi-text">
+                  <div class="qmi-title" style="color:#fda4af;">Lock Session</div>
+                  <div class="qmi-sub">Lock admin rights for safety</div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Shown when Locked (Discreet Unlock) -->
+            <button type="button" class="quick-tool-item" id="ownerUnlockBtn" onclick="openOwnerPinModal(); closeQuickToolsDropdown();" style="display:none;">
+              <span class="qmi-icon" style="background: rgba(251,191,36,0.3); border:1px solid #f59e0b;">🔐</span>
+              <div class="qmi-text">
+                <div class="qmi-title" style="color:#fde68a;">Owner Unlock</div>
+                <div class="qmi-sub">Enter Jyoti Singh Secret PIN</div>
+              </div>
+            </button>
+
+            <!-- 4.5. 💎 90%+ Diamond Filter Toggle -->
+            <button type="button" class="quick-tool-item" onclick="toggleDiamondSniperMode(); closeQuickToolsDropdown();">
+              <span class="qmi-icon" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border:1px solid #38bdf8;">💎</span>
+              <div class="qmi-text">
+                <div class="qmi-title" style="color:#7dd3fc;">90%+ Diamond Filter: <span id="quickDiamondStatus">ON</span></div>
+                <div class="qmi-sub">Block low probability setups (90%+ only)</div>
+              </div>
+            </button>
+
+            <!-- 5. Auto-Sync -->
+            <button type="button" class="quick-tool-item" onclick="triggerAnalysis(true)">
+              <span class="qmi-icon" style="background: rgba(16,185,129,0.25); border:1px solid #10b981;">🔄</span>
+              <div class="qmi-text">
+                <div class="qmi-title"><span class="live-sync-dot"></span>Auto-Sync: <span id="lastSyncClock" style="color:#34d399; margin-left:3px;">Live</span></div>
+                <div class="qmi-sub">Click to force sync live data now</div>
+              </div>
+            </button>
+
+            <!-- 6. Auto-Renew -->
+            <div class="quick-tool-item" style="cursor:default;">
+              <span class="qmi-icon" style="background: rgba(16,185,129,0.25); border:1px solid #10b981;">🟢</span>
+              <div class="qmi-text">
+                <div class="qmi-title" style="color:#34d399;">Auto-Renew: ON</div>
+                <div class="qmi-sub">Continuous live streaming active</div>
+              </div>
+            </div>
+
+            <!-- 7. Sound Alerts -->
+            <button type="button" class="quick-tool-item" id="soundToggleBtn" onclick="toggleAlertSound()">
+              <span class="qmi-icon" id="soundToggleIcon" style="background: rgba(16,185,129,0.25); border:1px solid #10b981;">🔊</span>
+              <div class="qmi-text">
+                <div class="qmi-title" id="soundToggleText">Sound: ON</div>
+                <div class="qmi-sub">Audio beep on high-conviction trades</div>
+              </div>
+            </button>
+
+            <!-- 8. Push Alerts -->
+            <button type="button" class="quick-tool-item" onclick="enableBrowserNotifications(); closeQuickToolsDropdown();">
+              <span class="qmi-icon" style="background: rgba(56,189,248,0.25); border:1px solid #38bdf8;">📲</span>
+              <div class="qmi-text">
+                <div class="qmi-title">Push Alerts</div>
+                <div class="qmi-sub">Desktop &amp; smartphone notifications</div>
+              </div>
+            </button>
+
+            <!-- 9. Self-Learn Gen -->
+            <button type="button" class="quick-tool-item" id="selfLearnHealthBtn" onclick="openHealthModal(); closeQuickToolsDropdown();">
+              <span class="qmi-icon" style="background: rgba(168,85,247,0.25); border:1px solid #a855f7;">🧬</span>
+              <div class="qmi-text">
+                <div class="qmi-title" id="selfLearnTitleText">Self-Learn Gen #134 (60.5%)</div>
+                <div class="qmi-sub">AI self-learning loop &amp; diagnostics</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ROW 2: 🛡️ JYOTI SINGH'S PERSONAL 4 GOLDEN PROFIT RULES (1-LINE 4 INTERACTIVE BUTTONS) -->
+  <div class="jyoti-shield-bar" id="widget_goldenRules">
+    <button type="button" class="shield-pill" onclick="activateGoldenRuleButton(0)" style="border-color: rgba(244, 63, 94, 0.45);">
+      <div class="shield-icon">🚫</div>
+      <div style="min-width:0; overflow:hidden;">
+        <div style="font-weight: 800; color: #fda4af; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Rule #1: No Averaging Losers</div>
+        <div style="color: var(--text-muted); font-size: 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Girte hue CE/PE ko kabhi average mat karo</div>
+      </div>
+    </button>
+    <button type="button" class="shield-pill" onclick="activateGoldenRuleButton(1)" style="border-color: rgba(16, 185, 129, 0.45);">
+      <div class="shield-icon">🚀</div>
+      <div style="min-width:0; overflow:hidden;">
+        <div style="font-weight: 800; color: #34d399; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Rule #2: Fast Move = Buy CE/PE</div>
+        <div style="color: var(--text-muted); font-size: 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Jab Momentum &gt; 48 ho tabhi Option Buy karo</div>
+      </div>
+    </button>
+    <button type="button" class="shield-pill" onclick="activateGoldenRuleButton(2)" style="border-color: rgba(56, 189, 248, 0.45);">
+      <div class="shield-icon">🛡️</div>
+      <div style="min-width:0; overflow:hidden;">
+        <div style="font-weight: 800; color: #7dd3fc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Rule #3: Slow Market = Sell Options</div>
+        <div style="color: var(--text-muted); font-size: 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">12:00–2:30 PM chop me Theta Decay khao</div>
+      </div>
+    </button>
+    <button type="button" class="shield-pill" onclick="activateGoldenRuleButton(3)" style="border-color: rgba(251, 191, 36, 0.45);">
+      <div class="shield-icon">🏆</div>
+      <div style="min-width:0; overflow:hidden;">
+        <div style="font-weight: 800; color: #fde68a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Rule #4: Lock Morning Profits</div>
+        <div style="color: var(--text-muted); font-size: 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Subah 2-3 winning trades ke baad Kill-Switch ON!</div>
+      </div>
+    </button>
+  </div>
+
+  <!-- ROW 3: 🔍 FULL-WIDTH STOCK SEARCH & QUICK WATCHLIST BAR -->
+  <div class="control-bar widget-box" id="widget_searchBar" style="margin-bottom: 12px;">
+    <div class="search-row">
+      <div class="search-input-wrapper">
+        <input type="text" id="symbolInput" placeholder="Search Any NSE/BSE Symbol or Index (e.g. NIFTY, BANKNIFTY, SENSEX)..." value="NIFTY" />
+      </div>
+      <select id="styleSelect" class="select-control">
+        <option value="Intraday Swing" selected>⚡ Intraday Swing</option>
+        <option value="Intraday Scalp">🔥 Quick Scalp</option>
+        <option value="Positional Delivery">📈 Positional</option>
+      </select>
+      <select id="riskSelect" class="select-control">
+        <option value="Moderate" selected>⚖️ Moderate Risk</option>
+        <option value="Conservative">🛡️ Safe / Conservative</option>
+        <option value="Aggressive">🚀 High Conviction</option>
+      </select>
+      <button class="btn-primary" id="analyzeBtn" onclick="triggerAnalysis(false)">
+        <span>🚀 Analyze For Jyoti</span>
+      </button>
+    </div>
+
+    <div class="quick-pills" id="quickWatchlistContainer">
+      <span>🔥 Quick Watchlist:</span>
+      <button class="pill-btn active" onclick="selectSymbol('NIFTY')">NIFTY 50</button>
+      <button class="pill-btn" onclick="selectSymbol('BANKNIFTY')">BANK NIFTY</button>
+      <button class="pill-btn" onclick="selectSymbol('SENSEX')">SENSEX</button>
+      <button class="pill-btn" onclick="selectSymbol('INTELLECT')" style="border-color:#fbbf24; color:#fde68a;">⭐ INTELLECT</button>
+      <button class="pill-btn" onclick="selectSymbol('RELIANCE')">RELIANCE</button>
+      <button class="pill-btn" onclick="selectSymbol('HDFCBANK')">HDFCBANK</button>
+      <button class="pill-btn" onclick="selectSymbol('TATASTEEL')">TATASTEEL</button>
+      <button class="pill-btn" onclick="selectSymbol('BAJFINANCE')">BAJFINANCE</button>
+      <button class="pill-btn" onclick="selectSymbol('SBIN')">SBIN</button>
+      <button class="pill-btn" onclick="selectSymbol('TCS')">TCS</button>
+      <button class="pill-btn" onclick="selectSymbol('LT')">LT</button>
+    </div>
+  </div>
+
+  <!-- ROW 4: 📈 FULL-WIDTH LIVE STOCKS & INDEX TICKER TAPE (RIGHT ⬅️ LEFT CHALTE HUE) -->
+  <div class="live-ticker-bar" id="widget_tickerBar">
+    <div class="ticker-label-badge">
+      <span>🔴 Live Market (⬅️)</span>
+      <button onclick="toggleTickerLang()" id="tickerLangBtn" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff; border-radius:4px; padding:1px 6px; font-size:10px; font-weight:800; cursor:pointer;" title="Switch Hindi / English">हिंदी</button>
+      <button onclick="toggleTickerBarStyle()" id="tickerStyleBtn" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff; border-radius:4px; padding:1px 6px; font-size:10px; cursor:pointer;" title="Switch White / Dark Ribbon">☀️</button>
+    </div>
+    <div class="ticker-track-wrap">
+      <div class="ticker-track" id="liveTickerTrack">
+        <div class="ticker-item" onclick="selectSymbol('NIFTY')"><span class="ticker-sym">निफ्टी 50</span><span class="ticker-price">22520.45</span><span class="ticker-arrow-up">▲</span><span class="ticker-chg ticker-up">+288.40 (+1.30%)</span></div>
+        <div class="ticker-item" onclick="selectSymbol('BANKNIFTY')"><span class="ticker-sym">बैंक निफ्टी</span><span class="ticker-price">55256.65</span><span class="ticker-arrow-up">▲</span><span class="ticker-chg ticker-up">+740.20 (+1.36%)</span></div>
+        <div class="ticker-item" onclick="selectSymbol('SENSEX')"><span class="ticker-sym">सेंसेक्स</span><span class="ticker-price">72488.00</span><span class="ticker-arrow-up">▲</span><span class="ticker-chg ticker-up">+845.15 (+1.18%)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⚡ ROW 5: SCALP-PRO STUDIO SUITE (1-Tap Option Scalper & Panic Kill-Switch) -->
+  <div class="scalppro-bar widget-box" id="widget_scalpProSuite" style="margin-bottom: 12px; padding: 10px 14px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.92)); border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge info" style="font-weight: 900; letter-spacing: 0.5px; padding: 4px 10px; font-size: 11.5px; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff;">⚡ SCALP-PRO SUITE</span>
+      <div style="font-size: 12px; color: #cbd5e1;">
+        <span style="color:#fde68a; font-weight:800;" id="scalpCurrentSymbol">NIFTY</span> ATM Spot: <strong id="scalpSpotPrice" style="color:#38bdf8; font-family:'JetBrains Mono', Consolas, monospace;">--</strong>
+        <span class="badge success" id="scalpLimitBadge" style="font-size: 10.5px; margin-left: 6px;" title="AI Optimal Limit Price to avoid market order slippage">💡 AI Smart Limit: ON (Save ₹1.80/sh)</span>
+      </div>
+    </div>
+
+    <!-- Scalp Action Buttons & Emergency Panic Exit -->
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <button type="button" class="pill-btn" onclick="executeScalpTradeAction('BUY_CE')" style="padding: 6px 14px; background: linear-gradient(135deg, #10b981, #059669); border: none; color: #fff; font-weight: 800; font-size: 12px; box-shadow: 0 0 14px rgba(16, 185, 129, 0.45); cursor: pointer;" title="1-Tap Buy ATM Call with Optimal Limit &amp; Zing Targets">
+        ⚡ 1-Tap BUY CE (Call)
+      </button>
+      <button type="button" class="pill-btn" onclick="executeScalpTradeAction('BUY_PE')" style="padding: 6px 14px; background: linear-gradient(135deg, #f43f5e, #e11d48); border: none; color: #fff; font-weight: 800; font-size: 12px; box-shadow: 0 0 14px rgba(244, 63, 94, 0.45); cursor: pointer;" title="1-Tap Buy ATM Put with Optimal Limit &amp; Zing Targets">
+        ⚡ 1-Tap BUY PE (Put)
+      </button>
+      <button type="button" class="pill-btn" onclick="toggleScalpSplitScreen()" id="splitScreenToggleBtn" style="padding: 6px 12px; background: rgba(56, 189, 248, 0.16); border-color: #38bdf8; color: #7dd3fc; font-weight: 700; font-size: 11.5px; cursor: pointer;" title="Spot + Option Split Screen">
+        🔲 Split-Screen View
+      </button>
+      <!-- 🚨 EMERGENCY KILL-SWITCH (EXIT ALL) -->
+      <button type="button" class="pill-btn" onclick="triggerEmergencyKillSwitch()" style="padding: 6px 14px; background: linear-gradient(135deg, #dc2626, #991b1b); border: 1.5px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; box-shadow: 0 0 16px rgba(239, 68, 68, 0.6); animation: killSwitchPulse 2s infinite ease-in-out; cursor: pointer;" title="Panic Exit: Close All Open Trades Instantly &amp; Lock Profits">
+        🚨 EMERGENCY EXIT ALL
+      </button>
+    </div>
+  </div>
+
+  <!-- 🎯 ROW 5.5: SIMPLE MARKET STATUS & REGIME BANNER (Right by 90%+ Ultra Sniper Radar) -->
+  <div class="widget-box market-status-top-ribbon" id="widget_alertBanner" data-widget-name="🚨 Market Regime & Status Banner" style="margin-bottom: 12px; padding: 7px 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(99, 102, 241, 0.14)); border: 1.5px solid rgba(251, 191, 36, 0.4); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+      <span style="font-size: 18px;">🎯</span>
+      <div>
+        <div style="font-weight: 800; font-size: 12.5px; color: #fde68a;" id="globalRegimeTitle">
+          🏁 Market Closed (Post-Market Hours • Next Session opens next trading day at 09:15 AM IST) (Avg Momentum: 35.7 | Squeeze: 73.2%)
+        </div>
+        <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 1px;" id="globalRegimeAdvice">
+          Post-Market technical analysis loaded • Live intraday breakout alerts paused until 09:15 AM IST next session.
+        </div>
+      </div>
+    </div>
+    <div id="liveAlertCards" style="display: none;"></div>
+  </div>
+
+  <!-- 👑 ROW 6: QUANTITATIVE AI & 90%+ DIAMOND SUITE (Symmetrical 2-Column Side-by-Side Cockpit!) -->
+  <div class="ai-cockpit-grid" id="aiCockpitRow">
+    <!-- Left Column: 💎 90%+ ULTRA SNIPER DIAMOND RADAR (A+ Diamond Setups Only) -->
+    <div class="diamond-radar-card widget-box" id="widget_diamondSniperRadar" data-widget-name="💎 90%+ Diamond Sniper Radar">
+      <div class="diamond-radar-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="diamond-radar-pulse"></span>
+          <span style="font-size: 19px;">💎</span>
+          <div>
+            <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; letter-spacing: 0.3px; display: flex; align-items: center; gap: 8px;">
+              90%+ ULTRA SNIPER RADAR <span class="diamond-badge-pill">A+ DIAMOND TRADES ONLY</span>
+            </div>
+            <div style="font-size: 10.5px; color: #94a3b8;">
+              Strict Wall Street Filter Active • 100% Choppy Traps Blocked • 7-AI &gt; 75 + Swarm 4/5 + Volume Spike + OI Shield
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" id="diamondSniperToggleBtn" class="pill-btn" onclick="toggleDiamondSniperMode()" style="padding: 4px 12px; font-size: 11px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #0369a1); border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 0 14px rgba(56, 189, 248, 0.4); cursor: pointer;" title="Toggle 90%+ Diamond Strict Filter">
+            💎 90%+ Filter: <span id="diamondSniperStatusText">ACTIVE (ON)</span>
+          </button>
+          <button type="button" class="pill-btn" onclick="fetchLiveNotifications(true)" style="padding: 4px 10px; font-size: 10.5px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #cbd5e1;">🔄 Scan</button>
+        </div>
+      </div>
+
+      <!-- Live Diamond Setup or Scanning Radar Animation -->
+      <div id="diamondRadarBody" style="padding: 12px 16px; flex: 1;">
+        <!-- Dynamically filled by app.js: Either active 90%+ Diamond Card or Scanning Radar status -->
+      </div>
+    </div>
+
+    <!-- Right Column: 👑 MASTER 7-AI SUPREMACY MATRIX (Wall Street Multi-Model Suite) -->
+    <div class="card widget-box" id="widget_master7AiMatrix" data-widget-name="👑 Master 7-AI Supremacy Matrix" style="border: 1.5px solid rgba(168, 85, 247, 0.45); background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.92)); border-radius: 14px; overflow: hidden;">
+      <div class="card-header" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(168, 85, 247, 0.25)); padding: 10px 16px; border-bottom: 1px solid rgba(168, 85, 247, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 20px;">👑</span>
+          <div>
+            <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; letter-spacing: 0.3px;">
+              MASTER 7-AI SUPREMACY MATRIX
+            </div>
+            <div style="font-size: 10.5px; color: #cbd5e1;">
+              ML Probabilities • LSTM Deep Learning • RL Self-Learning • Sentiment NLP • Swarm Consensus
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="master7AiConfluenceBadge" class="badge" style="font-size: 11px; padding: 4px 10px; font-weight: 800; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;">
+            ⚡ 7-AI: Live
+          </span>
+          <button type="button" class="pill-btn" onclick="triggerAnalysis(true)" style="padding: 3px 9px; font-size: 10.5px; background: rgba(56, 189, 248, 0.18); border-color: #38bdf8; color: #7dd3fc;">🔄 Re-Calculate</button>
+        </div>
+      </div>
+
+      <!-- Master Gauge Bar & Hindi AI Recommendation -->
+      <div style="padding: 10px 14px; background: rgba(0, 0, 0, 0.25); border-bottom: 1px solid rgba(255, 255, 255, 0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="flex: 1; min-width: 200px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+            <span style="color: #94a3b8; font-weight: 700;">Composite Conviction:</span>
+            <strong id="master7AiScoreText" style="color: #fde68a; font-size: 12.5px;">-- / 100</strong>
+          </div>
+          <div style="height: 8px; width: 100%; background: rgba(255, 255, 255, 0.08); border-radius: 99px; overflow: hidden; position: relative;">
+            <div id="master7AiMeterBar" style="height: 100%; width: 50%; background: linear-gradient(90deg, #f43f5e, #fbbf24, #10b981); transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+          </div>
+        </div>
+        <div style="flex: 1.5; min-width: 220px; font-size: 10.5px; color: #cbd5e1; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 6px 10px;">
+          💡 <strong style="color: #fde68a;">Verdict:</strong> <span id="master7AiVerdictText">Evaluating live multi-model signals...</span>
+        </div>
+      </div>
+
+      <!-- 7 AI Interactive Grid Cards -->
+      <div class="master-7ai-grid" id="master7AiGridContainer" style="padding: 10px; flex: 1;">
+        <!-- Dynamically filled by app.js with the 7 AI model tiles -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ROW 5: EXACT MOCKUP 2-HALF MULTI-CARD GRID (50% LEFT HALF | 50% RIGHT HALF) -->
+  <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+  <div class="mockup-main-board" id="mainDynamicBoard">
+
+    <!-- 👈 LEFT HALF (50% WIDTH): 3 SUB-ROWS -->
+    <div class="mockup-half-col" id="heroLeftCol">
+
+      <!-- Left Sub-Row 1: [Pre-Breakout & Momentum Radar] + [Smart Options Studio] -->
+      <div class="mockup-subgrid-2col" id="leftSubRow1">
+        <!-- Col 1: Pre-Breakout & Momentum Radar -->
+        <div class="card widget-box" id="widget_momentum" data-widget-name="⚡ Pre-Breakout & Momentum Radar" style="border: 1.5px solid rgba(16, 185, 129, 0.45); margin:0;">
+          <div class="card-header">
+            <h2 id="title_widget_momentum">⚡ Pre-Breakout &amp; Momentum Radar</h2>
+            <button class="pill-btn" onclick="refreshMomentum(true)" style="padding:3px 9px; font-size:11px;">↻ Scan</button>
+          </div>
+          <div id="momentumPanel" style="max-height: 365px; overflow-y: auto; padding-right: 4px;">
+            <div style="color:var(--text-muted); font-size:12.5px;">Scanning breakout movers...</div>
+          </div>
+        </div>
+
+        <!-- Col 2: Smart Options Studio (Buyer vs Seller) -->
+        <div class="card widget-box" id="widget_optionsStudio" data-widget-name="⚡ Smart Options Studio (Buyer vs Seller)" style="border: 1.5px solid rgba(139, 92, 246, 0.45); background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(15, 23, 42, 0.92)); margin:0;">
+          <div class="card-header">
+            <h2 id="title_widget_optionsStudio">⚡ Smart Options Studio (Buyer vs Seller)</h2>
+            <span class="badge info" id="opstraStrategyBadge">Auto Regime</span>
+          </div>
+          <div id="adaptiveRegimeBox" style="margin-bottom: 8px; padding: 8px 10px; border-radius: 10px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); font-size: 11.5px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#fbbf24; font-size:12px;" id="adaptiveRegimeLabel">🤖 Smart Regime: Detecting...</strong>
+              <button class="pill-btn" onclick="autoSelectOptionRegime()" style="padding:2px 8px; font-size:10.5px; border-color:#fbbf24; color:#fde68a;">⚡ Auto-Select</button>
+            </div>
+            <div id="adaptiveRegimeReason" style="color:#e2e8f0; margin-top:4px; font-size:11px; line-height:1.35;">Checking Momentum &amp; Squeeze...</div>
+          </div>
+          <div style="margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+            <select id="opstraStrategySelect" class="select-control" style="flex:1; min-width:140px; padding: 6px 8px; font-size: 11.5px;" onchange="loadOpstraStrategy()">
+              <optgroup label="🔥 FAST MOMENTUM — OPTION BUYING">
+                <option value="Long Call">Long Call — Fast Bullish CE Buy</option>
+                <option value="Long Put">Long Put — Fast Bearish PE Buy</option>
+                <option value="Bull Call Spread" selected>Bull Call Spread (Bullish Hedge)</option>
+                <option value="Bear Put Spread">Bear Put Spread (Bearish Hedge)</option>
+              </optgroup>
+              <optgroup label="🛡️ LOW MOMENTUM — OPTION SELLING (Theta)">
+                <option value="Iron Condor">Iron Condor — Safe Option Selling</option>
+                <option value="Short Strangle">Short Strangle — Pure Theta Selling</option>
+              </optgroup>
+            </select>
+            <button class="btn-primary" onclick="executeOpstraDemoTrade()" style="padding: 6px 10px; font-size: 11.5px; background: linear-gradient(135deg, #8b5cf6, #ec4899);">
+              <span>▶ Paper Trade</span>
+            </button>
+          </div>
+          <div id="opstraStrategyDetails" class="trade-plan-box" style="border-color: rgba(139, 92, 246, 0.3); font-size:11.5px;">
+            Loading Strategy Payoff &amp; Greeks...
+          </div>
+          <div style="margin-top: 8px;">
+            <h4 style="font-size: 11px; color: #c4b5fd; margin-bottom: 4px;">📂 Active Paper Options Portfolio</h4>
+            <div id="demoPortfolioList" style="max-height: 95px; overflow-y: auto; font-size: 11px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Sub-Row 2: [360° Fundamental & Range X-Ray] + [Multi-Timeframe Alignment & Pivots] (Same Size Box) -->
+      <div class="mockup-subgrid-2col" id="leftSubRow2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; margin-bottom: 10px;">
+        <!-- Col 1: 360° Fundamental & Price Range X-Ray -->
+        <div class="card widget-box" id="widget_rediff360" data-widget-name="🏢 360° Fundamental & Price Range X-Ray" style="border: 1.5px solid rgba(251, 191, 36, 0.45); background: linear-gradient(145deg, rgba(251, 191, 36, 0.07), rgba(15, 23, 42, 0.92)); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+          <div class="card-header" style="margin-bottom: 6px;">
+            <h2 id="title_widget_rediff360" style="font-size: 12px;">🏢 360° Fundamental &amp; Range X-Ray</h2>
+            <span class="badge warning" id="rediffSectorBadge" style="font-size: 9.5px; padding: 2px 6px;">NSE</span>
+          </div>
+          <div id="rediffCompany360Panel" style="max-height: 270px; overflow-y: auto; padding-right: 4px; font-size: 11px;">
+            <div style="color:var(--text-muted); font-size:11.5px;">Loading 52W Range, P/E, Market Cap &amp; Returns...</div>
+          </div>
+        </div>
+
+        <!-- Col 2: Multi-Timeframe Alignment & Camarilla Pivots (Same Size Box!) -->
+        <div class="card widget-box" id="widget_mtfPivots" data-widget-name="⏱️ Multi-Timeframe Alignment & Pivots" style="border: 1.5px solid rgba(56, 189, 248, 0.45); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+          <div class="card-header" style="margin-bottom: 6px;">
+            <h2 id="title_widget_mtfPivots" style="font-size: 12px;">⏱️ Multi-TF Alignment &amp; Pivots</h2>
+            <button class="pill-btn" onclick="triggerAnalysis(true)" style="padding:2px 7px; font-size:9.5px;">↻ Recalc</button>
+          </div>
+          <div style="max-height: 270px; overflow-y: auto; padding-right: 2px;">
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="mtfTable" style="margin-bottom:6px; font-size: 10.5px;">
+                <thead>
+                  <tr style="font-size: 10px;">
+                    <th style="padding: 3px 5px;">TF</th>
+                    <th style="padding: 3px 5px;">Trend</th>
+                    <th style="padding: 3px 5px;">Score</th>
+                    <th style="padding: 3px 5px;">RSI</th>
+                    <th style="padding: 3px 5px;">EMA20</th>
+                    <th style="padding: 3px 5px;">ST</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="6" style="text-align:center; padding: 4px;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10.5px;">
+              <div style="background: rgba(255,255,255,0.02); padding: 5px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-size: 10px; font-weight:700; color: var(--accent-blue); margin-bottom: 3px;">Standard</div>
+                <div id="standardPivots">Loading...</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); padding: 5px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-size: 10px; font-weight:700; color: var(--accent-green); margin-bottom: 3px;">Camarilla / Fibs</div>
+                <div id="camarillaPivots">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Sub-Row 3: [Live Market Action & Sectors] + [10-Yr Historical Archive] -->
+      <div class="mockup-subgrid-2col" id="leftSubRow3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; margin-bottom: 10px;">
+        <!-- Col 1: Live Market Action -->
+        <div class="card widget-box" id="widget_moneycontrolPulse" data-widget-name="💹 Live Market Action & Sectors" style="border: 1.5px solid rgba(56, 189, 248, 0.45); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+          <div class="card-header" style="margin-bottom: 6px;">
+            <h2 id="title_widget_moneycontrolPulse" style="font-size: 12px;">💹 Live Market Action &amp; Sectors</h2>
+            <span class="badge info" id="mcBreadthBadge" style="font-size: 9.5px; padding: 2px 6px;">Adv/Dec</span>
+          </div>
+          <div id="moneycontrolPanel" style="max-height: 250px; overflow-y: auto; padding-right: 4px; font-size: 11px;">
+            <div style="color:var(--text-muted); font-size:11.5px;">Loading Gainers, Losers &amp; Sector Heatmap...</div>
+          </div>
+        </div>
+
+        <!-- Col 2: 10-Yr Historical Archive -->
+        <div class="card widget-box" id="widget_histPanel" data-widget-name="🗄️ 10-Yr Historical Archive" style="border: 1px solid rgba(244, 63, 94, 0.3); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="card-header" style="margin-bottom: 6px;">
+              <h2 id="title_widget_histPanel" style="font-size: 12px;">🗄️ 10-Yr Historical Archive</h2>
+              <span class="badge info" id="histDownloadBadge" style="font-size: 9.5px; padding: 2px 6px;">Ready</span>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px;">
+              Complete 10-year daily and intraday backtest historical bars for Indian equities and indices.
+            </p>
+          </div>
+          <div>
+            <button class="btn-primary" onclick="triggerHistoricalDownload()" style="width:100%; background:linear-gradient(135deg,#f43f5e,#e11d48); font-size:11px; padding:6px 10px;">
+              ⬇️ Update 10-Year Dataset
+            </button>
+            <div id="histDownloadStatus" style="margin-top:4px; font-size:10px; color:var(--text-muted);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Container for User-Added Custom Widgets on Left Half -->
+      <div id="customWidgetsLeft" style="display:flex; flex-direction:column; gap:12px;"></div>
+
+    </div>
+
+    <!-- 👉 RIGHT HALF (50% WIDTH): 3 SUB-ROWS -->
+    <div class="mockup-half-col" id="heroRightCol">
+
+      <!-- Right Sub-Row 1: [Top 10 Heavyweights Pulse] + [Live Technical Speedometer] -->
+      <div class="mockup-subgrid-right-top" id="rightSubRow1">
+        <!-- Col 1: Top 10 Heavyweights Pulse -->
+        <div class="card widget-box" id="widget_heavyweights" data-widget-name="🏋️ Top 10 Heavyweights Pulse" style="border: 1.5px solid rgba(56, 189, 248, 0.4); margin:0;">
+          <div class="card-header">
+            <h2 id="title_widget_heavyweights">🏋️ Top 10 Heavyweights Pulse</h2>
+            <button class="pill-btn" onclick="refreshHeavyweights()" style="padding:3px 9px; font-size:11px;">↻ Refresh</button>
+          </div>
+          <div id="heavyweightsPanel">
+            <div style="color:var(--text-muted); font-size:12.5px;">Loading top 10 heavyweights...</div>
+          </div>
+        </div>
+
+        <!-- Col 2: Live Technical Speedometer -->
+        <div class="card widget-box" id="widget_investingGauge" data-widget-name="🧭 Live Technical Speedometer" style="border: 1.5px solid rgba(16, 185, 129, 0.5); margin:0;">
+          <div class="card-header">
+            <h2 id="title_widget_investingGauge">🧭 Live Technical Speedometer</h2>
+            <span class="badge success" id="invTechBadge">BUY</span>
+          </div>
+          <div id="investingTechPanel">
+            <div style="color:var(--text-muted); font-size:12px;">Calculating MA 5..200 &amp; Oscillators...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sub-Row 2 (Full Width of Right Half): 📺 "मेरा टीवी" (Compact Sleek 1080p Stream) -->
+      <div class="card widget-box mera-tv-card" id="widget_liveTv" data-widget-name="📺 मेरा टीवी (24x7 Live Broadcast)" style="margin:0; padding: 10px 12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
+          <div class="mera-tv-heading" id="title_widget_liveTv" style="font-size: 13.5px; font-weight: 800; border-bottom: 2px solid #38bdf8; padding-bottom: 2px; color: #ffffff;">📺 मेरा टीवी (Full HD 1080p)</div>
+          <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+            <span class="badge danger" id="tvHdQualityBadge" style="background:rgba(16,185,129,0.22); border:1px solid #10b981; color:#6ee7b7; font-size:9.5px; padding:2px 6px;">🟢 1080p FULL HD</span>
+            <button class="pill-btn" id="tvFitToggleBtn" onclick="toggleTvAspectFit()" style="padding:2px 7px; font-size:10px; border-color:#10b981; color:#34d399; background:rgba(16,185,129,0.12);" title="Zero Blank Space: Full Edge-to-Edge Fill">↔️ Full Fill</button>
+            <button class="pill-btn" id="tvClarityBtn" onclick="toggleTvHdClarity()" style="padding:2px 7px; font-size:10px; border-color:#38bdf8; color:#7dd3fc; background:rgba(56,189,248,0.12);" title="Toggle Crystal-Clear HD Sharpness Filter">✨ HD</button>
+            <button class="pill-btn" id="tvMuteToggleBtn" onclick="toggleLiveTvMute()" style="padding:2px 7px; font-size:10px; border-color:#38bdf8; color:#7dd3fc;" title="Mute / Unmute TV">🔇 Unmute</button>
+            <button class="pill-btn" id="tvTheaterBtn" onclick="toggleTvTheaterMode()" style="padding:2px 7px; font-size:10px; border-color:#a855f7; color:#e9d5ff; background:rgba(168,85,247,0.12);" title="Toggle Wide Full-Screen View">↔️ Wide</button>
+            <button class="pill-btn" onclick="toggleTvFullscreen()" style="padding:2px 7px; font-size:10px; border-color:#f59e0b; color:#fde68a; background:rgba(245,158,11,0.14);" title="Full Screen View (⛶)">⛶ Fullscreen</button>
+            <button class="pill-btn" onclick="toggleFloatingMiniTv()" style="padding:2px 7px; font-size:10px; border-color:#fbbf24; color:#fde68a;" title="Pop-out Floating Mini TV">🗗 Mini-TV</button>
+          </div>
+        </div>
+
+        <!-- 1-Click Live Business TV Channel Tabs (Compact) -->
+        <div class="tv-channel-tabs" id="liveTvChannelTabs" style="display:flex; flex-wrap:wrap; gap:4px; margin: 4px 0 6px 0;">
+          <button class="tv-ch-btn active" id="tvBtn_cnbc_awaaz_hls" onclick="switchLiveTvChannel('cnbc_awaaz_hls')" style="padding: 2px 7px; font-size: 10px;">📺 चैनल 1 (हिंदी 1080p)</button>
+          <button class="tv-ch-btn" id="tvBtn_zee_business_yt" onclick="switchLiveTvChannel('zee_business_yt')" style="padding: 2px 7px; font-size: 10px;">📺 चैनल 2 (हिंदी HD)</button>
+          <button class="tv-ch-btn" id="tvBtn_cnbc_tv18_hls" onclick="switchLiveTvChannel('cnbc_tv18_hls')" style="padding: 2px 7px; font-size: 10px;">📺 चैनल 4 (ENG 1080p)</button>
+          <button class="tv-ch-btn" id="tvBtn_ndtv_profit_yt" onclick="switchLiveTvChannel('ndtv_profit_yt')" style="padding: 2px 7px; font-size: 10px;">📺 मार्केट 5 (ENG HD)</button>
+        </div>
+
+        <!-- Direct HTML5 HLS Live TV Video Screen (Full Edge-to-Edge 16:9 Screen - Zero Blank Sides) -->
+        <div class="live-tv-screen-wrap" id="liveTvScreenWrap" style="position: relative; width: 100%; aspect-ratio: 16 / 9; height: auto; max-height: none; background:#000; border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(56, 189, 248, 0.35); box-shadow: 0 6px 24px rgba(0,0,0,0.6);">
+          <video id="liveTvHlsVideo" class="hd-clarity-boost" controls autoplay muted playsinline style="width:100%; height:100%; max-height: none; object-fit: cover; display:block; background:#000;"></video>
+          <iframe id="liveTvYoutubeIframe" src="" style="width:100%; height:100%; max-height: none; border:none; display:none; object-fit: cover;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:4px; font-size:10px; color:#94a3b8;">
+          <span id="liveTvNowPlaying">🔴 Playing: बिज़नेस चैनल 1 (1080p Full HD Stream)</span>
+          <span id="liveTvBitrateInfo" style="color:#34d399; font-weight:700;">⚡ 1920×1080 Full HD</span>
+        </div>
+      </div>
+
+      <!-- Right Sub-Row 3: 3 Equal Columns [AI Swarm & Pattern Radar] + [India VIX Volatility Meter] + [Jyoti's Live Trading Account] -->
+      <div class="mockup-subgrid-3col" id="rightSubRow3">
+        <!-- Col 1: AI Swarm & Pattern Radar -->
+        <div class="card widget-box" id="widget_swarmPanel" data-widget-name="🧠 100-AI Centurion Swarm Debate" style="border: 1.5px solid rgba(56, 189, 248, 0.45); margin:0;">
+          <div class="card-header">
+            <h2 id="title_widget_swarmPanel">🧠 100-AI Centurion Swarm Debate</h2>
+            <span class="badge info" id="patternTotalBadge" style="background:linear-gradient(135deg, #0284c7, #2563eb); color:#fff; font-weight:800;">100 Agents Live</span>
+          </div>
+          <div id="patternList" style="max-height: 80px; overflow-y: auto; margin-bottom: 6px; font-size:11px;"></div>
+          <div class="swarm-chat" id="swarmChat" style="max-height: 195px; font-size:11px;"></div>
+        </div>
+
+        <!-- Col 2: India VIX Volatility Meter -->
+        <div class="card widget-box" id="widget_vixPanel" data-widget-name="📈 India VIX Volatility Meter" style="border: 1.5px solid rgba(251, 191, 36, 0.4); margin:0;">
+          <div class="card-header">
+            <h2 id="title_widget_vixPanel">📈 India VIX Volatility Meter</h2>
+            <button class="pill-btn" onclick="refreshVIX()" style="padding:3px 9px; font-size:11px;">↻ Refresh</button>
+          </div>
+          <div id="vixPanel">
+            <div style="color:var(--text-muted); font-size:12.5px;">Loading India VIX data...</div>
+          </div>
+        </div>
+
+        <!-- Col 3: Jyoti's Live Trading Account -->
+        <div class="card widget-box" id="widget_dhanAccount" data-widget-name="👑 Jyoti's Live Trading Account" style="border: 1.5px solid rgba(16, 185, 129, 0.5); background: linear-gradient(145deg, rgba(16, 185, 129, 0.09), rgba(15, 23, 42, 0.92)); margin:0;">
+          <div class="card-header">
+            <h2 id="title_widget_dhanAccount">👑 Jyoti's Live Trading Account</h2>
+            <span class="badge success" id="dhanStatusBadge">🟢 Connected</span>
+          </div>
+          <div id="dhanPanel">
+            <div id="dhanLiveData" style="margin-bottom:8px;"></div>
+            <details style="cursor:pointer; font-size:11px; color:var(--text-muted);">
+              <summary style="color:#a5b4fc; font-weight:700; padding:3px 0;">⚙️ Manual Token Setup (Auto-Renew ON)</summary>
+              <div class="dhan-setup-box" style="margin-top:6px;">
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <input type="text" id="dhanClientId" placeholder="Client ID" value="1000659782" class="select-control" style="width:100%;"/>
+                  <input type="password" id="dhanAccessToken" placeholder="Paste New Access Token" class="select-control" style="width:100%;"/>
+                  <button class="btn-primary" onclick="connectDhan()">🔗 Save &amp; Reconnect</button>
+                </div>
+                <div id="dhanConnectStatus" style="margin-top:6px; font-size:11px;"></div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Container for User-Added Custom Widgets on Right Half -->
+      <div id="customWidgetsRight" style="display:flex; flex-direction:column; gap:12px;"></div>
+
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ROW 6: 100% FULL-WIDTH LIVE PRO CANDLESTICK CHART AT BOTTOM                 -->
+  <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+  <div id="fullWidthBottomZone">
+    <div class="card widget-box" id="widget_chart" data-widget-name="📊 Live Pro Candlestick Chart" style="border: 2px solid rgba(56, 189, 248, 0.55); margin-bottom: 16px; width: 100%;">
+      <div class="card-header" style="flex-wrap:wrap; gap:10px;">
+        <h2><span id="title_widget_chart">📊 Live Pro Candlestick Chart</span> <span id="chartSymbolTag" style="color: var(--accent-blue); font-size: 13.5px;">[NIFTY • 15M]</span></h2>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="timeframe-tabs">
+            <button class="tf-tab active" id="btnModeTVLight" onclick="switchChartEngine('tv_candlestick')">🕯️ Live Candles + Volume</button>
+            <button class="tf-tab" id="btnModeTVWidget" onclick="switchChartEngine('tv_official')">🌐 Multi-Indicator Terminal</button>
+          </div>
+          <div class="timeframe-tabs" id="tfButtonsGroup">
+            <button class="tf-tab" onclick="switchTimeframe('5m')">5M</button>
+            <button class="tf-tab active" onclick="switchTimeframe('15m')">15M</button>
+            <button class="tf-tab" onclick="switchTimeframe('1h')">1H</button>
+            <button class="tf-tab" onclick="switchTimeframe('1d')">1D</button>
+          </div>
+        </div>
+      </div>
+      <!-- Mode 1: Real-Time NSE/BSE Candlesticks + Volume + EMA20 (Zero Logos/Watermarks!) -->
+      <div id="tvLightweightContainer" style="width: 100%; height: 460px; position: relative; border-radius: 10px; overflow: hidden;"></div>
+      <!-- Mode 2: Multi-Indicator Terminal Widget -->
+      <div id="tvOfficialWidgetContainer" style="width: 100%; height: 480px; display: none; border-radius: 10px; overflow: hidden;"></div>
+      <!-- Fallback Canvas kept hidden for legacy compatibility -->
+      <div style="display:none;"><canvas id="candlestickChart"></canvas></div>
+    </div>
+
+    <!-- Dynamic Container for User-Added Custom Widgets at Full-Width Bottom -->
+    <div id="customWidgetsBottom" style="display:flex; flex-direction:column; gap:14px; margin-bottom:14px;"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ROW 7: SUPPLEMENTARY PRO ANALYTICS DOCK (SNIPER PLAN, OI/PCR, PORTFOLIO)    -->
+  <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+  <div id="supplementaryDockZone">
+    <div class="stats-grid widget-box" id="widget_heroStats" data-widget-name="📊 4 Hero Summary Buttons">
+      <button type="button" class="stat-card" onclick="document.getElementById('widget_chart')?.scrollIntoView({behavior:'smooth',block:'center'})" style="border: 1.5px solid rgba(16, 185, 129, 0.55); border-top: 3px solid #10b981;">
+        <div class="hero-btn-icon" style="background:rgba(16,185,129,0.16);">💰</div>
+        <div class="hero-btn-content">
+          <div class="label" style="color:#6ee7b7;">LIVE SPOT PRICE</div>
+          <div class="value" id="cardPrice">Rs.--</div>
+          <div class="sub-value" id="cardChange">--</div>
+        </div>
+      </button>
+      <button type="button" class="stat-card" onclick="document.getElementById('widget_sniperPlan')?.scrollIntoView({behavior:'smooth',block:'center'})" style="border: 1.5px solid rgba(245, 158, 11, 0.55); border-top: 3px solid #f59e0b;">
+        <div class="hero-btn-icon" style="background:rgba(245,158,11,0.16);">🎯</div>
+        <div class="hero-btn-content">
+          <div class="label" style="color:#fde68a;">AI FINAL DECISION</div>
+          <div class="value" id="cardConsensus">--</div>
+          <div class="sub-value" id="cardProbability">--</div>
+        </div>
+      </button>
+      <button type="button" class="stat-card" onclick="document.getElementById('widget_mtfPivots')?.scrollIntoView({behavior:'smooth',block:'center'})" style="border: 1.5px solid rgba(56, 189, 248, 0.55); border-top: 3px solid #38bdf8;">
+        <div class="hero-btn-icon" style="background:rgba(56,189,248,0.16);">⏱️</div>
+        <div class="hero-btn-content">
+          <div class="label" style="color:#7dd3fc;">MULTI-TF TREND</div>
+          <div class="value blue-text" id="cardConfluence">--</div>
+          <div class="sub-value" id="cardConfluenceSub">Calculating...</div>
+        </div>
+      </button>
+      <button type="button" class="stat-card" onclick="document.getElementById('widget_swarmPanel')?.scrollIntoView({behavior:'smooth',block:'center'})" style="border: 1.5px solid rgba(168, 85, 247, 0.55); border-top: 3px solid #a855f7;">
+        <div class="hero-btn-icon" style="background:rgba(168,85,247,0.16);">📐</div>
+        <div class="hero-btn-content">
+          <div class="label" style="color:#e9d5ff;">ACTIVE PATTERNS</div>
+          <div class="value yellow-text" id="cardPatterns">--</div>
+          <div class="sub-value" id="cardPatternsSub">Scanning...</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- 🌟 ROW B: 4 PRO SUITE BOXES IN 1 SINGLE LINE (SAME BOX SIZE!) -->
+    <div class="pro-quad-suite-grid" id="proQuadSuiteRow">
+      <!-- 1. 🎯 Jyoti's Sniper Trade Plan -->
+      <div class="card widget-box" id="widget_sniperPlan" data-widget-name="🎯 Jyoti's Sniper Trade Plan" style="border: 1.5px solid rgba(16, 185, 129, 0.45); background: linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(15, 23, 42, 0.92)); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+        <div class="card-header" style="margin-bottom: 6px;">
+          <h2 id="title_widget_sniperPlan" style="font-size: 12px;">🎯 Sniper Trade Plan</h2>
+          <span class="badge success" id="planActionBadge" style="font-size: 9.5px; padding: 2px 6px;">ANALYZING</span>
+        </div>
+        <div class="trade-plan-box" id="tradePlanBox" style="font-size: 11px; flex: 1;">
+          <div class="trade-plan-row">
+            <span>🎯 Entry Zone:</span>
+            <strong id="planEntry" style="color:#fde68a;">--</strong>
+          </div>
+          <div class="trade-plan-row">
+            <span>🛑 Strict SL:</span>
+            <strong class="red-text" id="planStopLoss">--</strong>
+          </div>
+          <div class="trade-plan-row">
+            <span>🚀 Target 1:</span>
+            <strong class="green-text" id="planT1">--</strong>
+          </div>
+          <div class="trade-plan-row">
+            <span>🚀 Target 2:</span>
+            <strong class="green-text" id="planT2">--</strong>
+          </div>
+          <div class="trade-plan-row">
+            <span>🚀 Target 3:</span>
+            <strong class="green-text" id="planT3">--</strong>
+          </div>
+          <div class="trade-plan-row">
+            <span>⚖️ R:R Ratio:</span>
+            <strong id="planRR" style="color:#38bdf8;">--</strong>
+          </div>
+          <div style="margin-top: 6px; font-size: 10px; color: var(--text-secondary); line-height: 1.35; padding: 4px 6px; background: rgba(255,255,255,0.03); border-radius: 6px;">
+            <strong>⚠️ Rule:</strong> <span id="planInvalidation">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 🔥 Live Call vs Put OI, PCR & Max Pain -->
+      <div class="card widget-box" id="widget_oiPanel" data-widget-name="🔥 Live OI / PCR / Max Pain" style="border: 1.5px solid rgba(139, 92, 246, 0.45); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+        <div class="card-header" style="margin-bottom: 6px;">
+          <h2 id="title_widget_oiPanel" style="font-size: 12px;">🔥 Live OI / PCR / Max Pain</h2>
+          <button class="pill-btn" onclick="refreshOI()" style="padding:2px 7px; font-size:9.5px;">↻ Refresh</button>
+        </div>
+        <div id="oiPanel" style="flex: 1; max-height: 250px; overflow-y: auto;">
+          <div style="color:var(--text-muted); font-size:11.5px;">Fetching Open Interest data...</div>
+        </div>
+      </div>
+
+      <!-- 3. 🧮 Jyoti's Position Size & SL Guard -->
+      <div class="card widget-box" id="widget_calculator" data-widget-name="🧮 Position Size & SL Guard" style="border: 1.5px solid rgba(251, 191, 36, 0.4); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+        <div class="card-header" style="margin-bottom: 6px;">
+          <h2 id="title_widget_calculator" style="font-size: 12px;">🧮 Position Size &amp; SL Guard</h2>
+          <span class="badge warning" style="font-size: 9.5px; padding: 2px 6px;">Max 3% Risk</span>
+        </div>
+        <div style="font-size: 11px; display: flex; flex-direction: column; gap: 5px; flex: 1;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--text-muted);">Capital (Rs.):</span>
+            <input type="number" id="calcCapital" value="25000" oninput="updateRiskCalc()" class="select-control" style="width:90px; padding:3px 6px; text-align:right; font-size: 10.5px;" />
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--text-muted);">Premium (Rs.):</span>
+            <input type="number" id="calcPremium" value="120" oninput="updateRiskCalc()" class="select-control" style="width:90px; padding:3px 6px; text-align:right; font-size: 10.5px;" />
+          </div>
+          <div id="riskCalcResult" style="padding:6px 8px; border-radius:6px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); line-height:1.45; font-size: 10.5px;">
+            <div>🎯 <strong>Max Risk (3%):</strong> <span class="red-text">Rs.750</span></div>
+            <div>📦 <strong>Safe Lot (NIFTY):</strong> <span class="green-text">1 Lot (25 Qty)</span></div>
+            <div>🛑 <strong>Stop-Loss:</strong> <span class="yellow-text">Rs.90 (-30 pts)</span></div>
+            <div>🚀 <strong>Target (1:2):</strong> <span class="green-text">Rs.180 (+60 pts)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 💼 Jyoti's Live Equity & F&O Portfolio Tracker -->
+      <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Live Equity & F&O Portfolio Tracker" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+        <div class="card-header" style="flex-wrap:wrap; gap:4px; margin-bottom: 6px;">
+          <h2 id="title_widget_investingPortfolio" style="font-size: 12px;">💼 Portfolio Tracker</h2>
+          <div style="display:flex; gap:3px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="pfAddSym" placeholder="Sym" class="select-control" style="width:55px; padding:2px 4px; font-size:10px;"/>
+            <input type="number" id="pfAddQty" placeholder="Qty" value="50" class="select-control" style="width:40px; padding:2px 4px; font-size:10px;"/>
+            <input type="number" id="pfAddPrice" placeholder="Price" class="select-control" style="width:50px; padding:2px 4px; font-size:10px;"/>
+            <button class="btn-primary" onclick="addPortfolioHolding()" style="padding:2px 6px; font-size:10px;">+ Add</button>
+          </div>
+        </div>
+        <div id="investingPortfolioPanel" style="max-height: 250px; overflow-y: auto; padding-right: 2px; flex: 1;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- ⚙️ JYOTI'S DYNAMIC BACK PANEL (ADMIN CONTROL CENTER MODAL)                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="admin-modal-backdrop" id="adminBackPanelModal">
+  <div class="admin-modal-window">
+    <div class="admin-modal-header">
+      <div>
+        <h2 style="font-size:18px; font-weight:800; color:#fde68a;">⚙️ Jyoti's Dynamic Back Panel (Admin Control Center)</h2>
+        <p style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Add, Remove, Hide/Show, Rename &amp; Reorganize Widgets, Stocks, Live TV Channels &amp; Rules</p>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn-primary" onclick="saveAdminBackPanelConfig()" style="padding:7px 14px; font-size:12px; background:linear-gradient(135deg,#10b981,#059669);">💾 Save &amp; Apply All</button>
+        <button class="pill-btn" onclick="closeAdminBackPanel()" style="padding:6px 12px; font-size:12px; border-color:#f43f5e; color:#fda4af;">✕ Close</button>
+      </div>
+    </div>
+
+    <div class="admin-tabs-bar">
+      <button class="admin-tab-btn active" id="admTab_widgets" onclick="switchAdminTab('widgets')">🧩 1. Reorganize &amp; Hide/Show Widgets</button>
+      <button class="admin-tab-btn" id="admTab_addWidget" onclick="switchAdminTab('addWidget')">➕ 2. Add New Custom Card</button>
+      <button class="admin-tab-btn" id="admTab_watchlist" onclick="switchAdminTab('watchlist')">🔥 3. Watchlist &amp; Ticker Manager</button>
+      <button class="admin-tab-btn" id="admTab_livetv" onclick="switchAdminTab('livetv')">📺 4. Live TV Channels Manager</button>
+      <button class="admin-tab-btn" id="admTab_branding" onclick="switchAdminTab('branding')">👑 5. Header &amp; Golden Rules</button>
+    </div>
+
+    <div class="admin-modal-body">
+      <!-- TAB 1: REORGANIZE, RENAME, MOVE ZONE & SHOW/HIDE WIDGETS -->
+      <div class="admin-section-pane active" id="admPane_widgets">
+        <div style="margin-bottom:12px; padding:10px 14px; border-radius:10px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); font-size:12px; color:#e2e8f0;">
+          💡 <strong>Tip:</strong> Yahan se aap kisi bhi card ka naam badal sakti hain, use <strong>Left Half / Right Half / Full-Width Bottom</strong> me shift kar sakti hain, <strong>⬆️ Up / ⬇️ Down</strong> reorder kar sakti hain, ya <strong>👁️ Show/Hide</strong> kar sakti hain.
+        </div>
+        <div id="adminWidgetsList"></div>
+      </div>
+
+      <!-- TAB 2: ADD NEW CUSTOM CARD / WIDGET -->
+      <div class="admin-section-pane" id="admPane_addWidget">
+        <div class="card" style="border:1px solid rgba(251,191,36,0.4);">
+          <h3 style="font-size:15px; color:#fde68a; margin-bottom:12px;">➕ Create &amp; Add Your Own Custom Card to Dashboard</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:11.5px; color:var(--text-muted); display:block; margin-bottom:4px;">Card Title:</label>
+              <input type="text" id="newWidgetTitle" placeholder="e.g. 📝 My Intraday Checklist" class="select-control" style="width:100%;" />
+            </div>
+            <div>
+              <label style="font-size:11.5px; color:var(--text-muted); display:block; margin-bottom:4px;">Card Type:</label>
+              <select id="newWidgetType" class="select-control" style="width:100%;">
+                <option value="notes">📝 Custom Notes / Trading Rules Card</option>
+                <option value="symbol_tracker">📈 Live Stock / Index Mini-Tracker</option>
+                <option value="embed_url">🌐 Custom External Embed / Stream URL</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11.5px; color:var(--text-muted); display:block; margin-bottom:4px;">Where to Place on Dashboard:</label>
+              <select id="newWidgetZone" class="select-control" style="width:100%;">
+                <option value="left">👈 Left Half Column</option>
+                <option value="right">👉 Right Half Column</option>
+                <option value="bottom">⬛ Full-Width Bottom Area</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:11.5px; color:var(--text-muted); display:block; margin-bottom:4px;">Card Content / Stock Symbol / Embed URL:</label>
+            <textarea id="newWidgetContent" rows="4" placeholder="Enter your custom trading notes, OR enter an NSE symbol (e.g. NIFTY, SBIN), OR paste an https:// embed URL..." class="select-control" style="width:100%; font-family:inherit;"></textarea>
+          </div>
+          <button class="btn-primary" onclick="addCustomDashboardWidget()" style="background:linear-gradient(135deg,#10b981,#0ea5e9);">➕ Add Card to Dashboard Now</button>
+        </div>
+
+        <h4 style="font-size:13.5px; color:#fde68a; margin:16px 0 8px;">📂 Your Custom Added Cards:</h4>
+        <div id="adminCustomWidgetsList"></div>
+      </div>
+
+      <!-- TAB 3: WATCHLIST & LIVE TICKER MANAGER -->
+      <div class="admin-section-pane" id="admPane_watchlist">
+        <div class="card" style="margin-bottom:14px; border:1px solid rgba(16,185,129,0.4);">
+          <h4 style="font-size:14px; color:#34d399; margin-bottom:10px;">➕ Add New Symbol to Watchlist &amp; Live Ticker</h4>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <input type="text" id="admNewSym" placeholder="Symbol (e.g. INFY)" class="select-control" style="width:150px;" />
+            <input type="text" id="admNewSymLabel" placeholder="Button Label (e.g. INFY)" class="select-control" style="width:160px;" />
+            <input type="text" id="admNewSymHindi" placeholder="Hindi Name (e.g. इंफोसिस)" class="select-control" style="width:170px;" />
+            <button class="btn-primary" onclick="adminAddWatchlistSymbol()">+ Add Symbol</button>
+          </div>
+        </div>
+        <div id="adminWatchlistItems"></div>
+      </div>
+
+      <!-- TAB 4: LIVE TV CHANNELS MANAGER -->
+      <div class="admin-section-pane" id="admPane_livetv">
+        <div class="card" style="margin-bottom:14px; border:1px solid rgba(244,63,94,0.4);">
+          <h4 style="font-size:14px; color:#fda4af; margin-bottom:10px;">➕ Add New Live TV Channel (.m3u8 HLS or Embed URL)</h4>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <input type="text" id="admTvName" placeholder="Button Label (e.g. 📺 चैनल 6)" class="select-control" style="width:180px;" />
+            <input type="text" id="admTvUrl" placeholder="Direct .m3u8 Stream URL or Embed URL" class="select-control" style="flex:1; min-width:240px;" />
+            <select id="admTvType" class="select-control" style="width:130px;">
+              <option value="hls">HLS (.m3u8)</option>
+              <option value="yt">Iframe Embed</option>
+            </select>
+            <button class="btn-primary" onclick="adminAddTvChannel()">+ Add Channel</button>
+          </div>
+        </div>
+        <div id="adminTvChannelsList"></div>
+      </div>
+
+      <!-- TAB 5: HEADER & GOLDEN PROFIT RULES EDITOR -->
+      <div class="admin-section-pane" id="admPane_branding">
+        <div class="card" style="margin-bottom:14px;">
+          <h4 style="font-size:14px; color:#fde68a; margin-bottom:10px;">👑 Terminal Header &amp; Theme</h4>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px;">
+            <div>
+              <label style="font-size:11px; color:var(--text-muted);">Main Terminal Title:</label>
+              <input type="text" id="admHeaderTitle" class="select-control" style="width:100%; margin-top:4px;" />
+            </div>
+            <div>
+              <label style="font-size:11px; color:var(--text-muted);">Header Subtitle:</label>
+              <input type="text" id="admHeaderSub" class="select-control" style="width:100%; margin-top:4px;" />
+            </div>
+            <div>
+              <label style="font-size:11px; color:var(--text-muted);">Color Theme:</label>
+              <select id="admColorTheme" class="select-control" style="width:100%; margin-top:4px;" onchange="applyAdminThemePreview(this.value)">
+                <option value="default">🌌 Royal Dark Gold (Default)</option>
+                <option value="theme-cyber">💎 Cyber Ocean Blue</option>
+                <option value="theme-emerald">🌿 Emerald Matrix</option>
+                <option value="theme-amethyst">🔮 Amethyst Luxury</option>
+                <option value="theme-crimson">🔥 Crimson Pro</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px; border:1px solid rgba(251,191,36,0.45);">
+          <h4 style="font-size:14px; color:#fde68a; margin-bottom:8px;">🔐 Owner Security Lock (Change Your Secret Back-Panel PIN)</h4>
+          <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:10px;">
+            Jab aap apna public link (<code>*.lhr.life</code>) kisi ko bhejte hain, toh unke liye Back Panel aur Drag-Edit **Locked** rehta hai. Sirf aap apna Secret PIN daal kar unlock kar sakte hain (Default PIN: <strong>9782</strong>).
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <input type="password" id="admCurrentPin" placeholder="Current PIN (e.g. 9782)" class="select-control" style="width:180px;" />
+            <input type="password" id="admNewPin" placeholder="New Secret PIN (min 4 digits)" class="select-control" style="width:210px;" />
+            <button class="btn-primary" onclick="changeOwnerAdminPin()" style="background:linear-gradient(135deg,#f59e0b,#d97706);">🔑 Update Secret PIN</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <h4 style="font-size:14px; color:#34d399;">🛡️ Golden Profit Rules Manager (Add / Edit / Remove Rules)</h4>
+            <button class="pill-btn" onclick="adminAddGoldenRule()" style="border-color:#10b981; color:#34d399;">+ Add New Rule</button>
+          </div>
+          <div id="adminGoldenRulesList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-modal-footer">
+      <button class="pill-btn" onclick="resetAdminBackPanelToDefault()" style="border-color:#f43f5e; color:#fda4af; padding:7px 14px;">🔄 Reset Everything to Default</button>
+      <div style="display:flex; gap:10px;">
+        <button class="pill-btn" onclick="closeAdminBackPanel()" style="padding:7px 14px;">Cancel</button>
+        <button class="btn-primary" onclick="saveAdminBackPanelConfig()" style="background:linear-gradient(135deg,#10b981,#059669); padding:8px 18px;">💾 Save &amp; Apply Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     🔐 OWNER PIN SECURITY MODAL (Protects Back Panel & Drag-Resize on Public Links)
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="admin-modal-backdrop" id="ownerPinModal">
+  <div class="admin-modal-box" style="max-width:420px;">
+    <div class="admin-modal-header">
+      <div>
+        <h3 style="font-size:17px; font-weight:800; color:#fde68a;">🔐 Owner Verification (Jyoti Singh Only)</h3>
+        <p style="font-size:11.5px; color:var(--text-secondary);">Back Panel &amp; Layout Customization is locked for visitors</p>
+      </div>
+      <button class="pill-btn" onclick="closeOwnerPinModal()" style="border-color:#f43f5e; color:#fda4af; padding:5px 10px;">✖</button>
+    </div>
+    <div class="admin-modal-body" style="padding:20px; text-align:center;">
+      <div style="font-size:36px; margin-bottom:8px;">👑🔒</div>
+      <div style="font-size:13px; color:#e2e8f0; margin-bottom:14px;">
+        Enter your <strong>Secret Owner PIN</strong> to unlock <strong>Easy Drag &amp; Resize</strong> and <strong>Back Panel</strong>:
+      </div>
+      <input type="password" id="ownerPinInput" placeholder="Enter Secret PIN..." class="select-control" style="width:100%; text-align:center; font-size:18px; font-weight:800; letter-spacing:4px; padding:10px; margin-bottom:12px;" onkeydown="if(event.key==='Enter') submitOwnerPinUnlock()" />
+      <div id="ownerPinErrorMsg" style="color:#fb7185; font-size:12px; margin-bottom:10px; display:none;">❌ Invalid PIN! Only Jyoti Singh can unlock.</div>
+      <button class="btn-primary" onclick="submitOwnerPinUnlock()" style="width:100%; justify-content:center; padding:10px; font-size:14px; background:linear-gradient(135deg,#f59e0b,#ea580c);">🔓 Unlock Owner Controls</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     📱 MOBILE & TABLET INSTANT ACCESS MODAL (Wi-Fi LAN + 4G/5G Anywhere Link + QR)
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="admin-modal-backdrop" id="mobileAccessModal">
+  <div class="admin-modal-box" style="max-width:650px;">
+    <div class="admin-modal-header">
+      <div>
+        <h3 style="font-size:18px; font-weight:800; color:#6ee7b7;">📱 Mobile &amp; Tablet Par Dashboard Kaise Dekhein?</h3>
+        <p style="font-size:12px; color:var(--text-secondary);">Scan QR Code from Mobile Camera OR open the link below on your Phone/Tablet</p>
+      </div>
+      <button class="pill-btn" onclick="closeMobileAccessModal()" style="border-color:#f43f5e; color:#fda4af; padding:6px 12px; font-size:12px;">✖ Close</button>
+    </div>
+    <div class="admin-modal-body" style="padding:18px;">
+      <div style="background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.4); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:12.5px; color:#fecdd3;">
+        ⚠️ <strong>Note:</strong> <code>127.0.0.1:8000</code> sirf PC/Laptop ke andar kaam karta hai. Mobile par dekhne ke liye niche diye gaye <strong>Option 1 (4G/5G Anywhere Link)</strong> ya <strong>Option 2 (Same Wi-Fi Link)</strong> ka use karein:
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:14px;">
+        <!-- Option 1: Public 4G/5G Anywhere URL -->
+        <div class="card" style="border:1.5px solid rgba(16,185,129,0.5); text-align:center; padding:14px;">
+          <div class="badge info" style="background:rgba(16,185,129,0.2); color:#6ee7b7; border:1px solid #10b981; margin-bottom:8px;">🌍 OPTION 1: Kahi Bhi (4G/5G Mobile Data)</div>
+          <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:10px;">Mobile internet (Jio/Airtel 4G/5G) ya Wi-Fi dono par chalega:</div>
+          <div id="mobilePublicQrWrap" style="background:#fff; padding:10px; border-radius:12px; display:inline-block; margin-bottom:10px;">
+            <img id="mobilePublicQrImg" src="" alt="Scan QR" style="width:150px; height:150px; display:block;" />
+          </div>
+          <div style="margin-top:4px;">
+            <a id="mobilePublicUrlLink" href="#" target="_blank" style="color:#34d399; font-weight:800; font-size:13px; word-break:break-all; text-decoration:underline;">Loading Public Link...</a>
+          </div>
+        </div>
+
+        <!-- Option 2: Local Wi-Fi / Hotspot LAN URL -->
+        <div class="card" style="border:1.5px solid rgba(56,189,248,0.5); text-align:center; padding:14px;">
+          <div class="badge info" style="margin-bottom:8px;">📶 OPTION 2: Same Wi-Fi / Mobile Hotspot</div>
+          <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:10px;">Agar PC aur Mobile ek hi Wi-Fi router se connected hain:</div>
+          <div style="background:#fff; padding:10px; border-radius:12px; display:inline-block; margin-bottom:10px;">
+            <img id="mobileLanQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://192.168.1.4:8000" alt="LAN QR" style="width:150px; height:150px; display:block;" />
+          </div>
+          <div style="margin-top:4px;">
+            <a id="mobileLanUrlLink" href="http://192.168.1.4:8000" target="_blank" style="color:#38bdf8; font-weight:800; font-size:14px; word-break:break-all; text-decoration:underline;">http://192.168.1.4:8000</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- 🔐 PRIVACY / OWNER PIN UNLOCK MODAL -->
+<div class="admin-modal-backdrop" id="privacyPinModal" style="display:none; align-items:center; justify-content:center;">
+  <div class="admin-modal-box" style="max-width:400px; text-align:center;">
+    <div class="admin-modal-header" style="justify-content:center; position:relative;">
+      <h3 style="font-size:17px; font-weight:800; color:#6ee7b7; display:flex; align-items:center; gap:8px;">
+        <span>🔐</span> Jyoti's Owner Mode Lock
+      </h3>
+      <button class="pill-btn" onclick="closePrivacyPinModal()" style="position:absolute; right:12px; border-color:#f43f5e; color:#fda4af; padding:3px 9px; font-size:11px;">✕</button>
+    </div>
+    <div class="admin-modal-body" style="padding:20px 22px;">
+      <p style="font-size:12px; color:#cbd5e1; margin-bottom:16px; line-height:1.45;">
+        🔒 <strong>Privacy Shield Active:</strong> Dhan broker details &amp; real order execution are locked. Enter Master PIN to reveal Dhan Account.
+      </p>
+
+      <div style="margin-bottom:14px;">
+        <input type="password" id="ownerPinInput" maxlength="8" placeholder="Enter PIN (e.g. 1000)" style="letter-spacing:4px; font-size:18px; text-align:center; width:200px; padding:8px 12px; border-radius:10px; background:rgba(0,0,0,0.5); border:1.5px solid #38bdf8; color:#fde68a; font-weight:800;" onkeydown="if(event.key==='Enter') verifyOwnerPin()" />
+      </div>
+
+      <div id="pinErrorMsg" style="font-size:11.5px; color:#f87171; min-height:18px; margin-bottom:12px;"></div>
+
+      <div style="display:flex; gap:8px; justify-content:center;">
+        <button class="btn-primary" onclick="verifyOwnerPin()" style="padding:8px 22px; font-size:12px; background:linear-gradient(135deg, #10b981, #059669);">
+          <span>🔓 Unlock Dhan</span>
+        </button>
+        <button class="pill-btn" onclick="lockPrivacyModeNow()" style="padding:8px 16px; font-size:12px; border-color:#38bdf8; color:#7dd3fc;">
+          <span>🛡️ Keep Hidden</span>
+        </button>
+      </div>
+
+      <div style="margin-top:14px; font-size:10.5px; color:#94a3b8; background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 10px;">
+        💡 Default Master PIN: <strong style="color:#fde68a;">1000</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <h3 style="color: white; font-weight: 800; font-size: 20px;">👑 Analyzing Market For Jyoti Singh...</h3>
+  <p style="color: var(--text-secondary); font-size: 13.5px;">Loading Live Candlesticks, 360° Fundamentals, Market Breadth, Technical Gauge &amp; AI Swarm...</p>
+</div>
+
+<script>
+  // ── 1. Risk Calculator ──
+  function updateRiskCalc() {
+    const cap = parseFloat(document.getElementById("calcCapital")?.value || 25000);
+    const prem = parseFloat(document.getElementById("calcPremium")?.value || 120);
+    const maxRisk = Math.round(cap * 0.03);
+    const slPts = Math.max(10, Math.round(prem * 0.25));
+    const safeQty = Math.max(25, Math.floor(maxRisk / slPts / 25) * 25);
+    const lots = Math.max(1, Math.round(safeQty / 25));
+    const slPrice = Math.max(5, (prem - slPts)).toFixed(1);
+    const t1Price = (prem + slPts * 2).toFixed(1);
+    const el = document.getElementById("riskCalcResult");
+    if (el) {
+      el.innerHTML = `
+        <div class="trade-plan-row" style="font-size:10.5px;"><span>🎯 Max Risk (3%):</span><strong class="red-text">Rs.${maxRisk}</strong></div>
+        <div class="trade-plan-row" style="font-size:10.5px;"><span>📦 Safe Lot:</span><strong class="green-text">${lots} Lot (${lots * 25} Q)</strong></div>
+        <div class="trade-plan-row" style="font-size:10.5px;"><span>🛑 Hard SL:</span><strong class="yellow-text">Rs.${slPrice} (-${slPts} pts)</strong></div>
+        <div class="trade-plan-row" style="font-size:10.5px;"><span>🚀 Target (1:2):</span><strong class="green-text">Rs.${t1Price} (+${slPts * 2} pts)</strong></div>
+      `;
+    }
+  }
+</script>
+<script src="/static/app.js?v=20261016_v35"></script>
+</body>
+</html>
