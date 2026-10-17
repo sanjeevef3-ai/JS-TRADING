@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 *.log
 .gemini/
-tools/*.exe
+tools/
 data/logs/
 data/historical/
 scratch/
