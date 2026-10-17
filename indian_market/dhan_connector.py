@@ -80,6 +80,10 @@ class DhanConnector:
         exp_ts = self._decode_jwt_exp(self.access_token)
         now_ts = int(time.time())
 
+        # If token is already expired, Dhan renew_token will reject with DH-901. Only fresh token can be extended!
+        if exp_ts and exp_ts < now_ts:
+            return {"renewed": False, "reason": "Token already expired. New token required from Dhan Web/App."}
+
         # Renew if force=True or if less than 12 hours (43200s) left before expiry
         if force or (exp_ts and (exp_ts - now_ts) < 43200):
             try:

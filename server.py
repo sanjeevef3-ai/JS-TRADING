@@ -69,7 +69,7 @@ def get_app_version():
         "status": "online"
     }
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def serve_index():
     """Serves the main interactive dashboard."""
     index_file = UI_DIR / "index.html"
