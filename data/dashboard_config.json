@@ -194,7 +194,13 @@
     {
       "id": "widget_investingPortfolio",
       "title": "💼 Jyoti's Live Equity & F&O Portfolio Tracker",
-      "zone": "leftSubRow2",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
+      "id": "widget_dailyOutcomes",
+      "title": "🎯 Today's Calls & Target/SL Outcomes Ledger",
+      "zone": "supplementaryDockZone",
       "visible": true
     },
     {
@@ -304,6 +310,11 @@
     },
     "widget_calculator": {
       "fullWidth": false,
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_dailyOutcomes": {
+      "fullWidth": true,
       "freeX": 0,
       "freeY": 0
     }

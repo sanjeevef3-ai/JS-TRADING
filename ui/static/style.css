@@ -2612,3 +2612,167 @@ body.privacy-mode-active #rightSubRow3 {
   }
 }
 
+/* 🎯 REAL-TIME TARGET HIT & STOP-LOSS HIT POP-FLASH NOTIFICATIONS */
+.pop-flash-card.type-target-hit {
+  opacity: 1 !important;
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.98), rgba(15, 23, 42, 0.98)) !important;
+  border: 2px solid #10b981 !important;
+  box-shadow: 0 0 28px rgba(16, 185, 129, 0.55), 0 0 50px rgba(251, 191, 36, 0.3) !important;
+  animation: popFlashSlideIn 0.35s ease forwards, targetHitPulse 2s infinite alternate ease-in-out !important;
+}
+
+@keyframes targetHitPulse {
+  0% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), 0 0 35px rgba(251, 191, 36, 0.2);
+    border-color: #10b981;
+  }
+  100% {
+    box-shadow: 0 0 34px rgba(16, 185, 129, 0.75), 0 0 60px rgba(251, 191, 36, 0.45);
+    border-color: #34d399;
+  }
+}
+
+.pop-flash-card.type-target-hit .pop-flash-topbar .type-pill {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(251, 191, 36, 0.3)) !important;
+  color: #a7f3d0 !important;
+  border-color: #34d399 !important;
+  font-weight: 800 !important;
+}
+
+.pop-flash-card.type-sl-hit {
+  opacity: 1 !important;
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.98), rgba(15, 23, 42, 0.98)) !important;
+  border: 2px solid #ef4444 !important;
+  box-shadow: 0 0 28px rgba(239, 68, 68, 0.55), 0 0 45px rgba(220, 38, 38, 0.3) !important;
+  animation: popFlashSlideIn 0.35s ease forwards, slHitPulse 1.8s infinite alternate ease-in-out !important;
+}
+
+@keyframes slHitPulse {
+  0% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), 0 0 30px rgba(220, 38, 38, 0.2);
+    border-color: #ef4444;
+  }
+  100% {
+    box-shadow: 0 0 34px rgba(239, 68, 68, 0.75), 0 0 55px rgba(220, 38, 38, 0.4);
+    border-color: #f87171;
+  }
+}
+
+.pop-flash-card.type-sl-hit .pop-flash-topbar .type-pill {
+  background: rgba(239, 68, 68, 0.3) !important;
+  color: #fca5a5 !important;
+  border-color: #f87171 !important;
+  font-weight: 800 !important;
+}
+
+/* 🎯 TODAY'S TRADE CALLS & OUTCOMES LEDGER WIDGET */
+.daily-outcomes-ribbon {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 991px) {
+  .daily-outcomes-ribbon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.daily-outcome-stat-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.daily-outcome-stat-card .label {
+  font-size: 9.5px;
+  color: #94a3b8;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.daily-outcome-stat-card .val {
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: #ffffff;
+}
+
+.outcome-call-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.6));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.outcome-call-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.outcome-call-card.status-tg1 {
+  border-left: 3.5px solid #10b981;
+  background: linear-gradient(145deg, rgba(6, 78, 59, 0.15), rgba(15, 23, 42, 0.85));
+}
+
+.outcome-call-card.status-tg2 {
+  border-left: 3.5px solid #fbbf24;
+  background: linear-gradient(145deg, rgba(251, 191, 36, 0.15), rgba(15, 23, 42, 0.85));
+}
+
+.outcome-call-card.status-sl {
+  border-left: 3.5px solid #ef4444;
+  background: linear-gradient(145deg, rgba(127, 29, 29, 0.15), rgba(15, 23, 42, 0.85));
+}
+
+.outcome-call-card.status-active {
+  border-left: 3.5px solid #38bdf8;
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.85));
+}
+
+.outcome-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.outcome-badge-pill.tg1 {
+  background: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  border: 1px solid #10b981;
+}
+
+.outcome-badge-pill.tg2 {
+  background: rgba(251, 191, 36, 0.25);
+  color: #fde68a;
+  border: 1px solid #f59e0b;
+}
+
+.outcome-badge-pill.sl {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border: 1px solid #ef4444;
+}
+
+.outcome-badge-pill.active {
+  background: rgba(56, 189, 248, 0.25);
+  color: #7dd3fc;
+  border: 1px solid #38bdf8;
+}
+
+

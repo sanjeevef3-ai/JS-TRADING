@@ -1080,6 +1080,7 @@ function initNotificationArchive() {
 
   saveNotificationArchive();
   updateNotifBadge();
+  refreshDailyOutcomes(false);
 }
 
 function saveNotificationArchive() {
@@ -1143,6 +1144,50 @@ function playAlertBeep(isUrgent = false) {
   } catch (e) {}
 }
 
+// 🎯 Joyful 4-note ascending victorious arpeggio for Target 1 & Target 2 Hit!
+function playTargetHitSound() {
+  if (!alertSoundEnabled) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // C5 (523Hz), E5 (659Hz), G5 (784Hz), C6 (1046Hz)
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((f, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.20, ctx.currentTime + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.12 + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + idx * 0.12);
+      osc.stop(ctx.currentTime + idx * 0.12 + 0.23);
+    });
+  } catch (e) {}
+}
+
+// 🛑 Warning double-pulse tone for Stop-Loss Hit!
+function playStopLossSound() {
+  if (!alertSoundEnabled) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Low alert tone F4 (349Hz) then D4 (293Hz)
+    const tones = [349.23, 293.66];
+    tones.forEach((f, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.18, ctx.currentTime + idx * 0.18);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.18 + 0.16);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + idx * 0.18);
+      osc.stop(ctx.currentTime + idx * 0.18 + 0.17);
+    });
+  } catch (e) {}
+}
+
 function enableBrowserNotifications() {
   if (!("Notification" in window)) {
     alert("Browser notifications not supported in this browser.");
@@ -1176,6 +1221,40 @@ function isIndianMarketOpenNow() {
   }
 }
 
+function showToast(msg) {
+  if (typeof showPortfolioToast === "function") {
+    showPortfolioToast(msg);
+  } else {
+    let t = document.getElementById("portfolioToast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "portfolioToast";
+      t.style.position = "fixed";
+      t.style.bottom = "24px";
+      t.style.right = "24px";
+      t.style.background = "linear-gradient(135deg, #059669, #10b981)";
+      t.style.color = "#ffffff";
+      t.style.padding = "10px 18px";
+      t.style.borderRadius = "8px";
+      t.style.boxShadow = "0 10px 30px rgba(0,0,0,0.6)";
+      t.style.fontSize = "12px";
+      t.style.fontWeight = "700";
+      t.style.zIndex = "99999";
+      t.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+      t.style.pointerEvents = "none";
+      document.body.appendChild(t);
+    }
+    t.innerHTML = msg;
+    t.style.opacity = "1";
+    t.style.transform = "translateY(0)";
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => {
+      t.style.opacity = "0";
+      t.style.transform = "translateY(10px)";
+    }, 4000);
+  }
+}
+
 // ── 1. Push Notification with STRICT ANTI-REPEAT & REAL CHANGE DETECTION ──
 function pushFlashNotification(rawItem, showPopFlash = true) {
   if (!rawItem || !rawItem.title) return;
@@ -1189,8 +1268,15 @@ function pushFlashNotification(rawItem, showPopFlash = true) {
   // ── JAB TAK KOI CHANGE NA HO TAB TAK SAME NOTIFICATION REPEAT NAHI HONA CHAHIYE ──
   let hasRealChange = false;
   let sigKey = "";
+  const isOutcomeAlert = type === "TARGET_HIT" || type === "SL_HIT" || Boolean(rawItem.is_outcome);
 
-  if (type === "NEWS") {
+  if (isOutcomeAlert) {
+    // 🎯 Critical Target/SL hit outcomes: unique alert per outcome hit
+    sigKey = rawItem.id || `OUTCOME_${symbol}_${type}_${rawItem.outcome_kind || 'HIT'}`;
+    if (!flashedSignatures.has(sigKey)) {
+      hasRealChange = true;
+    }
+  } else if (type === "NEWS") {
     // For news headlines: unique clean headline text is the signature
     sigKey = `NEWS_${(rawItem.id || rawItem.title).replace(/[^a-zA-Z0-9]/g, "").slice(0, 45)}`;
     if (!flashedSignatures.has(sigKey)) {
@@ -1228,6 +1314,9 @@ function pushFlashNotification(rawItem, showPopFlash = true) {
 
   // Find if already present in notificationStore
   const existingIdx = notificationStore.findIndex(n => {
+    if (isOutcomeAlert) {
+      return n.id === (rawItem.id || sigKey);
+    }
     if (symbol && n.symbol) {
       return n.symbol === symbol && n.type === type;
     }
@@ -1307,18 +1396,27 @@ function pushFlashNotification(rawItem, showPopFlash = true) {
     passesDiamondFilter = Boolean(notifItem.is_diamond || (notifItem.win_probability_pct && notifItem.win_probability_pct >= 90.0));
   }
 
-  // ⚠️ MARKET HOURS & DIAMOND CONFLUENCE ENFORCED:
-  const isPopCandidate = !notifItem.is_market_closed && passesDiamondFilter && (
+  // ⚠️ MARKET HOURS & DIAMOND CONFLUENCE ENFORCED (TG/SL Outcomes ALWAYS notify!):
+  const isOutcome = notifItem.type === "TARGET_HIT" || notifItem.type === "SL_HIT" || Boolean(notifItem.is_outcome);
+  const isPopCandidate = isOutcome || (!notifItem.is_market_closed && passesDiamondFilter && (
     (isMarketLive && isTradeSignal) ||
     (!sniperDiamondOnly && notifItem.is_important && notifItem.type === "NEWS")
-  );
+  ));
 
   if (showPopFlash && isPopCandidate && !flashedSignatures.has(sigKey)) {
     flashedSignatures.add(sigKey);
     saveFlashedSignatures();
 
     renderPopFlashCard(notifItem);
-    playAlertBeep(notifItem.priority.includes("URGENT") || notifItem.type === "TRADE");
+    
+    // Distinct sounds for Target Hit vs Stop-Loss Hit vs Regular Alert
+    if (notifItem.type === "TARGET_HIT") {
+      playTargetHitSound();
+    } else if (notifItem.type === "SL_HIT") {
+      playStopLossSound();
+    } else {
+      playAlertBeep(notifItem.priority.includes("URGENT") || notifItem.type === "TRADE");
+    }
 
     // Native browser push if granted
     if ("Notification" in window && Notification.permission === "granted") {
@@ -1339,7 +1437,13 @@ function renderPopFlashCard(n) {
   // Type styling
   let typeClass = "type-trade";
   let typeLabel = "⚡ TRADE SIGNAL";
-  if (n.is_diamond) {
+  if (n.type === "TARGET_HIT") {
+    typeClass = "type-target-hit";
+    typeLabel = n.outcome_kind === "TG2" ? "🚀 JACKPOT TARGET 2 HIT (+PROFIT)" : "🎯 TARGET 1 HIT (50% BOOK & TRAIL)";
+  } else if (n.type === "SL_HIT") {
+    typeClass = "type-sl-hit";
+    typeLabel = "🛑 STOP-LOSS HIT (CAPITAL PROTECTION EXIT)";
+  } else if (n.is_diamond) {
     typeClass = "type-diamond";
     typeLabel = `💎 DIAMOND 90%+ A+ SETUP (${n.win_probability_pct || 92}%)`;
   } else if (n.type === "PRE_BREAKOUT") {
@@ -1586,6 +1690,7 @@ function renderNotificationCenter() {
 
   // Counts for each filter
   const countDiamond = notificationStore.filter(n => n.is_diamond).length;
+  const countOutcomes = notificationStore.filter(n => n.type === "TARGET_HIT" || n.type === "SL_HIT" || n.is_outcome).length;
   const countAll = notificationStore.length;
   const countTrade = notificationStore.filter(n => n.type === "TRADE").length;
   const countBreakout = notificationStore.filter(n => n.type === "PRE_BREAKOUT").length;
@@ -1593,6 +1698,7 @@ function renderNotificationCenter() {
   const countVix = notificationStore.filter(n => n.type === "VIX").length;
 
   const elCountDiamond = document.getElementById("notifCountDiamond");
+  const elCountOutcomes = document.getElementById("notifCountOutcomes");
   const elCountAll = document.getElementById("notifCountAll");
   const elCountTrade = document.getElementById("notifCountTrade");
   const elCountBreakout = document.getElementById("notifCountBreakout");
@@ -1600,6 +1706,7 @@ function renderNotificationCenter() {
   const elCountVix = document.getElementById("notifCountVix");
 
   if (elCountDiamond) elCountDiamond.textContent = countDiamond;
+  if (elCountOutcomes) elCountOutcomes.textContent = countOutcomes;
   if (elCountAll) elCountAll.textContent = countAll;
   if (elCountTrade) elCountTrade.textContent = countTrade;
   if (elCountBreakout) elCountBreakout.textContent = countBreakout;
@@ -1611,20 +1718,25 @@ function renderNotificationCenter() {
     ? notificationStore
     : (activeNotifFilter === "DIAMOND"
         ? notificationStore.filter(n => n.is_diamond)
-        : notificationStore.filter(n => n.type === activeNotifFilter));
+        : (activeNotifFilter === "OUTCOMES"
+            ? notificationStore.filter(n => n.type === "TARGET_HIT" || n.type === "SL_HIT" || n.is_outcome)
+            : notificationStore.filter(n => n.type === activeNotifFilter)));
 
   if (filtered.length === 0) {
     const isDiamondFilter = activeNotifFilter === "DIAMOND";
+    const isOutcomesFilter = activeNotifFilter === "OUTCOMES";
     container.innerHTML = `
       <div style="text-align:center; padding: 40px 10px; color: var(--text-muted);">
-        <div style="font-size:36px; margin-bottom:8px;">${isDiamondFilter ? '💎' : '📭'}</div>
+        <div style="font-size:36px; margin-bottom:8px;">${isOutcomesFilter ? '🎯' : (isDiamondFilter ? '💎' : '📭')}</div>
         <div style="font-size:14px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">
-          ${isDiamondFilter ? 'Koi 90%+ Diamond Trade Pending Nahi Hai' : 'Koi Notification Nahi Hai'}
+          ${isOutcomesFilter ? 'Koi Naya TG ya SL Hit Pending Nahi Hai' : (isDiamondFilter ? 'Koi 90%+ Diamond Trade Pending Nahi Hai' : 'Koi Notification Nahi Hai')}
         </div>
         <div style="font-size:12px;">
-          ${isDiamondFilter 
-            ? 'Strict Wall Street Filter Active hai — sirf wahi trade aayega jisme 7-AI &gt; 75, Swarm 4/5 aur OI Shield clear ho.' 
-            : 'Jaise hi naye trades, breakouts ya news aayenge, yahan Time & Date wise display honge.'}
+          ${isOutcomesFilter
+            ? 'Live intraday trade calls ka Target 1, Target 2 ya Stop-Loss hit hote hi yahan instant notification aayega.'
+            : (isDiamondFilter 
+                ? 'Strict Wall Street Filter Active hai — sirf wahi trade aayega jisme 7-AI &gt; 75, Swarm 4/5 aur OI Shield clear ho.' 
+                : 'Jaise hi naye trades, breakouts ya news aayenge, yahan Time & Date wise display honge.')}
         </div>
       </div>
     `;
@@ -1638,7 +1750,17 @@ function renderNotificationCenter() {
     let tagClr = "#34d399";
     let tagText = "🚀 TRADE";
 
-    if (n.is_diamond) {
+    if (n.type === "TARGET_HIT") {
+      cardTypeCls = "card-trade type-target-hit";
+      tagBg = "linear-gradient(135deg, rgba(16,185,129,0.35), rgba(251,191,36,0.3))";
+      tagClr = "#a7f3d0";
+      tagText = n.outcome_kind === "TG2" ? "🚀 JACKPOT TG2" : "🎯 TARGET 1 HIT";
+    } else if (n.type === "SL_HIT") {
+      cardTypeCls = "card-trade type-sl-hit";
+      tagBg = "rgba(239,68,68,0.3)";
+      tagClr = "#fca5a5";
+      tagText = "🛑 STOP-LOSS HIT";
+    } else if (n.is_diamond) {
       cardTypeCls = "card-trade type-diamond";
       tagBg = "linear-gradient(135deg, rgba(234,179,8,0.25), rgba(56,189,248,0.25))";
       tagClr = "#fde68a";
@@ -1809,11 +1931,175 @@ async function fetchLiveNotifications(manual = false) {
     // 💎 Render 90%+ Diamond Radar Widget
     renderDiamondRadarWidget(data.diamond_trades || [], data);
 
+    // 🎯 Render Today's Trade Calls & Target/SL Outcomes Ledger
+    if (data.today_outcomes_summary || data.today_calls) {
+      renderDailyOutcomesWidget(data.today_outcomes_summary, data.today_calls);
+    }
+
     if (manual && typeof showToast === "function") {
       showToast("🔔 Notifications updated live!");
     }
   } catch (err) {
     console.error("fetchLiveNotifications error:", err);
+  }
+}
+
+// ── 5B. 🎯 Today's Trade Calls & Target/SL Outcomes Ledger Controller ──
+let currentDocFilter = "ALL";
+let lastDailyOutcomesData = { summary: {}, calls: [] };
+
+function setDocTabFilter(filter) {
+  currentDocFilter = filter;
+  ["All", "Tg", "Sl", "Active"].forEach(k => {
+    const btn = document.getElementById(`docTab${k}`);
+    if (btn) {
+      if (k.toUpperCase() === filter.toUpperCase()) {
+        btn.classList.add("active");
+        btn.style.background = "#059669";
+        btn.style.borderColor = "#10b981";
+        btn.style.color = "#ffffff";
+      } else {
+        btn.classList.remove("active");
+        btn.style.background = "rgba(15,23,42,0.8)";
+        btn.style.borderColor = "rgba(255,255,255,0.15)";
+        btn.style.color = "#cbd5e1";
+      }
+    }
+  });
+  renderDailyOutcomesWidget();
+}
+
+function renderDailyOutcomesWidget(summary = null, calls = null) {
+  if (summary) lastDailyOutcomesData.summary = summary;
+  if (calls) lastDailyOutcomesData.calls = calls;
+
+  const s = lastDailyOutcomesData.summary || {};
+  const allCalls = lastDailyOutcomesData.calls || [];
+
+  // Update Ribbon Metrics
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setEl("docTotalCalls", s.total_calls !== undefined ? s.total_calls : allCalls.length);
+  setEl("docTgHits", `${s.tg_hits || 0} (${s.win_rate_pct || 0}%)`);
+  setEl("docSlHits", s.sl_hits || 0);
+  setEl("docActiveCalls", s.active_calls || 0);
+  setEl("docNetPoints", s.net_points_str || `${s.net_points || 0} pts`);
+
+  // Update tab counts
+  setEl("docTabCountAll", allCalls.length);
+  setEl("docTabCountTg", allCalls.filter(c => c.status === "TG1_HIT" || c.status === "TG2_HIT").length);
+  setEl("docTabCountSl", allCalls.filter(c => c.status === "SL_HIT").length);
+  setEl("docTabCountActive", allCalls.filter(c => c.status === "ACTIVE").length);
+
+  const container = document.getElementById("dailyOutcomesListContainer");
+  if (!container) return;
+
+  const filtered = currentDocFilter === "ALL"
+    ? allCalls
+    : (currentDocFilter === "TG"
+        ? allCalls.filter(c => c.status === "TG1_HIT" || c.status === "TG2_HIT")
+        : (currentDocFilter === "SL"
+            ? allCalls.filter(c => c.status === "SL_HIT")
+            : allCalls.filter(c => c.status === "ACTIVE")));
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding: 25px 10px; color: #94a3b8; font-size:12px;">
+        <div style="font-size:28px; margin-bottom:4px;">🎯</div>
+        Is category me abhi koi call nahi hai. Jaise hi trade outcome trigger hoga, yahan auto-update ho jayega!
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(c => {
+    let statusCls = "status-active";
+    let badgeHtml = `<span class="outcome-badge-pill active">⏳ IN-PROGRESS</span>`;
+    if (c.status === "TG1_HIT") {
+      statusCls = "status-tg1";
+      badgeHtml = `<span class="outcome-badge-pill tg1">🎯 TARGET 1 HIT</span>`;
+    } else if (c.status === "TG2_HIT") {
+      statusCls = "status-tg2";
+      badgeHtml = `<span class="outcome-badge-pill tg2">🚀 JACKPOT TG2</span>`;
+    } else if (c.status === "SL_HIT") {
+      statusCls = "status-sl";
+      badgeHtml = `<span class="outcome-badge-pill sl">🛑 SL HIT</span>`;
+    }
+
+    const pnlVal = c.pnl_points !== undefined ? c.pnl_points : 0.0;
+    const pnlClr = pnlVal > 0 ? "#34d399" : (pnlVal < 0 ? "#f87171" : "#cbd5e1");
+    const pnlSign = pnlVal > 0 ? "+" : "";
+
+    return `
+      <div class="outcome-call-card ${statusCls}">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong style="font-size:13px; color:#ffffff; letter-spacing:0.3px;">${c.symbol}</strong>
+            <span style="font-size:12px; color:#fde68a; font-weight:700;">${c.action}</span>
+            <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.1);">${c.call_type || 'MOMENTUM'}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${badgeHtml}
+            <strong style="font-size:13px; font-family:monospace; color:${pnlClr};">${pnlSign}${pnlVal} pts</strong>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:6px; font-size:11px; background:rgba(0,0,0,0.25); padding:6px 10px; border-radius:6px;">
+          <div><span style="color:#94a3b8;">Entry:</span> <strong style="color:#ffffff;">₹${c.entry_price}</strong></div>
+          <div><span style="color:#94a3b8;">Target 1:</span> <strong style="color:#34d399;">₹${c.target_1}</strong></div>
+          <div><span style="color:#94a3b8;">Target 2:</span> <strong style="color:#fde68a;">₹${c.target_2}</strong></div>
+          <div><span style="color:#94a3b8;">Stop-Loss:</span> <strong style="color:#f87171;">₹${c.stop_loss}</strong></div>
+          <div><span style="color:#94a3b8;">Live CMP:</span> <strong style="color:#38bdf8;">₹${c.cmp || c.entry_price}</strong></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:#cbd5e1; flex-wrap:wrap; gap:4px;">
+          <div style="display:flex; align-items:center; gap:4px;">
+            <span>🕒 ${c.created_at}</span>
+            ${c.resolved_at ? `<span style="color:#94a3b8;">• Resolved: ${c.resolved_at}</span>` : ''}
+          </div>
+          <div style="font-style:italic; font-weight:600; color:${c.status.includes('TG') ? '#6ee7b7' : (c.status === 'SL_HIT' ? '#fca5a5' : '#94a3b8')};">
+            ${c.hit_message || ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function simulateOutcomeTest(outcomeType) {
+  try {
+    showToast(`🧪 Simulating ${outcomeType} Hit Notification...`);
+    const res = await fetch(`/api/signals/simulate-outcome?outcome_type=${outcomeType}`, { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.notification) {
+        if (data.notification.id) flashedSignatures.delete(data.notification.id);
+        if (data.notification.signatureKey) flashedSignatures.delete(data.notification.signatureKey);
+        pushFlashNotification(data.notification, true);
+      }
+      if (data.summary && data.calls) {
+        renderDailyOutcomesWidget(data.summary, data.calls);
+      } else {
+        refreshDailyOutcomes();
+      }
+      fetchLiveNotifications(false);
+      showToast(`✅ ${outcomeType} Hit Alert fired with Audio Chime & Push Notification!`);
+      return data;
+    }
+  } catch (e) {
+    console.error("simulateOutcomeTest error:", e);
+  }
+}
+
+async function refreshDailyOutcomes(manual = false) {
+  try {
+    const res = await fetch("/api/signals/daily-outcomes");
+    if (res.ok) {
+      const data = await res.json();
+      renderDailyOutcomesWidget(data.summary, data.calls);
+      if (manual) showToast("↻ Today's calls & outcomes refreshed!");
+    }
+  } catch (e) {
+    console.error("refreshDailyOutcomes error:", e);
   }
 }
 
@@ -4603,6 +4889,7 @@ const DEFAULT_ADMIN_CONFIG = {
     { id: "widget_calculator", title: "🧮 Jyoti's Position Size & SL Guard", zone: "oiRiskSuiteRow", visible: true },
     { id: "widget_mtfPivots", title: "⏱️ Multi-Timeframe Alignment & Pivots", zone: "supplementaryDockZone", visible: true },
     { id: "widget_investingPortfolio", title: "💼 Jyoti's Live Equity & F&O Portfolio Tracker", zone: "supplementaryDockZone", visible: true },
+    { id: "widget_dailyOutcomes", title: "🎯 Today's Calls & Target/SL Outcomes Ledger", zone: "supplementaryDockZone", visible: true },
     { id: "widget_histPanel", title: "🗄️ 10-Yr Historical Archive", zone: "supplementaryDockZone", visible: true }
   ],
   customWidgets: [],

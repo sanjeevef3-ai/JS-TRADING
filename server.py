@@ -25,8 +25,9 @@ app = FastAPI(
 )
 
 from starlette.middleware.base import BaseHTTPMiddleware
+from indian_market.trade_call_tracker import trade_call_tracker
 
-APP_BUILD_VERSION = "20261019_v47"
+APP_BUILD_VERSION = "20261019_v48"
 
 class NoCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -330,11 +331,43 @@ def get_live_notifications():
                 "time_clock": cur_time_clock
             })
 
-    # Combine all
+    # 4. Evaluate Active Daily Calls for Target Hits (TG1/TG2) & Stop-Loss (SL) Hits
+    live_prices = {}
+    for item in (mom_data.get("fast_movers", []) + mom_data.get("diamond_trades", []) + mom_data.get("pre_breakout_alerts", [])):
+        if "symbol" in item and "price" in item:
+            try:
+                live_prices[item["symbol"]] = float(item["price"])
+            except Exception:
+                pass
+    
+    # Also register any active fast_movers/diamond signals into daily ledger automatically
+    for d in (mom_data.get("diamond_trades", []) + mom_data.get("fast_movers", [])):
+        if "BUY" in str(d.get("action", "")).upper():
+            try:
+                trade_call_tracker.register_trade_call({
+                    "symbol": d.get("symbol", ""),
+                    "action": d.get("action", ""),
+                    "call_type": "DIAMOND_90" if d.get("is_diamond") else "MOMENTUM_BUY",
+                    "entry_price": d.get("optimal_limit_price") or d.get("price"),
+                    "target_1": d.get("target_1"),
+                    "target_2": d.get("target_2"),
+                    "stop_loss": d.get("hard_sl"),
+                    "win_probability_pct": d.get("win_probability_pct", 88.0)
+                })
+            except Exception:
+                pass
+
+    outcome_notifs = trade_call_tracker.evaluate_all_active_calls(live_prices)
+
+    # Combine all: Outcome alerts (TG Hit / SL Hit) ALWAYS take HIGHEST PRIORITY at top!
     all_notifs = []
+    all_notifs.extend(outcome_notifs)
     all_notifs.extend(trade_notifications)
     all_notifs.extend(vix_notifs)
     all_notifs.extend(news_items)
+
+    today_summary = trade_call_tracker.get_today_summary()
+    today_calls = trade_call_tracker.get_all_calls()
 
     return {
         "status": "success",
@@ -345,9 +378,26 @@ def get_live_notifications():
         "notifications": all_notifs,
         "diamond_trades": mom_data.get("diamond_trades", []),
         "diamond_count": mom_data.get("diamond_count", 0),
+        "today_outcomes_summary": today_summary,
+        "today_calls": today_calls,
         "global_regime": mom_data.get("global_regime", "BALANCED REGIME"),
         "global_advice": mom_data.get("global_advice", "")
     }
+
+@app.get("/api/signals/daily-outcomes")
+def get_daily_trade_outcomes():
+    """Returns today's complete Buy/Sell calls ledger, win rate, and Target/SL hit outcomes."""
+    return {
+        "status": "success",
+        "summary": trade_call_tracker.get_today_summary(),
+        "calls": trade_call_tracker.get_all_calls()
+    }
+
+@app.post("/api/signals/simulate-outcome")
+def simulate_trade_outcome(call_id: str = Query(""), outcome_type: str = Query("TG1")):
+    """Simulates TG1, TG2, or SL hit for testing audio chimes and pop-flash notifications."""
+    res = trade_call_tracker.simulate_outcome(call_id, outcome_type)
+    return res
 
 @app.get("/api/options/oi")
 def get_live_oi_data(symbol: str = Query("NIFTY")):

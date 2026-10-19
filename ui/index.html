@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261019_v47">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v48_2">
   <script>
-    window.APP_CLIENT_VERSION = "20261019_v47";
+    window.APP_CLIENT_VERSION = "20261019_v48";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -709,6 +709,7 @@
           <!-- Filter Bar -->
           <div class="notif-filter-bar" style="padding: 6px 10px; gap: 4px;">
             <button type="button" class="notif-filter-chip active" data-filter="DIAMOND" onclick="filterNotificationsByType('DIAMOND')" style="border-color:#38bdf8; color:#7dd3fc; font-weight:800; background:rgba(56,189,248,0.15);">💎 90%+ Diamond (<span id="notifCountDiamond">0</span>)</button>
+            <button type="button" class="notif-filter-chip" data-filter="OUTCOMES" onclick="filterNotificationsByType('OUTCOMES')" style="border-color:#10b981; color:#34d399; font-weight:800; background:rgba(16,185,129,0.15);">🎯 TG/SL Hits (<span id="notifCountOutcomes">0</span>)</button>
             <button type="button" class="notif-filter-chip" data-filter="ALL" onclick="filterNotificationsByType('ALL')">All (<span id="notifCountAll">0</span>)</button>
             <button type="button" class="notif-filter-chip" data-filter="TRADE" onclick="filterNotificationsByType('TRADE')">🚀 Trades (<span id="notifCountTrade">0</span>)</button>
             <button type="button" class="notif-filter-chip" data-filter="PRE_BREAKOUT" onclick="filterNotificationsByType('PRE_BREAKOUT')">⚡ Breakouts (<span id="notifCountBreakout">0</span>)</button>
@@ -1560,6 +1561,75 @@
         <!-- Portfolio Table & Metrics Panel -->
         <div id="investingPortfolioPanel" style="max-height: 280px; overflow-y: auto; padding-right: 2px; flex: 1;"></div>
       </div>
+
+      <!-- 5. 🎯 Jyoti's Today's Trade Calls & Target/SL Outcomes Ledger -->
+      <div class="card widget-box" id="widget_dailyOutcomes" data-widget-name="🎯 Today's Calls & Target/SL Outcomes Ledger" style="border: 1.5px solid rgba(16, 185, 129, 0.55); margin:0; padding: 12px 14px; width: 100%; display: flex; flex-direction: column; position: relative;">
+        <!-- Header -->
+        <div class="card-header" style="flex-wrap:wrap; gap:8px; margin-bottom: 8px; justify-content: space-between; align-items: center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <h2 id="title_widget_dailyOutcomes" style="font-size: 13.5px; font-weight: 800; color:#34d399; display:flex; align-items:center; gap:5px;">
+              🎯 Today's Trade Calls &amp; Target/SL Outcomes (आज के परिणाम)
+            </h2>
+            <span class="badge success" style="font-size:9.5px; font-weight:800; padding:2px 6px;">LIVE OUTCOMES</span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="pill-btn" onclick="simulateOutcomeTest('TG1')" style="padding:3px 9px; font-size:10px; background:rgba(16,185,129,0.22); border-color:#10b981; color:#34d399; font-weight:700;" title="Test Real-Time Target 1 Hit Chime & Alert">
+              🧪 Test TG1 Hit
+            </button>
+            <button type="button" class="pill-btn" onclick="simulateOutcomeTest('TG2')" style="padding:3px 9px; font-size:10px; background:rgba(251,191,36,0.22); border-color:#f59e0b; color:#fde68a; font-weight:700;" title="Test Jackpot Target 2 Hit Chime & Alert">
+              🧪 Test TG2 Hit
+            </button>
+            <button type="button" class="pill-btn" onclick="simulateOutcomeTest('SL')" style="padding:3px 9px; font-size:10px; background:rgba(239,68,68,0.22); border-color:#ef4444; color:#fca5a5; font-weight:700;" title="Test Stop-Loss Hit Warning & Alert">
+              🧪 Test SL Hit
+            </button>
+            <button type="button" class="pill-btn" onclick="refreshDailyOutcomes(true)" style="padding:3px 8px; font-size:10px;">
+              ↻ Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- 5-Metric Summary Ribbon -->
+        <div class="daily-outcomes-ribbon" id="dailyOutcomesRibbon">
+          <div class="daily-outcome-stat-card">
+            <span class="label">📢 Total Calls</span>
+            <span class="val" id="docTotalCalls">--</span>
+          </div>
+          <div class="daily-outcome-stat-card" style="border-color:rgba(16,185,129,0.4);">
+            <span class="label" style="color:#6ee7b7;">🎯 Targets Hit</span>
+            <span class="val green-text" id="docTgHits">--</span>
+          </div>
+          <div class="daily-outcome-stat-card" style="border-color:rgba(239,68,68,0.4);">
+            <span class="label" style="color:#fca5a5;">🛑 SL Triggered</span>
+            <span class="val red-text" id="docSlHits">--</span>
+          </div>
+          <div class="daily-outcome-stat-card" style="border-color:rgba(56,189,248,0.4);">
+            <span class="label" style="color:#7dd3fc;">⏳ Active Calls</span>
+            <span class="val blue-text" id="docActiveCalls">--</span>
+          </div>
+          <div class="daily-outcome-stat-card" style="border-color:rgba(251,191,36,0.4);">
+            <span class="label" style="color:#fde68a;">💰 Net Points (Win %)</span>
+            <span class="val yellow-text" id="docNetPoints">--</span>
+          </div>
+        </div>
+
+        <!-- Segmented Filter Tabs -->
+        <div style="display:flex; gap:6px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:6px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="pf-tab-btn active" id="docTabAll" onclick="setDocTabFilter('ALL')" style="padding:3px 8px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid #10b981; background:#059669; color:#fff; cursor:pointer;">🌟 All Calls (<span id="docTabCountAll">0</span>)</button>
+            <button class="pf-tab-btn" id="docTabTg" onclick="setDocTabFilter('TG')" style="padding:3px 8px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid rgba(255,255,255,0.15); background:rgba(15,23,42,0.8); color:#cbd5e1; cursor:pointer;">🎯 Targets Hit (<span id="docTabCountTg">0</span>)</button>
+            <button class="pf-tab-btn" id="docTabSl" onclick="setDocTabFilter('SL')" style="padding:3px 8px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid rgba(255,255,255,0.15); background:rgba(15,23,42,0.8); color:#cbd5e1; cursor:pointer;">🛑 SL Triggered (<span id="docTabCountSl">0</span>)</button>
+            <button class="pf-tab-btn" id="docTabActive" onclick="setDocTabFilter('ACTIVE')" style="padding:3px 8px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid rgba(255,255,255,0.15); background:rgba(15,23,42,0.8); color:#cbd5e1; cursor:pointer;">⏳ In-Progress (<span id="docTabCountActive">0</span>)</button>
+          </div>
+          <div style="font-size:10.5px; color:#94a3b8;">
+            Auto-Evaluator: <strong style="color:#10b981;">Active (Live Ticker)</strong>
+          </div>
+        </div>
+
+        <!-- Dynamic Calls List Container -->
+        <div id="dailyOutcomesListContainer" style="display:flex; flex-direction:column; gap:8px; max-height: 380px; overflow-y: auto; padding-right: 2px;">
+          <!-- Dynamically filled by app.js -->
+        </div>
+      </div>
   </div>
 </div>
 
@@ -2143,6 +2213,6 @@
     }
   }
 </script>
-<script src="/static/app.js?v=20261019_v47"></script>
+<script src="/static/app.js?v=20261019_v48_2"></script>
 </body>
 </html>
