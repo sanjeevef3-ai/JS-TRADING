@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261019_v45">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v46">
   <script>
-    window.APP_CLIENT_VERSION = "20261019_v45";
+    window.APP_CLIENT_VERSION = "20261019_v46";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -1706,26 +1706,46 @@
       <button class="pill-btn" onclick="closePfOrderPadModal()" style="padding:4px 10px; font-size:11px; border-color:#f43f5e; color:#fda4af;">✕ Close</button>
     </div>
     <div class="admin-modal-body" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
-      <!-- Underlying Selector -->
+      <!-- Underlying Selector with Live Search & Category Chips -->
       <div>
-        <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">1. Select Underlying / Stock:</label>
-        <div style="display: flex; gap: 8px;">
-          <select id="pfOrderPadUnderlying" onchange="onOrderPadUnderlyingChange(this.value)" class="select-control" style="flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 800; background: #0b1120; color: #fde68a; border: 1.5px solid #6366f1;">
-            <option value="NIFTY" selected>NIFTY 50 Index (Lot 25)</option>
-            <option value="BANKNIFTY">BANK NIFTY Index (Lot 15)</option>
-            <option value="FINNIFTY">FIN NIFTY Index (Lot 25)</option>
-            <option value="MIDCPNIFTY">MIDCAP NIFTY (Lot 50)</option>
-            <option value="SENSEX">BSE SENSEX (Lot 10)</option>
-            <option value="RELIANCE">RELIANCE (Lot 250)</option>
-            <option value="TATASTEEL">TATA STEEL (Lot 5500)</option>
-            <option value="HDFCBANK">HDFC BANK (Lot 550)</option>
-            <option value="INFY">INFOSYS (Lot 400)</option>
-            <option value="SBIN">STATE BANK OF INDIA (Lot 750)</option>
-            <option value="TCS">TCS (Lot 175)</option>
-            <option value="TATAMOTORS">TATA MOTORS (Lot 550)</option>
-          </select>
-          <div id="pfOrderPadSpotBadge" style="padding: 6px 10px; background: rgba(99,102,241,0.15); border: 1px solid #6366f1; border-radius: 6px; font-size: 11.5px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; white-space: nowrap;">
-            Spot: <span id="pfOrderPadSpotVal" style="margin-left: 4px; color:#fde68a;">--</span>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">1. Select Any Indian Stock / Index (100+ Stocks &amp; Indices):</label>
+          <span style="font-size: 10px; color: #38bdf8; cursor: pointer; text-decoration: underline;" onclick="openPortfolioSearchModal()">🔍 Visual Ladder</span>
+        </div>
+
+        <!-- Live Instant Search Bar for Any Stock -->
+        <div style="position: relative; margin-bottom: 6px;">
+          <input type="text" id="pfOrderStockSearchInput" placeholder="🔍 Type to search ANY stock (e.g. ITC, ZOMATO, TRENT, HAL, VEDL, PAYTM)..." oninput="onFilterOrderPadStocks(this.value)" class="select-control" style="width: 100%; padding: 7px 10px; font-size: 12px; background: #070d19; border: 1.5px solid #6366f1; border-radius: 6px; color: #fff;" autocomplete="off" />
+        </div>
+
+        <!-- Category Chips -->
+        <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px;" id="pfOrderCategoryChips">
+          <button type="button" class="pill-btn active" id="chip_ALL" onclick="filterOrderPadByCategory('ALL')" style="padding: 2px 7px; font-size: 10px;">🌟 All (100+)</button>
+          <button type="button" class="pill-btn" id="chip_INDEX" onclick="filterOrderPadByCategory('Benchmark')" style="padding: 2px 7px; font-size: 10px;">📌 Indices</button>
+          <button type="button" class="pill-btn" id="chip_BANK" onclick="filterOrderPadByCategory('Banking')" style="padding: 2px 7px; font-size: 10px;">🏦 Banking</button>
+          <button type="button" class="pill-btn" id="chip_IT" onclick="filterOrderPadByCategory('IT')" style="padding: 2px 7px; font-size: 10px;">💻 IT</button>
+          <button type="button" class="pill-btn" id="chip_ENERGY" onclick="filterOrderPadByCategory('Energy')" style="padding: 2px 7px; font-size: 10px;">⚡ Energy</button>
+          <button type="button" class="pill-btn" id="chip_AUTO" onclick="filterOrderPadByCategory('Auto')" style="padding: 2px 7px; font-size: 10px;">🚗 Auto</button>
+          <button type="button" class="pill-btn" id="chip_METALS" onclick="filterOrderPadByCategory('Metals')" style="padding: 2px 7px; font-size: 10px;">🏗️ Metals</button>
+          <button type="button" class="pill-btn" id="chip_DEFENSE" onclick="filterOrderPadByCategory('Defense')" style="padding: 2px 7px; font-size: 10px;">🛡️ Defense</button>
+          <button type="button" class="pill-btn" id="chip_FMCG" onclick="filterOrderPadByCategory('FMCG')" style="padding: 2px 7px; font-size: 10px;">🛒 FMCG/Retail</button>
+          <button type="button" class="pill-btn" id="chip_PHARMA" onclick="filterOrderPadByCategory('Pharma')" style="padding: 2px 7px; font-size: 10px;">💊 Pharma</button>
+        </div>
+
+        <!-- Full Width Select Dropdown -->
+        <select id="pfOrderPadUnderlying" onchange="onOrderPadUnderlyingChange(this.value)" class="select-control" style="width: 100%; padding: 8px 10px; font-size: 12.5px; font-weight: 800; background: #0b1120; color: #fde68a; border: 1.5px solid #6366f1; margin-bottom: 6px;">
+          <option value="NIFTY" selected>NIFTY - NIFTY 50 Index (Lot 25)</option>
+        </select>
+
+        <!-- Live Metadata Ribbon (Spot Price & Lot Size) -->
+        <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 6px; font-size: 11px;">
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="color: #94a3b8;">Live Spot:</span>
+            <strong id="pfOrderPadSpotVal" style="color: #38bdf8; font-family: monospace; font-size: 12.5px;">₹25,000.00</strong>
+          </div>
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="color: #94a3b8;">Standard Lot:</span>
+            <strong id="pfOrderPadLotBadge" style="color: #fde68a; font-family: monospace; font-size: 12px;">25 Qty</strong>
           </div>
         </div>
       </div>
@@ -2082,6 +2102,6 @@
     }
   }
 </script>
-<script src="/static/app.js?v=20261019_v45"></script>
+<script src="/static/app.js?v=20261019_v46"></script>
 </body>
 </html>

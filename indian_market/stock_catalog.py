@@ -17,6 +17,7 @@ STOCK_CATALOG = [
     {"symbol": "FINNIFTY", "name": "Nifty Financial Services", "hindi": "फिन निफ्टी", "ticker": "NIFTY_FIN_SERVICE.NS", "type": "INDEX", "sector": "Financials", "lot_size": 25, "is_fno": True, "base_price": 23500.0},
     {"symbol": "MIDCPNIFTY", "name": "Nifty Midcap Select", "hindi": "मिडकॅप निफ्टी", "ticker": "NIFTY_MIDCAP_100.NS", "type": "INDEX", "sector": "Midcap", "lot_size": 50, "is_fno": True, "base_price": 13000.0},
     {"symbol": "SENSEX", "name": "BSE Sensex 30", "hindi": "सेंसेक्स", "ticker": "^BSESN", "type": "INDEX", "sector": "Benchmark", "lot_size": 10, "is_fno": True, "base_price": 81500.0},
+    {"symbol": "BANKEX", "name": "BSE BANKEX", "hindi": "बैंकेक्स", "ticker": "BSE-BANK.BO", "type": "INDEX", "sector": "Banking", "lot_size": 15, "is_fno": True, "base_price": 58500.0},
 
     # IT & Tech
     {"symbol": "TCS", "name": "Tata Consultancy Services", "hindi": "टीसीएस", "ticker": "TCS.NS", "type": "STOCK", "sector": "IT", "lot_size": 175, "is_fno": True, "base_price": 4150.0},
@@ -28,6 +29,9 @@ STOCK_CATALOG = [
     {"symbol": "PERSISTENT", "name": "Persistent Systems", "hindi": "पर्सिस्टेंट सिस्टम्स", "ticker": "PERSISTENT.NS", "type": "STOCK", "sector": "IT", "lot_size": 100, "is_fno": True, "base_price": 5400.0},
     {"symbol": "COFORGE", "name": "Coforge Ltd", "hindi": "कोफोर्ज", "ticker": "COFORGE.NS", "type": "STOCK", "sector": "IT", "lot_size": 150, "is_fno": True, "base_price": 7500.0},
     {"symbol": "TATAELXSI", "name": "Tata Elxsi", "hindi": "टाटा एलेक्सी", "ticker": "TATAELXSI.NS", "type": "STOCK", "sector": "IT", "lot_size": 100, "is_fno": True, "base_price": 7200.0},
+    {"symbol": "KPITTECH", "name": "KPIT Technologies", "hindi": "केपीआईटी टेक", "ticker": "KPITTECH.NS", "type": "STOCK", "sector": "IT", "lot_size": 400, "is_fno": True, "base_price": 1720.0},
+    {"symbol": "MPHASIS", "name": "Mphasis Ltd", "hindi": "एमफॉसिस", "ticker": "MPHASIS.NS", "type": "STOCK", "sector": "IT", "lot_size": 275, "is_fno": True, "base_price": 2980.0},
+    {"symbol": "OFSS", "name": "Oracle Financial Services", "hindi": "ओरेकल फाइनेंशियल", "ticker": "OFSS.NS", "type": "STOCK", "sector": "IT", "lot_size": 100, "is_fno": True, "base_price": 11200.0},
     {"symbol": "INTELLECT", "name": "Intellect Design Arena", "hindi": "इंटेलेक्ट डिजाइन", "ticker": "INTELLECT.NS", "type": "STOCK", "sector": "Fintech", "lot_size": 50, "is_fno": False, "base_price": 920.0},
 
     # Banking & Financials
@@ -37,36 +41,61 @@ STOCK_CATALOG = [
     {"symbol": "KOTAKBANK", "name": "Kotak Mahindra Bank", "hindi": "कोटक बैंक", "ticker": "KOTAKBANK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 400, "is_fno": True, "base_price": 1850.0},
     {"symbol": "AXISBANK", "name": "Axis Bank Ltd", "hindi": "एक्सिस बैंक", "ticker": "AXISBANK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 625, "is_fno": True, "base_price": 1190.0},
     {"symbol": "INDUSINDBK", "name": "IndusInd Bank", "hindi": "इंडसइंड बैंक", "ticker": "INDUSINDBK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 500, "is_fno": True, "base_price": 1340.0},
-    {"symbol": "BAJFINANCE", "name": "Bajaj Finance Ltd", "hindi": "बजाज फाइनेंस", "ticker": "BAJFINANCE.NS", "type": "STOCK", "sector": "NBFC", "lot_size": 125, "is_fno": True, "base_price": 7150.0},
-    {"symbol": "BAJAJFINSV", "name": "Bajaj Finserv Ltd", "hindi": "बजाज फिनसर्व", "ticker": "BAJAJFINSV.NS", "type": "STOCK", "sector": "NBFC", "lot_size": 500, "is_fno": True, "base_price": 1820.0},
-    {"symbol": "CHOLAFIN", "name": "Cholamandalam Investment", "hindi": "चोलामंडलम", "ticker": "CHOLAFIN.NS", "type": "STOCK", "sector": "NBFC", "lot_size": 625, "is_fno": True, "base_price": 1520.0},
-    {"symbol": "MUTHOOTFIN", "name": "Muthoot Finance", "hindi": "मुथूट फाइनेंस", "ticker": "MUTHOOTFIN.NS", "type": "STOCK", "sector": "NBFC", "lot_size": 550, "is_fno": True, "base_price": 1960.0},
-    {"symbol": "JIOFIN", "name": "Jio Financial Services", "hindi": "जियो फाइनेंशियल", "ticker": "JIOFIN.NS", "type": "STOCK", "sector": "Financials", "lot_size": 1000, "is_fno": False, "base_price": 325.0},
-    {"symbol": "REC", "name": "REC Ltd", "hindi": "आरईसी", "ticker": "RECLTD.NS", "type": "STOCK", "sector": "PSU NBFC", "lot_size": 1000, "is_fno": True, "base_price": 540.0},
-    {"symbol": "PFC", "name": "Power Finance Corp", "hindi": "पीएफसी", "ticker": "PFC.NS", "type": "STOCK", "sector": "PSU NBFC", "lot_size": 1300, "is_fno": True, "base_price": 490.0},
-    {"symbol": "IREDA", "name": "Indian Renewable Energy Dev", "hindi": "इरेडा", "ticker": "IREDA.NS", "type": "STOCK", "sector": "Green Finance", "lot_size": 1000, "is_fno": False, "base_price": 225.0},
+    {"symbol": "PNB", "name": "Punjab National Bank", "hindi": "पीएनबी", "ticker": "PNB.NS", "type": "STOCK", "sector": "Banking", "lot_size": 8000, "is_fno": True, "base_price": 105.0},
+    {"symbol": "BANKBARODA", "name": "Bank of Baroda", "hindi": "बैंक ऑफ बड़ौदा", "ticker": "BANKBARODA.NS", "type": "STOCK", "sector": "Banking", "lot_size": 2925, "is_fno": True, "base_price": 255.0},
+    {"symbol": "CANBK", "name": "Canara Bank", "hindi": "केनरा बैंक", "ticker": "CANBK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 6750, "is_fno": True, "base_price": 102.0},
+    {"symbol": "FEDERALBNK", "name": "Federal Bank", "hindi": "फेडरल बैंक", "ticker": "FEDERALBNK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 5000, "is_fno": True, "base_price": 195.0},
+    {"symbol": "IDFCFIRSTB", "name": "IDFC First Bank", "hindi": "आईडीएफसी फर्स्ट बैंक", "ticker": "IDFCFIRSTB.NS", "type": "STOCK", "sector": "Banking", "lot_size": 7500, "is_fno": True, "base_price": 72.0},
+    {"symbol": "AUBANK", "name": "AU Small Finance Bank", "hindi": "एयू स्मॉल फाइनेंस", "ticker": "AUBANK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 1000, "is_fno": True, "base_price": 640.0},
+    {"symbol": "BANDHANBNK", "name": "Bandhan Bank", "hindi": "बंधन बैंक", "ticker": "BANDHANBNK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 2500, "is_fno": True, "base_price": 185.0},
+    {"symbol": "YESBANK", "name": "Yes Bank Ltd", "hindi": "यस बैंक", "ticker": "YESBANK.NS", "type": "STOCK", "sector": "Banking", "lot_size": 10000, "is_fno": False, "base_price": 21.5},
 
-    # Energy, Oil & Gas
-    {"symbol": "RELIANCE", "name": "Reliance Industries Ltd", "hindi": "रिलायंस इंडस्ट्रीज", "ticker": "RELIANCE.NS", "type": "STOCK", "sector": "Energy/Telecom", "lot_size": 250, "is_fno": True, "base_price": 2750.0},
-    {"symbol": "ONGC", "name": "Oil & Natural Gas Corp", "hindi": "ओएनजीसी", "ticker": "ONGC.NS", "type": "STOCK", "sector": "Oil & Gas", "lot_size": 3850, "is_fno": True, "base_price": 290.0},
-    {"symbol": "NTPC", "name": "NTPC Ltd", "hindi": "एनटीपीसी", "ticker": "NTPC.NS", "type": "STOCK", "sector": "Power", "lot_size": 1500, "is_fno": True, "base_price": 415.0},
-    {"symbol": "POWERGRID", "name": "Power Grid Corp of India", "hindi": "पावर ग्रिड", "ticker": "POWERGRID.NS", "type": "STOCK", "sector": "Power", "lot_size": 2700, "is_fno": True, "base_price": 335.0},
-    {"symbol": "TATAPOWER", "name": "Tata Power Company", "hindi": "टाटा पावर", "ticker": "TATAPOWER.NS", "type": "STOCK", "sector": "Power", "lot_size": 1350, "is_fno": True, "base_price": 440.0},
-    {"symbol": "COALINDIA", "name": "Coal India Ltd", "hindi": "कोल इंडिया", "ticker": "COALINDIA.NS", "type": "STOCK", "sector": "Mining", "lot_size": 2100, "is_fno": True, "base_price": 495.0},
-    {"symbol": "BPCL", "name": "Bharat Petroleum Corp", "hindi": "बीपीसीएल", "ticker": "BPCL.NS", "type": "STOCK", "sector": "Oil", "lot_size": 1800, "is_fno": True, "base_price": 345.0},
-    {"symbol": "IOC", "name": "Indian Oil Corp", "hindi": "इंडियन ऑयल", "ticker": "IOC.NS", "type": "STOCK", "sector": "Oil", "lot_size": 4875, "is_fno": True, "base_price": 175.0},
-    {"symbol": "GAIL", "name": "GAIL India Ltd", "hindi": "गेल", "ticker": "GAIL.NS", "type": "STOCK", "sector": "Gas", "lot_size": 2650, "is_fno": True, "base_price": 225.0},
-    {"symbol": "SUZLON", "name": "Suzlon Energy", "hindi": "सुजलॉन", "ticker": "SUZLON.NS", "type": "STOCK", "sector": "Renewables", "lot_size": 1000, "is_fno": False, "base_price": 75.0},
+    # Financial Services, NBFC & Insurance
+    {"symbol": "BAJFINANCE", "name": "Bajaj Finance Ltd", "hindi": "बजाज फाइनेंस", "ticker": "BAJFINANCE.NS", "type": "STOCK", "sector": "Financials", "lot_size": 125, "is_fno": True, "base_price": 7150.0},
+    {"symbol": "BAJAJFINSV", "name": "Bajaj Finserv Ltd", "hindi": "बजाज फिनसर्व", "ticker": "BAJAJFINSV.NS", "type": "STOCK", "sector": "Financials", "lot_size": 500, "is_fno": True, "base_price": 1820.0},
+    {"symbol": "CHOLAFIN", "name": "Cholamandalam Investment", "hindi": "चोलामंडलम", "ticker": "CHOLAFIN.NS", "type": "STOCK", "sector": "Financials", "lot_size": 625, "is_fno": True, "base_price": 1520.0},
+    {"symbol": "SHRIRAMFIN", "name": "Shriram Finance Ltd", "hindi": "श्रीराम फाइनेंस", "ticker": "SHRIRAMFIN.NS", "type": "STOCK", "sector": "Financials", "lot_size": 300, "is_fno": True, "base_price": 3250.0},
+    {"symbol": "MUTHOOTFIN", "name": "Muthoot Finance", "hindi": "मुथूट फाइनेंस", "ticker": "MUTHOOTFIN.NS", "type": "STOCK", "sector": "Financials", "lot_size": 550, "is_fno": True, "base_price": 1960.0},
+    {"symbol": "JIOFIN", "name": "Jio Financial Services", "hindi": "जियो फाइनेंशियल", "ticker": "JIOFIN.NS", "type": "STOCK", "sector": "Financials", "lot_size": 1000, "is_fno": False, "base_price": 325.0},
+    {"symbol": "REC", "name": "REC Ltd", "hindi": "आरईसी", "ticker": "RECLTD.NS", "type": "STOCK", "sector": "Financials", "lot_size": 1000, "is_fno": True, "base_price": 540.0},
+    {"symbol": "PFC", "name": "Power Finance Corp", "hindi": "पीएफसी", "ticker": "PFC.NS", "type": "STOCK", "sector": "Financials", "lot_size": 1300, "is_fno": True, "base_price": 490.0},
+    {"symbol": "IREDA", "name": "Indian Renewable Energy Dev", "hindi": "इरेडा", "ticker": "IREDA.NS", "type": "STOCK", "sector": "Financials", "lot_size": 1000, "is_fno": False, "base_price": 225.0},
+    {"symbol": "SBILIFE", "name": "SBI Life Insurance", "hindi": "एसबीआई लाइफ", "ticker": "SBILIFE.NS", "type": "STOCK", "sector": "Financials", "lot_size": 375, "is_fno": True, "base_price": 1720.0},
+    {"symbol": "HDFCLIFE", "name": "HDFC Life Insurance", "hindi": "एचडीएफसी लाइफ", "ticker": "HDFCLIFE.NS", "type": "STOCK", "sector": "Financials", "lot_size": 1100, "is_fno": True, "base_price": 710.0},
+    {"symbol": "ICICIPRULI", "name": "ICICI Prudential Life", "hindi": "आईसीआईसीआई प्रू", "ticker": "ICICIPRULI.NS", "type": "STOCK", "sector": "Financials", "lot_size": 900, "is_fno": True, "base_price": 750.0},
+    {"symbol": "ANGELONE", "name": "Angel One Ltd", "hindi": "एंजल वन", "ticker": "ANGELONE.NS", "type": "STOCK", "sector": "Financials", "lot_size": 250, "is_fno": True, "base_price": 2850.0},
+    {"symbol": "CDSL", "name": "Central Depository Services", "hindi": "सीडीएसएल", "ticker": "CDSL.NS", "type": "STOCK", "sector": "Financials", "lot_size": 350, "is_fno": False, "base_price": 1450.0},
+    {"symbol": "BSE", "name": "BSE Ltd", "hindi": "बीएसई लिमिटेड", "ticker": "BSE.NS", "type": "STOCK", "sector": "Financials", "lot_size": 250, "is_fno": False, "base_price": 4650.0},
+    {"symbol": "MCX", "name": "Multi Commodity Exchange", "hindi": "एमसीएक्स", "ticker": "MCX.NS", "type": "STOCK", "sector": "Financials", "lot_size": 200, "is_fno": True, "base_price": 6150.0},
+
+    # Energy, Power, Oil & Gas
+    {"symbol": "RELIANCE", "name": "Reliance Industries Ltd", "hindi": "रिलायंस इंडस्ट्रीज", "ticker": "RELIANCE.NS", "type": "STOCK", "sector": "Energy", "lot_size": 250, "is_fno": True, "base_price": 2750.0},
+    {"symbol": "ONGC", "name": "Oil & Natural Gas Corp", "hindi": "ओएनजीसी", "ticker": "ONGC.NS", "type": "STOCK", "sector": "Energy", "lot_size": 3850, "is_fno": True, "base_price": 290.0},
+    {"symbol": "NTPC", "name": "NTPC Ltd", "hindi": "एनटीपीसी", "ticker": "NTPC.NS", "type": "STOCK", "sector": "Energy", "lot_size": 1500, "is_fno": True, "base_price": 415.0},
+    {"symbol": "POWERGRID", "name": "Power Grid Corp of India", "hindi": "पावर ग्रिड", "ticker": "POWERGRID.NS", "type": "STOCK", "sector": "Energy", "lot_size": 2700, "is_fno": True, "base_price": 335.0},
+    {"symbol": "TATAPOWER", "name": "Tata Power Company", "hindi": "टाटा पावर", "ticker": "TATAPOWER.NS", "type": "STOCK", "sector": "Energy", "lot_size": 1350, "is_fno": True, "base_price": 440.0},
+    {"symbol": "COALINDIA", "name": "Coal India Ltd", "hindi": "कोल इंडिया", "ticker": "COALINDIA.NS", "type": "STOCK", "sector": "Energy", "lot_size": 2100, "is_fno": True, "base_price": 495.0},
+    {"symbol": "BPCL", "name": "Bharat Petroleum Corp", "hindi": "बीपीसीएल", "ticker": "BPCL.NS", "type": "STOCK", "sector": "Energy", "lot_size": 1800, "is_fno": True, "base_price": 345.0},
+    {"symbol": "IOC", "name": "Indian Oil Corp", "hindi": "इंडियन ऑयल", "ticker": "IOC.NS", "type": "STOCK", "sector": "Energy", "lot_size": 4875, "is_fno": True, "base_price": 175.0},
+    {"symbol": "GAIL", "name": "GAIL India Ltd", "hindi": "गेल", "ticker": "GAIL.NS", "type": "STOCK", "sector": "Energy", "lot_size": 2650, "is_fno": True, "base_price": 225.0},
+    {"symbol": "SUZLON", "name": "Suzlon Energy", "hindi": "सुजलॉन", "ticker": "SUZLON.NS", "type": "STOCK", "sector": "Energy", "lot_size": 1000, "is_fno": False, "base_price": 75.0},
+    {"symbol": "NHPC", "name": "NHPC Ltd", "hindi": "एनएचपीसी", "ticker": "NHPC.NS", "type": "STOCK", "sector": "Energy", "lot_size": 5000, "is_fno": False, "base_price": 92.0},
+    {"symbol": "SJVN", "name": "SJVN Ltd", "hindi": "एसजेवीएन", "ticker": "SJVN.NS", "type": "STOCK", "sector": "Energy", "lot_size": 4000, "is_fno": False, "base_price": 115.0},
+    {"symbol": "IEX", "name": "Indian Energy Exchange", "hindi": "आईईएक्स", "ticker": "IEX.NS", "type": "STOCK", "sector": "Energy", "lot_size": 3750, "is_fno": True, "base_price": 185.0},
 
     # Auto & Manufacturing
-    {"symbol": "TATAMOTORS", "name": "Tata Motors Ltd", "hindi": "टाटा मोटर्स", "ticker": "TATAMOTORS.NS", "type": "STOCK", "sector": "Automobile", "lot_size": 550, "is_fno": True, "base_price": 940.0},
-    {"symbol": "MARUTI", "name": "Maruti Suzuki India", "hindi": "मारुति सुजुकी", "ticker": "MARUTI.NS", "type": "STOCK", "sector": "Automobile", "lot_size": 50, "is_fno": True, "base_price": 12400.0},
-    {"symbol": "M&M", "name": "Mahindra & Mahindra", "hindi": "महिंद्रा एंड महिंद्रा", "ticker": "M&M.NS", "type": "STOCK", "sector": "Automobile", "lot_size": 350, "is_fno": True, "base_price": 3150.0},
-    {"symbol": "BAJAJ-AUTO", "name": "Bajaj Auto Ltd", "hindi": "बजाज ऑटो", "ticker": "BAJAJ-AUTO.NS", "type": "STOCK", "sector": "Automobile", "lot_size": 75, "is_fno": True, "base_price": 11800.0},
-    {"symbol": "EICHERMOT", "name": "Eicher Motors (Royal Enfield)", "hindi": "आयशर मोटर्स", "ticker": "EICHERMOT.NS", "type": "STOCK", "sector": "Automobile", "lot_size": 150, "is_fno": True, "base_price": 4850.0},
-    {"symbol": "HEROMOTOCO", "name": "Hero MotoCorp", "hindi": "हीरो मोटोकॉर्प", "ticker": "HEROMOTOCO.NS", "type": "STOCK", "sector": "Automobile", "lot_size": 150, "is_fno": True, "base_price": 5400.0},
-    {"symbol": "BHARATFORG", "name": "Bharat Forge Ltd", "hindi": "भारत फोर्ज", "ticker": "BHARATFORG.NS", "type": "STOCK", "sector": "Auto Ancillary", "lot_size": 500, "is_fno": True, "base_price": 1540.0},
-    {"symbol": "EXIDEIND", "name": "Exide Industries", "hindi": "एक्साइड इंडस्ट्रीज", "ticker": "EXIDEIND.NS", "type": "STOCK", "sector": "Batteries", "lot_size": 1200, "is_fno": True, "base_price": 510.0},
+    {"symbol": "TATAMOTORS", "name": "Tata Motors Ltd", "hindi": "टाटा मोटर्स", "ticker": "TATAMOTORS.NS", "type": "STOCK", "sector": "Auto", "lot_size": 550, "is_fno": True, "base_price": 940.0},
+    {"symbol": "MARUTI", "name": "Maruti Suzuki India", "hindi": "मारुति सुजुकी", "ticker": "MARUTI.NS", "type": "STOCK", "sector": "Auto", "lot_size": 50, "is_fno": True, "base_price": 12400.0},
+    {"symbol": "M&M", "name": "Mahindra & Mahindra", "hindi": "महिंद्रा एंड महिंद्रा", "ticker": "M&M.NS", "type": "STOCK", "sector": "Auto", "lot_size": 350, "is_fno": True, "base_price": 3150.0},
+    {"symbol": "BAJAJ-AUTO", "name": "Bajaj Auto Ltd", "hindi": "बजाज ऑटो", "ticker": "BAJAJ-AUTO.NS", "type": "STOCK", "sector": "Auto", "lot_size": 75, "is_fno": True, "base_price": 11800.0},
+    {"symbol": "EICHERMOT", "name": "Eicher Motors (Royal Enfield)", "hindi": "आयशर मोटर्स", "ticker": "EICHERMOT.NS", "type": "STOCK", "sector": "Auto", "lot_size": 150, "is_fno": True, "base_price": 4850.0},
+    {"symbol": "HEROMOTOCO", "name": "Hero MotoCorp", "hindi": "हीरो मोटोकॉर्प", "ticker": "HEROMOTOCO.NS", "type": "STOCK", "sector": "Auto", "lot_size": 150, "is_fno": True, "base_price": 5400.0},
+    {"symbol": "TVSMOTOR", "name": "TVS Motor Company", "hindi": "टीवीएस मोटर", "ticker": "TVSMOTOR.NS", "type": "STOCK", "sector": "Auto", "lot_size": 350, "is_fno": True, "base_price": 2450.0},
+    {"symbol": "BHARATFORG", "name": "Bharat Forge Ltd", "hindi": "भारत फोर्ज", "ticker": "BHARATFORG.NS", "type": "STOCK", "sector": "Auto", "lot_size": 500, "is_fno": True, "base_price": 1540.0},
+    {"symbol": "EXIDEIND", "name": "Exide Industries", "hindi": "एक्साइड इंडस्ट्रीज", "ticker": "EXIDEIND.NS", "type": "STOCK", "sector": "Auto", "lot_size": 1200, "is_fno": True, "base_price": 510.0},
+    {"symbol": "BOSCHLTD", "name": "Bosch Ltd", "hindi": "बॉश लिमिटेड", "ticker": "BOSCHLTD.NS", "type": "STOCK", "sector": "Auto", "lot_size": 25, "is_fno": True, "base_price": 34800.0},
+    {"symbol": "ASHOKLEY", "name": "Ashok Leyland", "hindi": "अशोक लेलैंड", "ticker": "ASHOKLEY.NS", "type": "STOCK", "sector": "Auto", "lot_size": 5000, "is_fno": True, "base_price": 225.0},
+    {"symbol": "MOTHERSON", "name": "Samvardhana Motherson", "hindi": "मदरसन", "ticker": "MOTHERSON.NS", "type": "STOCK", "sector": "Auto", "lot_size": 3300, "is_fno": True, "base_price": 175.0},
 
     # Metals & Mining
     {"symbol": "TATASTEEL", "name": "Tata Steel Ltd", "hindi": "टाटा स्टील", "ticker": "TATASTEEL.NS", "type": "STOCK", "sector": "Metals", "lot_size": 5500, "is_fno": True, "base_price": 165.0},
@@ -76,35 +105,58 @@ STOCK_CATALOG = [
     {"symbol": "JINDALSTEL", "name": "Jindal Steel & Power", "hindi": "जिंदल स्टील", "ticker": "JINDALSTEL.NS", "type": "STOCK", "sector": "Metals", "lot_size": 625, "is_fno": True, "base_price": 1020.0},
     {"symbol": "NATIONALUM", "name": "National Aluminium (NALCO)", "hindi": "नालको", "ticker": "NATIONALUM.NS", "type": "STOCK", "sector": "Metals", "lot_size": 3750, "is_fno": True, "base_price": 225.0},
     {"symbol": "SAIL", "name": "Steel Authority of India", "hindi": "सेल", "ticker": "SAIL.NS", "type": "STOCK", "sector": "Metals", "lot_size": 8000, "is_fno": True, "base_price": 138.0},
+    {"symbol": "NMDC", "name": "NMDC Ltd", "hindi": "एनएमडीसी", "ticker": "NMDC.NS", "type": "STOCK", "sector": "Metals", "lot_size": 3000, "is_fno": True, "base_price": 235.0},
 
-    # Defense & Capital Goods
+    # Defense, Railways, Infra & Capital Goods
     {"symbol": "BEL", "name": "Bharat Electronics Ltd", "hindi": "बीईएल (भारत इलेक्ट्रॉनिक्स)", "ticker": "BEL.NS", "type": "STOCK", "sector": "Defense", "lot_size": 2850, "is_fno": True, "base_price": 310.0},
     {"symbol": "HAL", "name": "Hindustan Aeronautics Ltd", "hindi": "एचएएल", "ticker": "HAL.NS", "type": "STOCK", "sector": "Defense", "lot_size": 300, "is_fno": True, "base_price": 4550.0},
-    {"symbol": "LT", "name": "Larsen & Toubro Ltd", "hindi": "लार्सन एंड टुब्रो", "ticker": "LT.NS", "type": "STOCK", "sector": "Infrastructure", "lot_size": 150, "is_fno": True, "base_price": 3650.0},
-    {"symbol": "BHEL", "name": "Bharat Heavy Electricals", "hindi": "भेल", "ticker": "BHEL.NS", "type": "STOCK", "sector": "Capital Goods", "lot_size": 2625, "is_fno": True, "base_price": 275.0},
+    {"symbol": "LT", "name": "Larsen & Toubro Ltd", "hindi": "लार्सन एंड टुब्रो", "ticker": "LT.NS", "type": "STOCK", "sector": "Defense", "lot_size": 150, "is_fno": True, "base_price": 3650.0},
+    {"symbol": "BHEL", "name": "Bharat Heavy Electricals", "hindi": "भेल", "ticker": "BHEL.NS", "type": "STOCK", "sector": "Defense", "lot_size": 2625, "is_fno": True, "base_price": 275.0},
     {"symbol": "MAZDOCK", "name": "Mazagon Dock Shipbuilders", "hindi": "माझगांव डॉक", "ticker": "MAZDOCK.NS", "type": "STOCK", "sector": "Defense", "lot_size": 125, "is_fno": False, "base_price": 4450.0},
     {"symbol": "COCHINSHIP", "name": "Cochin Shipyard", "hindi": "कोचीन शिपयार्ड", "ticker": "COCHINSHIP.NS", "type": "STOCK", "sector": "Defense", "lot_size": 200, "is_fno": False, "base_price": 1720.0},
-    {"symbol": "RVNL", "name": "Rail Vikas Nigam Ltd", "hindi": "आरवीएनएल (रेल विकास)", "ticker": "RVNL.NS", "type": "STOCK", "sector": "Railways", "lot_size": 500, "is_fno": False, "base_price": 520.0},
-    {"symbol": "IRFC", "name": "Indian Railway Finance Corp", "hindi": "आईआरएफसी", "ticker": "IRFC.NS", "type": "STOCK", "sector": "Railways", "lot_size": 1000, "is_fno": False, "base_price": 165.0},
+    {"symbol": "RVNL", "name": "Rail Vikas Nigam Ltd", "hindi": "आरवीएनएल (रेल विकास)", "ticker": "RVNL.NS", "type": "STOCK", "sector": "Defense", "lot_size": 500, "is_fno": False, "base_price": 520.0},
+    {"symbol": "IRFC", "name": "Indian Railway Finance Corp", "hindi": "आईआरएफसी", "ticker": "IRFC.NS", "type": "STOCK", "sector": "Defense", "lot_size": 1000, "is_fno": False, "base_price": 165.0},
+    {"symbol": "IRCTC", "name": "IRCTC Ltd", "hindi": "आईआरसीटीसी", "ticker": "IRCTC.NS", "type": "STOCK", "sector": "Defense", "lot_size": 875, "is_fno": True, "base_price": 915.0},
+    {"symbol": "SIEMENS", "name": "Siemens India Ltd", "hindi": "सीमेंस", "ticker": "SIEMENS.NS", "type": "STOCK", "sector": "Defense", "lot_size": 125, "is_fno": True, "base_price": 7450.0},
+    {"symbol": "ABB", "name": "ABB India Ltd", "hindi": "एबीबी इंडिया", "ticker": "ABB.NS", "type": "STOCK", "sector": "Defense", "lot_size": 125, "is_fno": True, "base_price": 8200.0},
+    {"symbol": "POLYCAB", "name": "Polycab India", "hindi": "पॉलीकैब", "ticker": "POLYCAB.NS", "type": "STOCK", "sector": "Defense", "lot_size": 125, "is_fno": True, "base_price": 6850.0},
+    {"symbol": "DIXON", "name": "Dixon Technologies", "hindi": "डिक्सन टेक", "ticker": "DIXON.NS", "type": "STOCK", "sector": "Defense", "lot_size": 100, "is_fno": True, "base_price": 15200.0},
 
     # Consumer, Retail & FMCG
     {"symbol": "ITC", "name": "ITC Ltd", "hindi": "आईटीसी", "ticker": "ITC.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 1600, "is_fno": True, "base_price": 490.0},
     {"symbol": "HINDUNILVR", "name": "Hindustan Unilever Ltd", "hindi": "हिंदुस्तान यूनिलीवर", "ticker": "HINDUNILVR.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 300, "is_fno": True, "base_price": 2780.0},
-    {"symbol": "TITAN", "name": "Titan Company Ltd", "hindi": "टाइटन", "ticker": "TITAN.NS", "type": "STOCK", "sector": "Consumer", "lot_size": 175, "is_fno": True, "base_price": 3650.0},
-    {"symbol": "TRENT", "name": "Trent Ltd (Westside/Zudio)", "hindi": "ट्रेंट (जूडियो)", "ticker": "TRENT.NS", "type": "STOCK", "sector": "Retail", "lot_size": 100, "is_fno": True, "base_price": 7950.0},
-    {"symbol": "ZOMATO", "name": "Zomato Ltd (Blinkit)", "hindi": "जोमैटो", "ticker": "ZOMATO.NS", "type": "STOCK", "sector": "New-Age Tech", "lot_size": 2000, "is_fno": False, "base_price": 275.0},
+    {"symbol": "TITAN", "name": "Titan Company Ltd", "hindi": "टाइटन", "ticker": "TITAN.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 175, "is_fno": True, "base_price": 3650.0},
+    {"symbol": "TRENT", "name": "Trent Ltd (Westside/Zudio)", "hindi": "ट्रेंट (जूडियो)", "ticker": "TRENT.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 100, "is_fno": True, "base_price": 7950.0},
+    {"symbol": "ZOMATO", "name": "Zomato Ltd (Blinkit)", "hindi": "जोमैटो", "ticker": "ZOMATO.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 2000, "is_fno": False, "base_price": 275.0},
     {"symbol": "VBL", "name": "Varun Beverages Ltd", "hindi": "वरुण बेवरेजेस", "ticker": "VBL.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 500, "is_fno": True, "base_price": 595.0},
-    {"symbol": "ASIANPAINT", "name": "Asian Paints Ltd", "hindi": "एशियन पेंट्स", "ticker": "ASIANPAINT.NS", "type": "STOCK", "sector": "Paints", "lot_size": 200, "is_fno": True, "base_price": 3120.0},
-    {"symbol": "PIDILITIND", "name": "Pidilite Industries (Fevicol)", "hindi": "पिडिलाइट", "ticker": "PIDILITIND.NS", "type": "STOCK", "sector": "Chemicals", "lot_size": 250, "is_fno": True, "base_price": 3180.0},
+    {"symbol": "ASIANPAINT", "name": "Asian Paints Ltd", "hindi": "एशियन पेंट्स", "ticker": "ASIANPAINT.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 200, "is_fno": True, "base_price": 3120.0},
+    {"symbol": "PIDILITIND", "name": "Pidilite Industries (Fevicol)", "hindi": "पिडिलाइट", "ticker": "PIDILITIND.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 250, "is_fno": True, "base_price": 3180.0},
+    {"symbol": "NESTLEIND", "name": "Nestle India Ltd", "hindi": "नेस्ले इंडिया", "ticker": "NESTLEIND.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 200, "is_fno": True, "base_price": 2420.0},
+    {"symbol": "BRITANNIA", "name": "Britannia Industries", "hindi": "ब्रिटानिया", "ticker": "BRITANNIA.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 200, "is_fno": True, "base_price": 5850.0},
+    {"symbol": "TATACONSUM", "name": "Tata Consumer Products", "hindi": "टाटा कंज्यूमर", "ticker": "TATACONSUM.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 900, "is_fno": True, "base_price": 1120.0},
+    {"symbol": "DABUR", "name": "Dabur India Ltd", "hindi": "डाबर", "ticker": "DABUR.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 1250, "is_fno": True, "base_price": 555.0},
+    {"symbol": "DMART", "name": "Avenue Supermarts (DMart)", "hindi": "डीमार्ट", "ticker": "DMART.NS", "type": "STOCK", "sector": "FMCG", "lot_size": 100, "is_fno": False, "base_price": 4250.0},
 
-    # Telecom, Adani & Others
-    {"symbol": "BHARTIARTL", "name": "Bharti Airtel Ltd", "hindi": "भारती एयरटेल", "ticker": "BHARTIARTL.NS", "type": "STOCK", "sector": "Telecom", "lot_size": 475, "is_fno": True, "base_price": 1680.0},
-    {"symbol": "ADANIENT", "name": "Adani Enterprises Ltd", "hindi": "अडानी एंटरप्राइजेज", "ticker": "ADANIENT.NS", "type": "STOCK", "sector": "Conglomerate", "lot_size": 300, "is_fno": True, "base_price": 3150.0},
-    {"symbol": "ADANIPORTS", "name": "Adani Ports & SEZ", "hindi": "अडानी पोर्ट्स", "ticker": "ADANIPORTS.NS", "type": "STOCK", "sector": "Infrastructure", "lot_size": 400, "is_fno": True, "base_price": 1450.0},
-    {"symbol": "DLF", "name": "DLF Ltd", "hindi": "डीएलएफ", "ticker": "DLF.NS", "type": "STOCK", "sector": "Real Estate", "lot_size": 825, "is_fno": True, "base_price": 880.0},
+    # Pharma & Healthcare
     {"symbol": "SUNPHARMA", "name": "Sun Pharma Industries", "hindi": "सन फार्मा", "ticker": "SUNPHARMA.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 350, "is_fno": True, "base_price": 1910.0},
     {"symbol": "CIPLA", "name": "Cipla Ltd", "hindi": "सिप्ला", "ticker": "CIPLA.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 650, "is_fno": True, "base_price": 1580.0},
-    {"symbol": "DRREDDY", "name": "Dr. Reddy's Laboratories", "hindi": "डॉ. रेड्डीज", "ticker": "DRREDDY.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 125, "is_fno": True, "base_price": 6650.0}
+    {"symbol": "DRREDDY", "name": "Dr. Reddy's Laboratories", "hindi": "डॉ. रेड्डीज", "ticker": "DRREDDY.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 125, "is_fno": True, "base_price": 6650.0},
+    {"symbol": "DIVISLAB", "name": "Divi's Laboratories", "hindi": "डिवीज लैब", "ticker": "DIVISLAB.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 150, "is_fno": True, "base_price": 5950.0},
+    {"symbol": "APOLLOHOSP", "name": "Apollo Hospitals", "hindi": "अपोलो हॉस्पिटल्स", "ticker": "APOLLOHOSP.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 125, "is_fno": True, "base_price": 7250.0},
+    {"symbol": "LUPIN", "name": "Lupin Ltd", "hindi": "ल्यूपिन", "ticker": "LUPIN.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 425, "is_fno": True, "base_price": 2220.0},
+    {"symbol": "AUROPHARMA", "name": "Aurobindo Pharma", "hindi": "अरबिंदो फार्मा", "ticker": "AUROPHARMA.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 550, "is_fno": True, "base_price": 1520.0},
+    {"symbol": "BIOCON", "name": "Biocon Ltd", "hindi": "बायोकॉन", "ticker": "BIOCON.NS", "type": "STOCK", "sector": "Pharma", "lot_size": 2500, "is_fno": True, "base_price": 345.0},
+
+    # Telecom, Adani, Real Estate & Cement
+    {"symbol": "BHARTIARTL", "name": "Bharti Airtel Ltd", "hindi": "भारती एयरटेल", "ticker": "BHARTIARTL.NS", "type": "STOCK", "sector": "Telecom", "lot_size": 475, "is_fno": True, "base_price": 1680.0},
+    {"symbol": "ADANIENT", "name": "Adani Enterprises Ltd", "hindi": "अडानी एंटरप्राइजेज", "ticker": "ADANIENT.NS", "type": "STOCK", "sector": "Adani", "lot_size": 300, "is_fno": True, "base_price": 3150.0},
+    {"symbol": "ADANIPORTS", "name": "Adani Ports & SEZ", "hindi": "अडानी पोर्ट्स", "ticker": "ADANIPORTS.NS", "type": "STOCK", "sector": "Adani", "lot_size": 400, "is_fno": True, "base_price": 1450.0},
+    {"symbol": "DLF", "name": "DLF Ltd", "hindi": "डीएलएफ", "ticker": "DLF.NS", "type": "STOCK", "sector": "Real Estate", "lot_size": 825, "is_fno": True, "base_price": 880.0},
+    {"symbol": "GODREJPROP", "name": "Godrej Properties", "hindi": "गोदरेज प्रॉपर्टीज", "ticker": "GODREJPROP.NS", "type": "STOCK", "sector": "Real Estate", "lot_size": 275, "is_fno": True, "base_price": 3150.0},
+    {"symbol": "ULTRACEMCO", "name": "UltraTech Cement", "hindi": "अल्ट्राटेक सीमेंट", "ticker": "ULTRACEMCO.NS", "type": "STOCK", "sector": "Cement", "lot_size": 100, "is_fno": True, "base_price": 11800.0},
+    {"symbol": "GRASIM", "name": "Grasim Industries", "hindi": "ग्रासिम", "ticker": "GRASIM.NS", "type": "STOCK", "sector": "Cement", "lot_size": 250, "is_fno": True, "base_price": 2680.0},
+    {"symbol": "PAYTM", "name": "Paytm (One97 Communications)", "hindi": "पेटीएम", "ticker": "PAYTM.NS", "type": "STOCK", "sector": "Tech", "lot_size": 500, "is_fno": False, "base_price": 750.0},
+    {"symbol": "IDEA", "name": "Vodafone Idea Ltd", "hindi": "वोडाफोन आइडिया", "ticker": "IDEA.NS", "type": "STOCK", "sector": "Telecom", "lot_size": 80000, "is_fno": True, "base_price": 8.5}
 ]
 
 SYMBOL_MAP = {s["symbol"]: s for s in STOCK_CATALOG}
@@ -301,15 +353,24 @@ def get_option_builder_data(underlying_sym: str = "NIFTY", live_cache: Optional[
     Returns complete strike ladder for the interactive Option Builder modal.
     """
     sym = (underlying_sym or "NIFTY").strip().upper().replace(" 50", "").replace(" ", "")
-    if sym not in SYMBOL_MAP:
+    matched_sym = None
+    if sym in SYMBOL_MAP:
+        matched_sym = sym
+    else:
         for k in SYMBOL_MAP:
-            if k in sym or sym in k:
-                sym = k
+            if k == sym or k in sym:
+                matched_sym = k
                 break
-    item = SYMBOL_MAP.get(sym, {"symbol": sym, "lot_size": 25, "name": sym, "base_price": 25000.0})
+    
+    if matched_sym and matched_sym in SYMBOL_MAP:
+        item = SYMBOL_MAP[matched_sym]
+        sym = matched_sym
+    else:
+        item = {"symbol": sym, "lot_size": 100, "name": sym, "base_price": 500.0}
+
     live_cache = live_cache or {}
     cached = live_cache.get(sym, {})
-    spot = float(cached.get("price") or item.get("base_price", 25000.0))
+    spot = float(cached.get("price") or item.get("base_price", 500.0))
     lot_size = item.get("lot_size", 25)
     step = get_strike_step(spot)
     atm_strike = int(round(spot / step) * step)

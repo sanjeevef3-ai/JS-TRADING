@@ -26,7 +26,7 @@ app = FastAPI(
 
 from starlette.middleware.base import BaseHTTPMiddleware
 
-APP_BUILD_VERSION = "20261019_v45"
+APP_BUILD_VERSION = "20261019_v46"
 
 class NoCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -238,7 +238,13 @@ def get_option_chain(symbol: str = Query("NIFTY")):
     chain = options_engine.generate_option_chain(spot)
     return {"symbol": clean_name, "spot": spot, "chain": chain}
 
-from indian_market.stock_catalog import search_portfolio_assets, get_option_builder_data
+from indian_market.stock_catalog import search_portfolio_assets, get_option_builder_data, STOCK_CATALOG
+import json
+
+@app.get("/api/portfolio/catalog")
+def get_portfolio_catalog():
+    """Returns complete catalog of 110+ Indian stocks, indices & sectors for Order Pad and Portfolio."""
+    return {"count": len(STOCK_CATALOG), "catalog": STOCK_CATALOG}
 
 @app.get("/api/portfolio/search")
 def search_portfolio(

@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDhanStatus();
   refreshSuperPortal(currentSymbol);
   renderInvestingPortfolio();
+  initOrderPadCatalog();
   updateSyncClock();
 
   // 3. Continuous Real-Time Silent Auto-Refresh Loop (Every 12 Seconds without loading spinner)
@@ -3177,21 +3178,317 @@ function renderInvestingPortfolio() {
 }
 
 
-// ── Paper Trading Order Pad Modal ──
+// ── Paper Trading Order Pad Modal & 110+ Indian Stocks Catalog ──
 let orderPadStrikesData = null;
 let currentOrderPadType = 'CE';
+let currentOrderPadCategory = "ALL";
+let currentOrderPadSearch = "";
+
+let ALL_INDIAN_STOCKS = [
+  // Major Indices
+  {symbol: "NIFTY", name: "NIFTY 50 Index", sector: "Benchmark", lot_size: 25, is_fno: true},
+  {symbol: "BANKNIFTY", name: "Bank Nifty Index", sector: "Banking", lot_size: 15, is_fno: true},
+  {symbol: "FINNIFTY", name: "Nifty Financial Services", sector: "Financials", lot_size: 25, is_fno: true},
+  {symbol: "MIDCPNIFTY", name: "Nifty Midcap Select", sector: "Midcap", lot_size: 50, is_fno: true},
+  {symbol: "SENSEX", name: "BSE Sensex 30", sector: "Benchmark", lot_size: 10, is_fno: true},
+  {symbol: "BANKEX", name: "BSE BANKEX", sector: "Banking", lot_size: 15, is_fno: true},
+
+  // IT & Tech
+  {symbol: "TCS", name: "Tata Consultancy Services", sector: "IT", lot_size: 175, is_fno: true},
+  {symbol: "INFY", name: "Infosys Ltd", sector: "IT", lot_size: 400, is_fno: true},
+  {symbol: "HCLTECH", name: "HCL Technologies", sector: "IT", lot_size: 350, is_fno: true},
+  {symbol: "WIPRO", name: "Wipro Ltd", sector: "IT", lot_size: 1500, is_fno: true},
+  {symbol: "TECHM", name: "Tech Mahindra", sector: "IT", lot_size: 600, is_fno: true},
+  {symbol: "LTIM", name: "LTIMindtree", sector: "IT", lot_size: 150, is_fno: true},
+  {symbol: "PERSISTENT", name: "Persistent Systems", sector: "IT", lot_size: 100, is_fno: true},
+  {symbol: "COFORGE", name: "Coforge Ltd", sector: "IT", lot_size: 150, is_fno: true},
+  {symbol: "TATAELXSI", name: "Tata Elxsi", sector: "IT", lot_size: 100, is_fno: true},
+  {symbol: "KPITTECH", name: "KPIT Technologies", sector: "IT", lot_size: 400, is_fno: true},
+  {symbol: "MPHASIS", name: "Mphasis Ltd", sector: "IT", lot_size: 275, is_fno: true},
+  {symbol: "OFSS", name: "Oracle Financial Services", sector: "IT", lot_size: 100, is_fno: true},
+  {symbol: "INTELLECT", name: "Intellect Design Arena", sector: "IT", lot_size: 50, is_fno: false},
+
+  // Banking & Financials
+  {symbol: "HDFCBANK", name: "HDFC Bank Ltd", sector: "Banking", lot_size: 550, is_fno: true},
+  {symbol: "ICICIBANK", name: "ICICI Bank Ltd", sector: "Banking", lot_size: 700, is_fno: true},
+  {symbol: "SBIN", name: "State Bank of India", sector: "Banking", lot_size: 750, is_fno: true},
+  {symbol: "KOTAKBANK", name: "Kotak Mahindra Bank", sector: "Banking", lot_size: 400, is_fno: true},
+  {symbol: "AXISBANK", name: "Axis Bank Ltd", sector: "Banking", lot_size: 625, is_fno: true},
+  {symbol: "INDUSINDBK", name: "IndusInd Bank", sector: "Banking", lot_size: 500, is_fno: true},
+  {symbol: "PNB", name: "Punjab National Bank", sector: "Banking", lot_size: 8000, is_fno: true},
+  {symbol: "BANKBARODA", name: "Bank of Baroda", sector: "Banking", lot_size: 2925, is_fno: true},
+  {symbol: "CANBK", name: "Canara Bank", sector: "Banking", lot_size: 6750, is_fno: true},
+  {symbol: "FEDERALBNK", name: "Federal Bank", sector: "Banking", lot_size: 5000, is_fno: true},
+  {symbol: "IDFCFIRSTB", name: "IDFC First Bank", sector: "Banking", lot_size: 7500, is_fno: true},
+  {symbol: "AUBANK", name: "AU Small Finance Bank", sector: "Banking", lot_size: 1000, is_fno: true},
+  {symbol: "BANDHANBNK", name: "Bandhan Bank", sector: "Banking", lot_size: 2500, is_fno: true},
+  {symbol: "YESBANK", name: "Yes Bank Ltd", sector: "Banking", lot_size: 10000, is_fno: false},
+
+  // Financial Services, NBFC & Insurance
+  {symbol: "BAJFINANCE", name: "Bajaj Finance Ltd", sector: "Financials", lot_size: 125, is_fno: true},
+  {symbol: "BAJAJFINSV", name: "Bajaj Finserv Ltd", sector: "Financials", lot_size: 500, is_fno: true},
+  {symbol: "CHOLAFIN", name: "Cholamandalam Investment", sector: "Financials", lot_size: 625, is_fno: true},
+  {symbol: "SHRIRAMFIN", name: "Shriram Finance Ltd", sector: "Financials", lot_size: 300, is_fno: true},
+  {symbol: "MUTHOOTFIN", name: "Muthoot Finance", sector: "Financials", lot_size: 550, is_fno: true},
+  {symbol: "JIOFIN", name: "Jio Financial Services", sector: "Financials", lot_size: 1000, is_fno: false},
+  {symbol: "REC", name: "REC Ltd", sector: "Financials", lot_size: 1000, is_fno: true},
+  {symbol: "PFC", name: "Power Finance Corp", sector: "Financials", lot_size: 1300, is_fno: true},
+  {symbol: "IREDA", name: "Indian Renewable Energy Dev", sector: "Financials", lot_size: 1000, is_fno: false},
+  {symbol: "SBILIFE", name: "SBI Life Insurance", sector: "Financials", lot_size: 375, is_fno: true},
+  {symbol: "HDFCLIFE", name: "HDFC Life Insurance", sector: "Financials", lot_size: 1100, is_fno: true},
+  {symbol: "ICICIPRULI", name: "ICICI Prudential Life", sector: "Financials", lot_size: 900, is_fno: true},
+  {symbol: "ANGELONE", name: "Angel One Ltd", sector: "Financials", lot_size: 250, is_fno: true},
+  {symbol: "CDSL", name: "Central Depository Services", sector: "Financials", lot_size: 350, is_fno: false},
+  {symbol: "BSE", name: "BSE Ltd", sector: "Financials", lot_size: 250, is_fno: false},
+  {symbol: "MCX", name: "Multi Commodity Exchange", sector: "Financials", lot_size: 200, is_fno: true},
+
+  // Energy, Power, Oil & Gas
+  {symbol: "RELIANCE", name: "Reliance Industries Ltd", sector: "Energy", lot_size: 250, is_fno: true},
+  {symbol: "ONGC", name: "Oil & Natural Gas Corp", sector: "Energy", lot_size: 3850, is_fno: true},
+  {symbol: "NTPC", name: "NTPC Ltd", sector: "Energy", lot_size: 1500, is_fno: true},
+  {symbol: "POWERGRID", name: "Power Grid Corp of India", sector: "Energy", lot_size: 2700, is_fno: true},
+  {symbol: "TATAPOWER", name: "Tata Power Company", sector: "Energy", lot_size: 1350, is_fno: true},
+  {symbol: "COALINDIA", name: "Coal India Ltd", sector: "Energy", lot_size: 2100, is_fno: true},
+  {symbol: "BPCL", name: "Bharat Petroleum Corp", sector: "Energy", lot_size: 1800, is_fno: true},
+  {symbol: "IOC", name: "Indian Oil Corp", sector: "Energy", lot_size: 4875, is_fno: true},
+  {symbol: "GAIL", name: "GAIL India Ltd", sector: "Energy", lot_size: 2650, is_fno: true},
+  {symbol: "SUZLON", name: "Suzlon Energy", sector: "Energy", lot_size: 1000, is_fno: false},
+  {symbol: "NHPC", name: "NHPC Ltd", sector: "Energy", lot_size: 5000, is_fno: false},
+  {symbol: "SJVN", name: "SJVN Ltd", sector: "Energy", lot_size: 4000, is_fno: false},
+  {symbol: "IEX", name: "Indian Energy Exchange", sector: "Energy", lot_size: 3750, is_fno: true},
+
+  // Auto & Manufacturing
+  {symbol: "TATAMOTORS", name: "Tata Motors Ltd", sector: "Auto", lot_size: 550, is_fno: true},
+  {symbol: "MARUTI", name: "Maruti Suzuki India", sector: "Auto", lot_size: 50, is_fno: true},
+  {symbol: "M&M", name: "Mahindra & Mahindra", sector: "Auto", lot_size: 350, is_fno: true},
+  {symbol: "BAJAJ-AUTO", name: "Bajaj Auto Ltd", sector: "Auto", lot_size: 75, is_fno: true},
+  {symbol: "EICHERMOT", name: "Eicher Motors", sector: "Auto", lot_size: 150, is_fno: true},
+  {symbol: "HEROMOTOCO", name: "Hero MotoCorp", sector: "Auto", lot_size: 150, is_fno: true},
+  {symbol: "TVSMOTOR", name: "TVS Motor Company", sector: "Auto", lot_size: 350, is_fno: true},
+  {symbol: "BHARATFORG", name: "Bharat Forge Ltd", sector: "Auto", lot_size: 500, is_fno: true},
+  {symbol: "EXIDEIND", name: "Exide Industries", sector: "Auto", lot_size: 1200, is_fno: true},
+  {symbol: "BOSCHLTD", name: "Bosch Ltd", sector: "Auto", lot_size: 25, is_fno: true},
+  {symbol: "ASHOKLEY", name: "Ashok Leyland", sector: "Auto", lot_size: 5000, is_fno: true},
+  {symbol: "MOTHERSON", name: "Samvardhana Motherson", sector: "Auto", lot_size: 3300, is_fno: true},
+
+  // Metals & Mining
+  {symbol: "TATASTEEL", name: "Tata Steel Ltd", sector: "Metals", lot_size: 5500, is_fno: true},
+  {symbol: "JSWSTEEL", name: "JSW Steel Ltd", sector: "Metals", lot_size: 675, is_fno: true},
+  {symbol: "HINDALCO", name: "Hindalco Industries", sector: "Metals", lot_size: 1400, is_fno: true},
+  {symbol: "VEDL", name: "Vedanta Ltd", sector: "Metals", lot_size: 2300, is_fno: true},
+  {symbol: "JINDALSTEL", name: "Jindal Steel & Power", sector: "Metals", lot_size: 625, is_fno: true},
+  {symbol: "NATIONALUM", name: "National Aluminium (NALCO)", sector: "Metals", lot_size: 3750, is_fno: true},
+  {symbol: "SAIL", name: "Steel Authority of India", sector: "Metals", lot_size: 8000, is_fno: true},
+  {symbol: "NMDC", name: "NMDC Ltd", sector: "Metals", lot_size: 3000, is_fno: true},
+
+  // Defense, Railways & Capital Goods
+  {symbol: "BEL", name: "Bharat Electronics Ltd", sector: "Defense", lot_size: 2850, is_fno: true},
+  {symbol: "HAL", name: "Hindustan Aeronautics Ltd", sector: "Defense", lot_size: 300, is_fno: true},
+  {symbol: "LT", name: "Larsen & Toubro Ltd", sector: "Defense", lot_size: 150, is_fno: true},
+  {symbol: "BHEL", name: "Bharat Heavy Electricals", sector: "Defense", lot_size: 2625, is_fno: true},
+  {symbol: "MAZDOCK", name: "Mazagon Dock Shipbuilders", sector: "Defense", lot_size: 125, is_fno: false},
+  {symbol: "COCHINSHIP", name: "Cochin Shipyard", sector: "Defense", lot_size: 200, is_fno: false},
+  {symbol: "RVNL", name: "Rail Vikas Nigam Ltd", sector: "Defense", lot_size: 500, is_fno: false},
+  {symbol: "IRFC", name: "Indian Railway Finance Corp", sector: "Defense", lot_size: 1000, is_fno: false},
+  {symbol: "IRCTC", name: "IRCTC Ltd", sector: "Defense", lot_size: 875, is_fno: true},
+  {symbol: "SIEMENS", name: "Siemens India Ltd", sector: "Defense", lot_size: 125, is_fno: true},
+  {symbol: "ABB", name: "ABB India Ltd", sector: "Defense", lot_size: 125, is_fno: true},
+  {symbol: "POLYCAB", name: "Polycab India", sector: "Defense", lot_size: 125, is_fno: true},
+  {symbol: "DIXON", name: "Dixon Technologies", sector: "Defense", lot_size: 100, is_fno: true},
+
+  // FMCG, Retail & Consumer
+  {symbol: "ITC", name: "ITC Ltd", sector: "FMCG", lot_size: 1600, is_fno: true},
+  {symbol: "HINDUNILVR", name: "Hindustan Unilever Ltd", sector: "FMCG", lot_size: 300, is_fno: true},
+  {symbol: "TITAN", name: "Titan Company Ltd", sector: "FMCG", lot_size: 175, is_fno: true},
+  {symbol: "TRENT", name: "Trent Ltd (Zudio/Westside)", sector: "FMCG", lot_size: 100, is_fno: true},
+  {symbol: "ZOMATO", name: "Zomato Ltd (Blinkit)", sector: "FMCG", lot_size: 2000, is_fno: false},
+  {symbol: "VBL", name: "Varun Beverages Ltd", sector: "FMCG", lot_size: 500, is_fno: true},
+  {symbol: "ASIANPAINT", name: "Asian Paints Ltd", sector: "FMCG", lot_size: 200, is_fno: true},
+  {symbol: "PIDILITIND", name: "Pidilite Industries", sector: "FMCG", lot_size: 250, is_fno: true},
+  {symbol: "NESTLEIND", name: "Nestle India Ltd", sector: "FMCG", lot_size: 200, is_fno: true},
+  {symbol: "BRITANNIA", name: "Britannia Industries", sector: "FMCG", lot_size: 200, is_fno: true},
+  {symbol: "TATACONSUM", name: "Tata Consumer Products", sector: "FMCG", lot_size: 900, is_fno: true},
+  {symbol: "DABUR", name: "Dabur India Ltd", sector: "FMCG", lot_size: 1250, is_fno: true},
+  {symbol: "DMART", name: "Avenue Supermarts (DMart)", sector: "FMCG", lot_size: 100, is_fno: false},
+
+  // Pharma & Healthcare
+  {symbol: "SUNPHARMA", name: "Sun Pharma Industries", sector: "Pharma", lot_size: 350, is_fno: true},
+  {symbol: "CIPLA", name: "Cipla Ltd", sector: "Pharma", lot_size: 650, is_fno: true},
+  {symbol: "DRREDDY", name: "Dr. Reddy's Laboratories", sector: "Pharma", lot_size: 125, is_fno: true},
+  {symbol: "DIVISLAB", name: "Divi's Laboratories", sector: "Pharma", lot_size: 150, is_fno: true},
+  {symbol: "APOLLOHOSP", name: "Apollo Hospitals", sector: "Pharma", lot_size: 125, is_fno: true},
+  {symbol: "LUPIN", name: "Lupin Ltd", sector: "Pharma", lot_size: 425, is_fno: true},
+  {symbol: "AUROPHARMA", name: "Aurobindo Pharma", sector: "Pharma", lot_size: 550, is_fno: true},
+  {symbol: "BIOCON", name: "Biocon Ltd", sector: "Pharma", lot_size: 2500, is_fno: true},
+
+  // Telecom, Adani, Real Estate & Cement
+  {symbol: "BHARTIARTL", name: "Bharti Airtel Ltd", sector: "Telecom", lot_size: 475, is_fno: true},
+  {symbol: "ADANIENT", name: "Adani Enterprises Ltd", sector: "Adani", lot_size: 300, is_fno: true},
+  {symbol: "ADANIPORTS", name: "Adani Ports & SEZ", sector: "Adani", lot_size: 400, is_fno: true},
+  {symbol: "DLF", name: "DLF Ltd", sector: "Real Estate", lot_size: 825, is_fno: true},
+  {symbol: "GODREJPROP", name: "Godrej Properties", sector: "Real Estate", lot_size: 275, is_fno: true},
+  {symbol: "ULTRACEMCO", name: "UltraTech Cement", sector: "Cement", lot_size: 100, is_fno: true},
+  {symbol: "GRASIM", name: "Grasim Industries", sector: "Cement", lot_size: 250, is_fno: true},
+  {symbol: "PAYTM", name: "Paytm (One97 Communications)", sector: "Tech", lot_size: 500, is_fno: false},
+  {symbol: "IDEA", name: "Vodafone Idea Ltd", sector: "Telecom", lot_size: 80000, is_fno: true}
+];
+
+function initOrderPadCatalog() {
+  fetch("/api/portfolio/catalog")
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.catalog && data.catalog.length > 0) {
+        ALL_INDIAN_STOCKS = data.catalog;
+        renderOrderPadUnderlyingSelect();
+      }
+    })
+    .catch(() => {});
+}
+
+function renderOrderPadUnderlyingSelect(selectedSym = null) {
+  const sel = document.getElementById("pfOrderPadUnderlying");
+  if (!sel) return;
+  const currentVal = selectedSym || sel.value || "NIFTY";
+
+  let list = ALL_INDIAN_STOCKS;
+  if (currentOrderPadCategory !== "ALL") {
+    list = list.filter(s => (s.sector || "").toLowerCase().includes(currentOrderPadCategory.toLowerCase()));
+  }
+  if (currentOrderPadSearch) {
+    const q = currentOrderPadSearch.trim().toLowerCase();
+    list = list.filter(s => s.symbol.toLowerCase().includes(q) || (s.name && s.name.toLowerCase().includes(q)));
+  }
+
+  let html = "";
+  // If user searched for custom symbol not found in predefined list:
+  if (currentOrderPadSearch && !list.some(s => s.symbol.toLowerCase() === currentOrderPadSearch.trim().toLowerCase())) {
+    const customSym = currentOrderPadSearch.trim().toUpperCase();
+    html += `<option value="${customSym}" selected>➕ Custom Stock: ${customSym} (Trade Any Asset)</option>`;
+  }
+
+  // Group by sector
+  const groups = {};
+  list.forEach(s => {
+    const sec = s.sector || "Other Stocks";
+    if (!groups[sec]) groups[sec] = [];
+    groups[sec].push(s);
+  });
+
+  for (const [sec, items] of Object.entries(groups)) {
+    html += `<optgroup label="── ${sec.toUpperCase()} ──">`;
+    items.forEach(s => {
+      const isSel = (s.symbol === currentVal) ? "selected" : "";
+      html += `<option value="${s.symbol}" ${isSel}>${s.symbol} - ${s.name} (Lot ${s.lot_size})</option>`;
+    });
+    html += `</optgroup>`;
+  }
+
+  if (list.length === 0 && !html) {
+    const fallbackSym = (currentOrderPadSearch || "NIFTY").trim().toUpperCase();
+    html = `<option value="${fallbackSym}">➕ Custom Stock: ${fallbackSym}</option>`;
+  }
+
+  sel.innerHTML = html;
+  if (selectedSym) {
+    sel.value = selectedSym;
+  }
+}
+
+function onFilterOrderPadStocks(query) {
+  currentOrderPadSearch = query;
+  renderOrderPadUnderlyingSelect();
+  const sel = document.getElementById("pfOrderPadUnderlying");
+  if (sel && sel.value) {
+    onOrderPadUnderlyingChange(sel.value);
+  }
+}
+
+function filterOrderPadByCategory(cat) {
+  currentOrderPadCategory = cat;
+  const chips = document.getElementById("pfOrderCategoryChips");
+  if (chips) {
+    chips.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+    const activeBtn = chips.querySelector(`[onclick*="'${cat}'"]`);
+    if (activeBtn) activeBtn.classList.add("active");
+  }
+  renderOrderPadUnderlyingSelect();
+  const sel = document.getElementById("pfOrderPadUnderlying");
+  if (sel && sel.value) {
+    onOrderPadUnderlyingChange(sel.value);
+  }
+}
 
 async function openPfOrderPadModal(preselectSym = null) {
   const modal = document.getElementById("pfOrderPadModal");
   if (!modal) return;
+  
+  // Reset search filters
+  currentOrderPadSearch = "";
+  currentOrderPadCategory = "ALL";
+  const sInput = document.getElementById("pfOrderStockSearchInput");
+  if (sInput) sInput.value = "";
+  const chips = document.getElementById("pfOrderCategoryChips");
+  if (chips) {
+    chips.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+    const allBtn = document.getElementById("chip_ALL");
+    if (allBtn) allBtn.classList.add("active");
+  }
+
+  renderOrderPadUnderlyingSelect(preselectSym);
+  
   const sel = document.getElementById("pfOrderPadUnderlying");
   if (sel && preselectSym) {
+    // If preselectSym is not in options, append it dynamically
+    if (!Array.from(sel.options).some(o => o.value === preselectSym)) {
+      const opt = document.createElement("option");
+      opt.value = preselectSym;
+      opt.innerText = `${preselectSym} (Selected)`;
+      opt.selected = true;
+      sel.appendChild(opt);
+    }
     sel.value = preselectSym;
   }
   const und = sel ? sel.value : "NIFTY";
   await onOrderPadUnderlyingChange(und);
   modal.classList.add("open");
   modal.style.display = "flex";
+}
+
+async function openPfOrderPadModalWithAsset(item) {
+  if (!item) return;
+  const und = item.underlying || item.symbol.split(" ")[0];
+  await openPfOrderPadModal(und);
+  
+  if (item.opt_type === "CE" || item.symbol.endsWith(" CE")) {
+    setOrderPadType("CE");
+  } else if (item.opt_type === "PE" || item.symbol.endsWith(" PE")) {
+    setOrderPadType("PE");
+  } else {
+    setOrderPadType("EQ");
+  }
+  
+  if (item.strike) {
+    const sel = document.getElementById("pfOrderPadStrikeSelect");
+    if (sel) {
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value == item.strike) {
+          sel.selectedIndex = i;
+          onOrderPadStrikeChange();
+          break;
+        }
+      }
+    }
+  }
+  
+  if (item.cmp) {
+    const pInput = document.getElementById("pfOrderPadPriceInput");
+    if (pInput) pInput.value = Number(item.cmp).toFixed(2);
+  }
+  if (item.lot_size) {
+    const qInput = document.getElementById("pfOrderPadQtyInput");
+    if (qInput) qInput.value = item.lot_size;
+  }
+  updateOrderPadMarginCalc();
 }
 
 function closePfOrderPadModal() {
@@ -3211,7 +3508,15 @@ async function onOrderPadUnderlyingChange(val) {
     const spotVal = document.getElementById("pfOrderPadSpotVal");
     if (spotVal) spotVal.innerText = `₹${Number(orderPadStrikesData.spot).toLocaleString("en-IN", {maximumFractionDigits:2})}`;
     
+    const lot = orderPadStrikesData.lot_size || 1;
+    const lotBadge = document.getElementById("pfOrderPadLotBadge");
+    if (lotBadge) lotBadge.innerText = `${lot} Qty`;
+    
+    const qtyInput = document.getElementById("pfOrderPadQtyInput");
+    if (qtyInput) qtyInput.value = lot;
+    
     populateOrderPadStrikes();
+    updateOrderPadMarginCalc();
   } catch (e) {
     console.warn("Order pad strike error", e);
   }
@@ -3678,13 +3983,10 @@ function addAssetFromModal(encodedJson, multiplier = 1) {
 function customizeAssetFromModal(encodedJson) {
   try {
     const it = JSON.parse(decodeURIComponent(encodedJson));
-    if (document.getElementById("pfAddSym")) document.getElementById("pfAddSym").value = it.symbol;
-    if (document.getElementById("pfAddQty")) document.getElementById("pfAddQty").value = it.lot_size || 1;
-    if (document.getElementById("pfAddPrice")) document.getElementById("pfAddPrice").value = it.cmp;
     closePortfolioSearchModal();
-    document.getElementById("pfAddQty")?.focus();
+    openPfOrderPadModalWithAsset(it);
   } catch (e) {
-    console.error(e);
+    console.error("customizeAssetFromModal error", e);
   }
 }
 
