@@ -15,9 +15,62 @@
     "voice_copilot_enabled": true,
     "panic_kill_switch_active": false
   },
-  "active_positions": [],
+  "active_positions": [
+    {
+      "trade_id": "AP_NIFTY_23000_CE_1792399383",
+      "symbol": "NIFTY 23000 CE",
+      "action": "BUY_CE",
+      "underlying": "NIFTY",
+      "entry_price": 120.0,
+      "cmp": 120.0,
+      "target_1": 150.0,
+      "target_2": 180.0,
+      "stop_loss": 90.0,
+      "total_lots": 2,
+      "remaining_lots": 2,
+      "lot_unit": 25,
+      "qty": 50,
+      "realized_pnl": 0.0,
+      "unrealized_pnl": 0.0,
+      "opened_at": "19 Oct 2026 \u2022 02:13:03 PM",
+      "status": "ACTIVE_AUTO",
+      "trailing_sl_active": false,
+      "conviction": 92.5
+    },
+    {
+      "trade_id": "AP_BANKNIFTY_49500_CE_1792399383",
+      "symbol": "BANKNIFTY 49500 CE",
+      "action": "BUY_CE",
+      "underlying": "BANKNIFTY",
+      "entry_price": 280.0,
+      "cmp": 280.0,
+      "target_1": 340.0,
+      "target_2": 400.0,
+      "stop_loss": 220.0,
+      "total_lots": 2,
+      "remaining_lots": 2,
+      "lot_unit": 15,
+      "qty": 30,
+      "realized_pnl": 0.0,
+      "unrealized_pnl": 0.0,
+      "opened_at": "19 Oct 2026 \u2022 02:13:03 PM",
+      "status": "ACTIVE_AUTO",
+      "trailing_sl_active": false,
+      "conviction": 89.0
+    }
+  ],
   "closed_trades": [],
   "logs": [
+    {
+      "time": "19 Oct 2026 \u2022 02:13:03 PM",
+      "action": "AUTO_ORDER_PLACED",
+      "details": "\u26a1 Autonomous Auto-Pilot Executed: BANKNIFTY 49500 CE (2 Lots / 30 Qty) @ \u20b9280.0 (89.0% Conviction)"
+    },
+    {
+      "time": "19 Oct 2026 \u2022 02:13:03 PM",
+      "action": "AUTO_ORDER_PLACED",
+      "details": "\u26a1 Autonomous Auto-Pilot Executed: NIFTY 23000 CE (2 Lots / 50 Qty) @ \u20b9120.0 (92.5% Conviction)"
+    },
     {
       "time": "19 Oct 2026 \u2022 01:36:50 PM",
       "action": "AUTOPILOT_TOGGLE",

@@ -323,18 +323,76 @@ class AutonomousAutoPilot:
 
         self.state["active_positions"] = remaining
 
-        # 3. Autonomous Order Sizing & Placement for High-Conviction Signals (2 Lots Default)
+        # 3. Autonomous Order Sizing & Placement for High-Conviction Signals (Stock Options + Index Options)
         max_positions = int(cfg.get("max_concurrent_positions", 2))
         min_conviction = float(cfg.get("min_conviction_pct", 88.0))
 
         if len(self.state["active_positions"]) < max_positions:
-            LOT_SIZE_MAP = {
+            # Comprehensive Official NSE F&O Lot Size Directory (Indices + Top 50 Stock Options)
+            NSE_FNO_LOT_SIZES = {
+                # Indices
                 "NIFTY": 25,
                 "BANKNIFTY": 15,
                 "FINNIFTY": 25,
                 "MIDCPNIFTY": 50,
-                "SENSEX": 10
+                "SENSEX": 10,
+                "BANKEX": 15,
+                # Heavyweight & Liquid Stock Options
+                "RELIANCE": 250,
+                "HDFCBANK": 550,
+                "ICICIBANK": 700,
+                "SBIN": 750,
+                "AXISBANK": 625,
+                "KOTAKBANK": 400,
+                "INFY": 400,
+                "TCS": 175,
+                "TATASTEEL": 5500,
+                "TATAMOTORS": 550,
+                "BAJFINANCE": 125,
+                "BAJAJFINSV": 500,
+                "BHARTIARTL": 950,
+                "LT": 150,
+                "MARUTI": 50,
+                "TITAN": 175,
+                "ADANIENT": 300,
+                "ADANIPORTS": 400,
+                "SUNPHARMA": 350,
+                "CIPLA": 650,
+                "WIPRO": 1500,
+                "HCLTECH": 350,
+                "ITC": 1600,
+                "COALINDIA": 2100,
+                "NTPC": 1500,
+                "POWERGRID": 1800,
+                "ONGC": 3850,
+                "BATAINDIA": 375,
+                "ZOMATO": 2000,
+                "JIOFIN": 2000,
+                "BEL": 2850,
+                "HAL": 150,
+                "DLF": 825,
+                "VEDL": 1150,
+                "FEDERALBNK": 5000,
+                "PNB": 8000,
+                "BANKBARODA": 2925,
+                "ASHOKLEY": 5000,
+                "TRENT": 100,
+                "INDUSINDBK": 500,
+                "TECHM": 600,
+                "HEROMOTOCO": 150,
+                "EICHERMOT": 175,
+                "APOLLOHOSP": 125,
+                "DIVISLAB": 200,
+                "DRREDDY": 125,
+                "JSWSTEEL": 675,
+                "HINDALCO": 1400,
+                "GRASIM": 250,
+                "ULTRACEMCO": 100,
+                "NESTLEIND": 25,
+                "BRITANNIA": 200,
+                "TATACONSUM": 900
             }
+
             for s in candidate_signals:
                 if len(self.state["active_positions"]) >= max_positions:
                     break
@@ -342,25 +400,48 @@ class AutonomousAutoPilot:
                 if prob < min_conviction:
                     continue
 
-                sym = s.get("symbol", "").upper()
-                # Ensure no duplicate active trade for same symbol
-                if any(p.get("symbol") == sym for p in self.state["active_positions"]):
+                raw_sym = str(s.get("symbol", "")).strip().upper()
+                raw_act = str(s.get("action", s.get("direction", "BUY"))).strip().upper()
+
+                # Extract proper contract symbol (e.g. RELIANCE 2760 CE or HDFCBANK 1660 PE or NIFTY 23000 CE)
+                contract_symbol = raw_sym
+                is_opt = "CE" in raw_act or "PE" in raw_act or "CE" in raw_sym or "PE" in raw_sym
+                und_base = raw_sym.split(" ")[0]
+
+                if is_opt and (" CE" not in raw_sym and " PE" not in raw_sym):
+                    import re
+                    match = re.search(r"(\d+\.?\d*\s*(?:CE|PE))", raw_act)
+                    if match:
+                        contract_symbol = f"{und_base} {match.group(1)}"
+                    elif s.get("strike"):
+                        opt_tag = "CE" if "CE" in raw_act or "CALL" in raw_act else "PE"
+                        contract_symbol = f"{und_base} {s.get('strike')} {opt_tag}"
+
+                # Ensure no duplicate active trade for same symbol/contract
+                if any(p.get("symbol") == contract_symbol for p in self.state["active_positions"]):
                     continue
 
-                # Auto Execute 2 Lots
-                entry_p = float(s.get("price") or s.get("entry_price") or live_prices.get(sym, 100.0))
-                und_base = sym.split(" ")[0]
-                unit_lot = LOT_SIZE_MAP.get(und_base, (50 if sym in ["NIFTY", "BANKNIFTY"] else 100))
+                # Determine correct unit lot size for this stock/index
+                unit_lot = NSE_FNO_LOT_SIZES.get(und_base, (250 if is_opt else 25))
                 total_qty = unit_lot * 2 # Exactly 2 Lots!
 
-                tg1_val = round(entry_p * 1.20, 2)
-                tg2_val = round(entry_p * 1.45, 2)
-                sl_val = round(entry_p * 0.85, 2)
+                # Realistic Entry Price: if spot price passed for an option, calculate option premium
+                entry_p = float(s.get("entry_price") or s.get("optimal_limit_price") or s.get("price") or live_prices.get(contract_symbol, live_prices.get(und_base, 100.0)))
+                if entry_p > 220 and is_opt and not s.get("entry_price"):
+                    # Calculate option premium ~1.8% of spot
+                    entry_p = round(max(15.0, entry_p * 0.018), 1)
+
+                tg1_val = float(s.get("target_1") or round(entry_p * 1.25, 1))
+                tg2_val = float(s.get("target_2") or round(entry_p * 1.50, 1))
+                sl_val = float(s.get("stop_loss") or s.get("hard_sl") or round(entry_p * 0.85, 1))
+
+                action_type = "BUY_CE" if "CE" in contract_symbol or "CE" in raw_act else ("BUY_PE" if "PE" in contract_symbol or "PE" in raw_act else "BUY")
 
                 new_pos = {
-                    "trade_id": f"AP_{sym}_{int(time.time())}",
-                    "symbol": sym,
-                    "action": s.get("action", "BUY_CE"),
+                    "trade_id": f"AP_{contract_symbol.replace(' ', '_')}_{int(time.time())}",
+                    "symbol": contract_symbol,
+                    "action": action_type,
+                    "underlying": und_base,
                     "entry_price": round(entry_p, 2),
                     "cmp": round(entry_p, 2),
                     "target_1": tg1_val,
@@ -378,12 +459,12 @@ class AutonomousAutoPilot:
                     "conviction": prob
                 }
                 self.state["active_positions"].append(new_pos)
-                msg = f"⚡ Autonomous Auto-Pilot Executed: {sym} {new_pos['action']} (2 Lots / {total_qty} Qty) @ ₹{entry_p:.1f} ({prob}% Conviction)"
-                voice_msg = f"नया ट्रेड: {sym} {new_pos['action']} में 2 लॉट से एंट्री ली गई है। एंट्री प्राइस ₹{entry_p:.1f}, पहला टारगेट ₹{tg1_val:.1f}, स्टॉप लॉस ₹{sl_val:.1f}।"
+                msg = f"⚡ Autonomous Auto-Pilot Executed: {contract_symbol} (2 Lots / {total_qty} Qty) @ ₹{entry_p:.1f} ({prob}% Conviction)"
+                voice_msg = f"नया हाई विन-रेट ट्रेड: {contract_symbol} में 2 लॉट से बाई किया गया है। एंट्री प्राइस ₹{entry_p:.1f}, पहला टारगेट ₹{tg1_val:.1f}, स्टॉप लॉस ₹{sl_val:.1f}।"
                 self._log_event("AUTO_ORDER_PLACED", msg)
                 actions_taken.append({
                     "type": "ORDER_PLACED",
-                    "symbol": sym,
+                    "symbol": contract_symbol,
                     "message": msg,
                     "voice_text": voice_msg,
                     "trade": new_pos

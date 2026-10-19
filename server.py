@@ -363,7 +363,11 @@ def get_live_notifications():
     # 🤖 v50 Autonomous Auto-Pilot Live Evaluation
     ap_actions = []
     try:
-        candidate_signals = mom_data.get("diamond_trades", []) + mom_data.get("fast_movers", [])
+        active_high_prob_calls = [
+            c for c in trade_call_tracker.get_all_calls()
+            if float(c.get("win_probability_pct", 0)) >= 88.0
+        ]
+        candidate_signals = mom_data.get("diamond_trades", []) + mom_data.get("fast_movers", []) + active_high_prob_calls
         ap_actions = autopilot_engine.evaluate_live_market(candidate_signals, live_prices)
     except Exception as e:
         print(f"[AutoPilot evaluation error]: {e}")

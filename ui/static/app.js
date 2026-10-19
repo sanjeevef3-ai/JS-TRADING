@@ -3401,21 +3401,55 @@ function getAssetLotStep(item) {
   const isOption = sym.endsWith(" CE") || sym.endsWith(" PE") || item.optType === "CE" || item.optType === "PE";
   
   const LOT_MAP = {
+    // Indices
     "NIFTY": 25,
     "BANKNIFTY": 15,
     "FINNIFTY": 25,
     "MIDCPNIFTY": 50,
     "SENSEX": 10,
+    "BANKEX": 15,
+    // Liquid Stock Options
     "RELIANCE": 250,
-    "TATASTEEL": 5500,
     "HDFCBANK": 550,
+    "ICICIBANK": 700,
+    "SBIN": 750,
+    "AXISBANK": 625,
+    "KOTAKBANK": 400,
     "INFY": 400,
     "TCS": 175,
-    "SBIN": 750,
+    "TATASTEEL": 5500,
     "TATAMOTORS": 550,
+    "BAJFINANCE": 125,
+    "BAJAJFINSV": 500,
+    "BHARTIARTL": 950,
     "LT": 150,
+    "MARUTI": 50,
+    "TITAN": 175,
+    "ADANIENT": 300,
+    "ADANIPORTS": 400,
+    "SUNPHARMA": 350,
+    "CIPLA": 650,
+    "WIPRO": 1500,
+    "HCLTECH": 350,
     "ITC": 1600,
-    "BHARTIARTL": 475
+    "COALINDIA": 2100,
+    "NTPC": 1500,
+    "POWERGRID": 1800,
+    "ONGC": 3850,
+    "BATAINDIA": 375,
+    "ZOMATO": 2000,
+    "JIOFIN": 2000,
+    "BEL": 2850,
+    "HAL": 150,
+    "DLF": 825,
+    "VEDL": 1150,
+    "FEDERALBNK": 5000,
+    "PNB": 8000,
+    "BANKBARODA": 2925,
+    "ASHOKLEY": 5000,
+    "TRENT": 100,
+    "INDUSINDBK": 500,
+    "TECHM": 600
   };
 
   if (isOption) {
