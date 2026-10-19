@@ -9,7 +9,8 @@
     "max_daily_loss": 2500.0,
     "max_daily_profit_target": 7500.0,
     "max_concurrent_positions": 2,
-    "lot_size": 1,
+    "lot_size": 2,
+    "partial_exit_tg1": true,
     "auto_trail_sl": true,
     "voice_copilot_enabled": true,
     "panic_kill_switch_active": false

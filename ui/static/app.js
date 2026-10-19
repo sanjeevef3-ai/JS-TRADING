@@ -1420,15 +1420,21 @@ function pushFlashNotification(rawItem, showPopFlash = true) {
 
     // 🗣️ v50 Jyoti Human Voice AI Announcement
     if (typeof speakTradeAnnouncement === "function") {
-      if (notifItem.type === "TARGET_HIT") {
+      if (notifItem.voice_text) {
+        speakTradeAnnouncement(notifItem.voice_text, true);
+      } else if (notifItem.type === "TARGET_HIT") {
         const isTg2 = notifItem.outcome_kind === "TG2";
         speakTradeAnnouncement(isTg2 
-          ? `बधाई हो ज्योति जी! ${notifItem.symbol || ''} में बड़ा टारगेट 2 हिट हो गया है। प्रॉफिट लॉक करें!`
-          : `ज्योति जी, ${notifItem.symbol || ''} में टारगेट 1 हिट हो गया है। 50% प्रॉफिट बुक करें और स्टॉप लॉस कॉस्ट पर ट्रेल करें।`);
+          ? `बधाई हो ज्योति जी! ${notifItem.symbol || ''} में बड़ा टारगेट 2 हिट हो गया है। दूसरा लॉट भी बंपर प्रॉफिट के साथ एग्जिट हो गया!`
+          : `ज्योति जी, ${notifItem.symbol || ''} में पहला टारगेट हिट हो गया है। 1 लॉट एग्जिट करके प्रॉफ़िट बुक कर लिया गया है, और बाक़ी 1 लॉट का स्टॉप लॉस कॉस्ट पर ट्रेल कर दिया गया है।`);
       } else if (notifItem.type === "SL_HIT") {
-        speakTradeAnnouncement(`सावधान! ${notifItem.symbol || ''} में स्टॉप लॉस हिट हुआ है। कैपिटल सुरक्षा के लिए ट्रेड एग्जिट कर दिया गया है।`);
-      } else if (notifItem.is_diamond) {
-        speakTradeAnnouncement(`डायमंड ब्रेकआउट अलर्ट: ${notifItem.symbol || ''} में 90% से अधिक प्रोबेबिलिटी सेटअप डिटेक्ट हुआ है।`);
+        const isTrailed = (notifItem.message || "").toLowerCase().includes("cost") || (notifItem.message || "").toLowerCase().includes("trail");
+        speakTradeAnnouncement(isTrailed
+          ? `अलर्ट! ${notifItem.symbol || ''} में ट्रेलिंग स्टॉप लॉस कॉस्ट पर हिट हुआ। बाक़ी 1 लॉट बिना नुकसान के एग्जिट हो गया।`
+          : `सावधान ज्योति जी! ${notifItem.symbol || ''} में स्टॉप लॉस हिट हुआ है। कैपिटल सुरक्षा के लिए ट्रेड एग्जिट कर दिया गया है।`);
+      } else if (notifItem.type === "TRADE" || notifItem.is_diamond) {
+        const actionWord = (notifItem.action || "BUY").toUpperCase();
+        speakTradeAnnouncement(`नया ट्रेड: ${notifItem.symbol || ''} ${actionWord} में 2 लॉट से एंट्री ली गई है।`);
       }
     }
 
@@ -2260,15 +2266,24 @@ function renderAutoPilotUI(ap) {
         const pnlNum = p.unrealized_pnl || 0.0;
         const pnlClr = pnlNum >= 0 ? "#34d399" : "#f87171";
         const pnlSign = pnlNum >= 0 ? "+" : "";
+        const remLots = p.remaining_lots !== undefined ? p.remaining_lots : (p.total_lots || 2);
+        const lotBadge = `<span style="background:rgba(56,189,248,0.2); color:#38bdf8; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;">${remLots} Lot${remLots > 1 ? 's' : ''} (${p.qty} Qty)</span>`;
+        const trailedTag = p.trailing_sl_active || p.status === "TG1_PARTIAL_EXIT_TRAILED" 
+          ? `<span style="background:rgba(16,185,129,0.2); color:#34d399; font-size:9.5px; font-weight:800; padding:1px 4px; border-radius:3px; margin-left:4px;">🛡️ Trailed to Cost</span>` 
+          : '';
+
         return `
           <div style="background:rgba(255,255,255,0.04); border-radius:6px; padding:6px 8px; border:1px solid rgba(255,255,255,0.08); font-size:11px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <strong style="color:#ffffff;">${p.symbol} ${p.action}</strong>
+              <div style="display:flex; align-items:center;">
+                <strong style="color:#ffffff;">${p.symbol} ${p.action}</strong>
+                ${lotBadge}
+              </div>
               <strong style="color:${pnlClr};">${pnlSign}₹${pnlNum.toFixed(1)}</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; margin-top:3px;">
-              <span>Entry: ₹${p.entry_price} • CMP: ₹${p.cmp}</span>
-              <span style="color:#fde68a;">SL: ₹${p.stop_loss}</span>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; margin-top:3px; flex-wrap:wrap; gap:4px;">
+              <span>Entry: ₹${p.entry_price} • CMP: ₹${p.cmp} • TG1: ₹${p.target_1} • TG2: ₹${p.target_2}</span>
+              <span style="color:#fde68a;">SL: ₹${p.stop_loss} ${trailedTag}</span>
             </div>
           </div>
         `;

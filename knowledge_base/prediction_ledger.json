@@ -1,28 +1,5 @@
 [
   {
-    "id": "pred_1792149677_NIFTY 50",
-    "timestamp": "2026-10-16 16:51:17",
-    "symbol": "NIFTY 50",
-    "price_at_prediction": 23146.15,
-    "direction": "MODERATE BULLISH",
-    "action": "BUY ON DIPS",
-    "confidence": null,
-    "entry_zone": "\u20b923134.79 - \u20b923152.97",
-    "stop_loss": 23100.7,
-    "target_1": 23214.33,
-    "target_2": 23259.77,
-    "patterns_present": [
-      "Bearish Harami",
-      "Tweezer Top",
-      "Bullish Marubozu",
-      "Bullish Engulfing",
-      "Tweezer Bottom"
-    ],
-    "status": "STOP_LOSS_HIT",
-    "resolved_at": "2026-10-19 09:55:19",
-    "resolved_price": 23095.9
-  },
-  {
     "id": "pred_1792149725_NIFTY 50",
     "timestamp": "2026-10-16 16:52:05",
     "symbol": "NIFTY 50",
@@ -10796,6 +10773,27 @@
       "Three Black Crows",
       "Inverted Hammer",
       "Three Black Crows"
+    ],
+    "status": "ACTIVE_MONITORING"
+  },
+  {
+    "id": "pred_1792398750_NIFTY 50",
+    "timestamp": "2026-10-19 14:02:30",
+    "symbol": "NIFTY 50",
+    "price_at_prediction": 22885.6,
+    "direction": "NEUTRAL / CHOPPY",
+    "action": "NO TRADE / WAIT FOR BREAKOUT",
+    "confidence": null,
+    "entry_zone": "Wait for Breakout above \u20b923114.46 or below \u20b922656.74",
+    "stop_loss": 22725.4,
+    "target_1": 23114.46,
+    "target_2": 23297.54,
+    "patterns_present": [
+      "Bearish Engulfing",
+      "Tweezer Top",
+      "Tweezer Bottom",
+      "Hanging Man",
+      "Tweezer Top"
     ],
     "status": "ACTIVE_MONITORING"
   }

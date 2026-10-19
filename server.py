@@ -370,17 +370,26 @@ def get_live_notifications():
 
     ap_notifs = []
     for act in ap_actions:
+        act_type = str(act.get("type", "")).upper()
+        is_tg = "TG" in act_type or "TARGET" in act_type
+        is_sl = "SL" in act_type
+        outcome_kind = act.get("outcome_kind") or ("TG2" if "TARGET2" in act_type or "TG2" in act_type else ("TG1" if "TG1" in act_type else ("SL" if is_sl else None)))
+        
         ap_notifs.append({
-            "id": f"AP_NOTIF_{int(time.time()*1000)}",
-            "type": "TARGET_HIT" if "TG" in act.get("type", "") else ("SL_HIT" if "SL" in act.get("type", "") else "TRADE"),
+            "id": f"AP_NOTIF_{int(time.time()*1000)}_{act_type}",
+            "type": "TARGET_HIT" if is_tg else ("SL_HIT" if is_sl else "TRADE"),
+            "outcome_kind": outcome_kind,
             "priority": "DIAMOND_90_URGENT",
             "is_important": True,
-            "is_outcome": True,
+            "is_outcome": bool(is_tg or is_sl),
             "symbol": act.get("symbol", "NIFTY"),
+            "action": act.get("trade", {}).get("action", "BUY"),
+            "price": act.get("trade", {}).get("entry_price"),
             "title": f"🤖 AUTOPILOT: {act.get('type')}",
             "message": act.get("message", ""),
+            "voice_text": act.get("voice_text", act.get("message", "")),
             "timestamp": cur_datetime_str,
-            "sound": "target_hit" if "TG" in act.get("type", "") else "sl_hit"
+            "sound": "target_hit" if is_tg else ("sl_hit" if is_sl else "trade")
         })
 
     # Combine all: Outcome alerts (TG Hit / SL Hit / Auto-Pilot) ALWAYS take HIGHEST PRIORITY at top!

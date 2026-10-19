@@ -38,17 +38,18 @@ class AutonomousAutoPilot:
     def _init_engine(self):
         self.state = {
             "date": get_ist_date_str(),
-            "enabled": False,
+            "enabled": True,
             "mode": "AUTO_PAPER", # AUTO_PAPER or MONITOR_ONLY
-            "status": "STANDBY",  # STANDBY, MONITORING, ENGAGED, PAUSED_GUARD
+            "status": "ENGAGED",  # STANDBY, MONITORING, ENGAGED, PAUSED_GUARD
             "daily_pnl": 0.0,
             "config": {
                 "min_conviction_pct": 88.0,
                 "max_daily_loss": 2500.0,
                 "max_daily_profit_target": 7500.0,
                 "max_concurrent_positions": 2,
-                "lot_size": 1,
-                "auto_trail_sl": True,
+                "lot_size": 2, # User instruction: 2 Lots paper trade
+                "partial_exit_tg1": True, # Exit 1 lot at Target 1
+                "auto_trail_sl": True, # Auto-trail SL to Cost after TG1
                 "voice_copilot_enabled": True,
                 "panic_kill_switch_active": False
             },
@@ -65,6 +66,14 @@ class AutonomousAutoPilot:
                     saved = json.load(f)
                     if saved.get("date") == get_ist_date_str():
                         self.state = saved
+                        # Ensure 2 lots and enabled
+                        cfg = self.state.setdefault("config", {})
+                        cfg["lot_size"] = 2
+                        cfg["partial_exit_tg1"] = True
+                        cfg["auto_trail_sl"] = True
+                        self.state["enabled"] = True
+                        if self.state.get("status") in ["STANDBY", "MONITORING"]:
+                            self.state["status"] = "ENGAGED"
                     else:
                         # New day rollover: archive previous day and reset fresh
                         self._log_event("NEW_DAY_ROLLOVER", f"Fresh Auto-Pilot session initiated for {get_ist_date_str()}")
@@ -97,9 +106,9 @@ class AutonomousAutoPilot:
         return {
             "version": "v50_AUTONOMOUS_QUANT",
             "date": self.state.get("date"),
-            "enabled": self.state.get("enabled", False),
+            "enabled": self.state.get("enabled", True),
             "mode": self.state.get("mode", "AUTO_PAPER"),
-            "status": self.state.get("status", "STANDBY"),
+            "status": self.state.get("status", "ENGAGED"),
             "daily_pnl": round(self.state.get("daily_pnl", 0.0), 2),
             "config": self.state.get("config", {}),
             "active_positions_count": len(self.state.get("active_positions", [])),
@@ -115,7 +124,7 @@ class AutonomousAutoPilot:
         self.state["mode"] = mode
         if enable:
             self.state["status"] = "MONITORING" if mode == "MONITOR_ONLY" else "ENGAGED"
-            self._log_event("AUTOPILOT_TOGGLE", f"Auto-Pilot engaged in mode: {mode}")
+            self._log_event("AUTOPILOT_TOGGLE", f"Auto-Pilot engaged in mode: {mode} (2 Lots, TG1 50% Exit & Trailing SL)")
         else:
             self.state["status"] = "STANDBY"
             self._log_event("AUTOPILOT_TOGGLE", "Auto-Pilot disengaged to manual standby")
@@ -154,7 +163,12 @@ class AutonomousAutoPilot:
 
     def evaluate_live_market(self, candidate_signals: List[Dict[str, Any]], live_prices: Dict[str, float]) -> List[Dict[str, Any]]:
         """
-        Continuously evaluates opportunities and manages positions autonomously.
+        Continuously evaluates opportunities and manages positions autonomously:
+        - Trades in 2 Lots.
+        - On Target 1: Exits 1 Lot (books partial profit) and automatically trails SL of remaining 1 Lot to Cost.
+        - On Target 2: Exits remaining 1 Lot with bumper profit.
+        - On Stop-Loss / Trailed SL: Exits remaining lot(s) to protect capital.
+        - Generates clear voice announcement strings for speech synthesis.
         """
         if not self.state.get("enabled"):
             return []
@@ -169,26 +183,40 @@ class AutonomousAutoPilot:
             if self.state["status"] != "PAUSED_MAX_LOSS":
                 self.state["status"] = "PAUSED_MAX_LOSS"
                 self.state["enabled"] = False
-                self._log_event("RISK_GUARD_HIT", f"Daily Loss Limit hit (₹{daily_pnl:.1f} <= -₹{max_loss:.1f}). Auto-Pilot paused to protect capital.")
+                msg = f"🛑 Daily Loss Limit Hit (-₹{max_loss:.0f}). Auto-Pilot paused to protect capital!"
+                self._log_event("RISK_GUARD_HIT", msg)
                 self._save_state()
+                return [{
+                    "type": "RISK_GUARD_STOP",
+                    "symbol": "RISK_CONTROL",
+                    "message": msg,
+                    "voice_text": f"सावधान ज्योति जी! दिन का लॉस लिमिट 2500 रुपये पूरा हो गया है। कैपिटल सुरक्षा के लिए ऑटो-पायलट रोक दिया गया है।"
+                }]
             return []
 
         if daily_pnl >= max_profit:
             if self.state["status"] != "PAUSED_PROFIT_LOCK":
                 self.state["status"] = "PAUSED_PROFIT_LOCK"
                 self.state["enabled"] = False
-                self._log_event("PROFIT_LOCK_HIT", f"Daily Target Achieved (+₹{daily_pnl:.1f}). Day profit locked!")
+                msg = f"🏆 Daily Profit Target Locked (+₹{daily_pnl:.1f}). Winnings secured!"
+                self._log_event("PROFIT_LOCK_HIT", msg)
                 self._save_state()
+                return [{
+                    "type": "PROFIT_TARGET_LOCKED",
+                    "symbol": "PROFIT_LOCK",
+                    "message": msg,
+                    "voice_text": f"बधाई हो ज्योति जी! दिन का प्रॉफ़िट टारगेट 7500 रुपये हासिल हो गया है। आज का मुनाफ़ा लॉक कर दिया गया है!"
+                }]
             return []
 
         actions_taken = []
-        # 2. Manage Existing Active Auto-Positions (Trailing SL & Target Exits)
+        # 2. Manage Existing Active Auto-Positions (2-Lot Split & Trailing SL)
         active = self.state.get("active_positions", [])
         remaining = []
         for pos in active:
-            sym = pos.get("symbol")
+            sym = pos.get("symbol", "")
             cmp = live_prices.get(sym, pos.get("cmp", pos.get("entry_price", 100.0)))
-            pos["cmp"] = cmp
+            pos["cmp"] = round(cmp, 2)
             entry = float(pos.get("entry_price", 100.0))
             tg1 = float(pos.get("target_1", entry * 1.25))
             tg2 = float(pos.get("target_2", entry * 1.50))
@@ -196,49 +224,117 @@ class AutonomousAutoPilot:
 
             is_pe = "PE" in pos.get("action", "").upper()
             pnl_pts = (entry - cmp) if is_pe else (cmp - entry)
-            pos["unrealized_pnl"] = round(pnl_pts * pos.get("qty", 50), 2)
+            current_qty = int(pos.get("qty", 50))
+            pos["unrealized_pnl"] = round(pnl_pts * current_qty, 2)
+            rem_lots = int(pos.get("remaining_lots", 2))
+            lot_unit = int(pos.get("lot_unit", current_qty // max(1, rem_lots)))
 
-            # Auto-Trail SL to Cost once TG1 hit
-            if cmp >= tg1 and cfg.get("auto_trail_sl") and pos.get("status") != "TG1_TRAILED":
-                pos["stop_loss"] = entry # Zero-risk breakeven SL
-                pos["status"] = "TG1_TRAILED"
-                msg = f"🤖 Auto-Pilot Trailed SL to Cost (₹{entry:.1f}) for {sym} after TG1 hit!"
-                self._log_event("AUTO_TRAIL_SL", msg)
-                actions_taken.append({"type": "SL_TRAILED", "symbol": sym, "message": msg})
+            # ── A. Check Target 1 Hit (Exit 1 Lot + Auto-Trail SL of Remaining Lot to Cost) ──
+            hit_tg1 = (cmp <= tg1) if is_pe else (cmp >= tg1)
+            if hit_tg1 and rem_lots >= 2:
+                # Partial profit booking: exit 1 lot
+                qty_to_exit = lot_unit
+                lot_realized = round(pnl_pts * qty_to_exit, 2)
+                pos["qty"] = max(lot_unit, current_qty - qty_to_exit)
+                pos["remaining_lots"] = 1
+                pos["realized_pnl"] = round(pos.get("realized_pnl", 0.0) + lot_realized, 2)
+                self.state["daily_pnl"] = round(self.state.get("daily_pnl", 0.0) + lot_realized, 2)
+                
+                # Auto-trail stop-loss of remaining 1 lot to Cost (breakeven)
+                pos["stop_loss"] = entry
+                pos["trailing_sl_active"] = True
+                pos["status"] = "TG1_PARTIAL_EXIT_TRAILED"
 
-            # Check Full Target 2 Exit
-            if cmp >= tg2:
+                msg = f"🎯 Target 1 Hit on {sym}! 1 Lot exited with +₹{lot_realized:.1f} profit. Remaining 1 Lot Stop-Loss trailed to Cost (₹{entry:.1f})!"
+                voice_msg = f"ज्योति जी, {sym} में टारगेट 1 हिट हो गया है! 1 लॉट एग्जिट करके {int(abs(lot_realized))} रुपये प्रॉफ़िट बुक कर लिया गया है, और बाक़ी 1 लॉट का स्टॉप-लॉस कॉस्ट पर ट्रेल कर दिया गया है।"
+                self._log_event("AUTO_TG1_PARTIAL_EXIT", msg)
+                actions_taken.append({
+                    "type": "TG1_PARTIAL_EXIT",
+                    "outcome_kind": "TG1",
+                    "symbol": sym,
+                    "message": msg,
+                    "voice_text": voice_msg,
+                    "realized_pnl": lot_realized,
+                    "remaining_lots": 1,
+                    "new_sl": entry
+                })
+
+            # ── B. Check Target 2 Hit (Jackpot Exit Remaining 1 Lot) ──
+            hit_tg2 = (cmp <= tg2) if is_pe else (cmp >= tg2)
+            if hit_tg2:
+                rem_qty = int(pos.get("qty", lot_unit))
+                final_lot_pnl = round(pnl_pts * rem_qty, 2)
+                total_pnl = round(pos.get("realized_pnl", 0.0) + final_lot_pnl, 2)
+                self.state["daily_pnl"] = round(self.state.get("daily_pnl", 0.0) + final_lot_pnl, 2)
+
                 pos["status"] = "CLOSED_TG2"
                 pos["closed_at"] = get_ist_now_str()
-                pos["realized_pnl"] = pos["unrealized_pnl"]
-                self.state["daily_pnl"] += pos["realized_pnl"]
+                pos["remaining_lots"] = 0
+                pos["realized_pnl"] = total_pnl
                 self.state.setdefault("closed_trades", []).insert(0, pos)
-                msg = f"🏆 Auto-Pilot Locked Target 2 Profit (+₹{pos['realized_pnl']:.1f}) on {sym}!"
+
+                msg = f"🚀 BADA TARGET 2 (JACKPOT) HIT on {sym}! 2nd Lot exited with +₹{final_lot_pnl:.1f}! Total Trade Profit: +₹{total_pnl:.1f}"
+                voice_msg = f"बधाई हो ज्योति जी! {sym} में बड़ा टारगेट 2 हिट हो गया है! दूसरा लॉट भी बंपर प्रॉफ़िट के साथ एग्जिट कर दिया गया है। कुल प्रॉफ़िट {int(total_pnl)} रुपये!"
                 self._log_event("AUTO_EXIT_TG2", msg)
-                actions_taken.append({"type": "TARGET2_EXIT", "symbol": sym, "message": msg})
+                actions_taken.append({
+                    "type": "TARGET2_EXIT",
+                    "outcome_kind": "TG2",
+                    "symbol": sym,
+                    "message": msg,
+                    "voice_text": voice_msg,
+                    "realized_pnl": total_pnl
+                })
                 continue
 
-            # Check Hard SL Exit
-            if cmp <= sl:
-                pos["status"] = "CLOSED_SL"
+            # ── C. Check Stop-Loss / Trailed Breakeven Exit ──
+            hit_sl = (cmp >= sl) if is_pe else (cmp <= sl)
+            if hit_sl:
+                rem_qty = int(pos.get("qty", lot_unit))
+                rem_pnl = round(pnl_pts * rem_qty, 2)
+                total_pnl = round(pos.get("realized_pnl", 0.0) + rem_pnl, 2)
+                self.state["daily_pnl"] = round(self.state.get("daily_pnl", 0.0) + rem_pnl, 2)
+
                 pos["closed_at"] = get_ist_now_str()
-                pos["realized_pnl"] = pos["unrealized_pnl"]
-                self.state["daily_pnl"] += pos["realized_pnl"]
+                pos["remaining_lots"] = 0
+                pos["realized_pnl"] = total_pnl
+
+                if pos.get("trailing_sl_active") or pos.get("status") == "TG1_PARTIAL_EXIT_TRAILED":
+                    pos["status"] = "CLOSED_TRAILED_SL"
+                    msg = f"🛡️ Trailed SL Hit at Cost (₹{sl:.1f}) on {sym}! Remaining 1 lot exited at breakeven. Total trade net profit: +₹{total_pnl:.1f}"
+                    voice_msg = f"अलर्ट! {sym} में ट्रेलिंग स्टॉप-लॉस कॉस्ट पर हिट हुआ। बाक़ी 1 लॉट बिना किसी नुक़सान के एग्जिट हो गया। ट्रेड अभी भी कुल मुनाफ़े में क्लोज हुआ है।"
+                else:
+                    pos["status"] = "CLOSED_SL"
+                    msg = f"🛑 Stop-Loss Hit on {sym} @ ₹{cmp:.1f} (₹{total_pnl:.1f})! Capital protection exit executed."
+                    voice_msg = f"सावधान ज्योति जी! {sym} में स्टॉप-लॉस हिट हुआ है। कैपिटल सुरक्षित रखने के लिए पोजीशन तुरंत क्लोज कर दी गई है।"
+
                 self.state.setdefault("closed_trades", []).insert(0, pos)
-                msg = f"🛑 Auto-Pilot Exited {sym} on Stop-Loss (₹{pos['realized_pnl']:.1f}) to protect capital!"
                 self._log_event("AUTO_EXIT_SL", msg)
-                actions_taken.append({"type": "SL_EXIT", "symbol": sym, "message": msg})
+                actions_taken.append({
+                    "type": "SL_EXIT",
+                    "outcome_kind": "SL",
+                    "symbol": sym,
+                    "message": msg,
+                    "voice_text": voice_msg,
+                    "realized_pnl": total_pnl
+                })
                 continue
 
             remaining.append(pos)
 
         self.state["active_positions"] = remaining
 
-        # 3. Autonomous Order Sizing & Placement for High-Conviction Signals
+        # 3. Autonomous Order Sizing & Placement for High-Conviction Signals (2 Lots Default)
         max_positions = int(cfg.get("max_concurrent_positions", 2))
         min_conviction = float(cfg.get("min_conviction_pct", 88.0))
 
         if len(self.state["active_positions"]) < max_positions:
+            LOT_SIZE_MAP = {
+                "NIFTY": 25,
+                "BANKNIFTY": 15,
+                "FINNIFTY": 25,
+                "MIDCPNIFTY": 50,
+                "SENSEX": 10
+            }
             for s in candidate_signals:
                 if len(self.state["active_positions"]) >= max_positions:
                     break
@@ -251,31 +347,51 @@ class AutonomousAutoPilot:
                 if any(p.get("symbol") == sym for p in self.state["active_positions"]):
                     continue
 
-                # Auto Execute
+                # Auto Execute 2 Lots
                 entry_p = float(s.get("price") or s.get("entry_price") or live_prices.get(sym, 100.0))
-                lot_qty = 50 if sym in ["NIFTY", "BANKNIFTY"] else 100
+                und_base = sym.split(" ")[0]
+                unit_lot = LOT_SIZE_MAP.get(und_base, (50 if sym in ["NIFTY", "BANKNIFTY"] else 100))
+                total_qty = unit_lot * 2 # Exactly 2 Lots!
+
+                tg1_val = round(entry_p * 1.20, 2)
+                tg2_val = round(entry_p * 1.45, 2)
+                sl_val = round(entry_p * 0.85, 2)
+
                 new_pos = {
                     "trade_id": f"AP_{sym}_{int(time.time())}",
                     "symbol": sym,
                     "action": s.get("action", "BUY_CE"),
                     "entry_price": round(entry_p, 2),
                     "cmp": round(entry_p, 2),
-                    "target_1": round(entry_p * 1.20, 2),
-                    "target_2": round(entry_p * 1.45, 2),
-                    "stop_loss": round(entry_p * 0.85, 2),
-                    "qty": lot_qty,
+                    "target_1": tg1_val,
+                    "target_2": tg2_val,
+                    "stop_loss": sl_val,
+                    "total_lots": 2,
+                    "remaining_lots": 2,
+                    "lot_unit": unit_lot,
+                    "qty": total_qty,
+                    "realized_pnl": 0.0,
                     "unrealized_pnl": 0.0,
                     "opened_at": get_ist_now_str(),
                     "status": "ACTIVE_AUTO",
+                    "trailing_sl_active": False,
                     "conviction": prob
                 }
                 self.state["active_positions"].append(new_pos)
-                msg = f"⚡ Autonomous Auto-Pilot Executed: {sym} {new_pos['action']} @ ₹{entry_p} ({prob}% Conviction)"
+                msg = f"⚡ Autonomous Auto-Pilot Executed: {sym} {new_pos['action']} (2 Lots / {total_qty} Qty) @ ₹{entry_p:.1f} ({prob}% Conviction)"
+                voice_msg = f"नया ट्रेड: {sym} {new_pos['action']} में 2 लॉट से एंट्री ली गई है। एंट्री प्राइस ₹{entry_p:.1f}, पहला टारगेट ₹{tg1_val:.1f}, स्टॉप लॉस ₹{sl_val:.1f}।"
                 self._log_event("AUTO_ORDER_PLACED", msg)
-                actions_taken.append({"type": "ORDER_PLACED", "symbol": sym, "message": msg, "trade": new_pos})
+                actions_taken.append({
+                    "type": "ORDER_PLACED",
+                    "symbol": sym,
+                    "message": msg,
+                    "voice_text": voice_msg,
+                    "trade": new_pos
+                })
 
         self._save_state()
         return actions_taken
+
 
 
 class OrderFlowEngine:
