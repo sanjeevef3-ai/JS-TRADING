@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDhanStatus();
   refreshSuperPortal(currentSymbol);
   renderInvestingPortfolio();
+  initPortfolioPaperTrading();
   updateSyncClock();
 
   // 3. Continuous Real-Time Silent Auto-Refresh Loop (Every 12 Seconds without loading spinner)
@@ -2723,14 +2724,244 @@ function addPortfolioHolding(customItem = null) {
 
 function removePortfolioHolding(idx) {
   const pf = getSavedPortfolio();
-  pf.splice(idx, 1);
-  localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
-  renderInvestingPortfolio();
+  if (idx >= 0 && idx < pf.length) {
+    const sym = pf[idx].symbol;
+    pf.splice(idx, 1);
+    localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
+    renderInvestingPortfolio();
+    showPortfolioToast(`🔴 Closed / Removed position: ${sym}`);
+  }
 }
 
+// ── Smart Lot Stepper Helper ──
+function getAssetLotStep(item) {
+  const sym = (item.symbol || "").toUpperCase();
+  const und = (item.underlying || sym.split(" ")[0]).toUpperCase();
+  const isOption = sym.endsWith(" CE") || sym.endsWith(" PE") || item.optType === "CE" || item.optType === "PE";
+  
+  const LOT_MAP = {
+    "NIFTY": 25,
+    "BANKNIFTY": 15,
+    "FINNIFTY": 25,
+    "MIDCPNIFTY": 50,
+    "SENSEX": 10,
+    "RELIANCE": 250,
+    "TATASTEEL": 5500,
+    "HDFCBANK": 550,
+    "INFY": 400,
+    "TCS": 175,
+    "SBIN": 750,
+    "TATAMOTORS": 550,
+    "LT": 150,
+    "ITC": 1600,
+    "BHARTIARTL": 475
+  };
+
+  if (isOption) {
+    return LOT_MAP[und] || 25;
+  }
+  return LOT_MAP[und] ? Math.min(LOT_MAP[und], 25) : 10;
+}
+
+// ── Adjust Quantity (Kam / Jada with +/- Lot Steppers) ──
+function adjustPositionQty(idx, deltaLots) {
+  const pf = getSavedPortfolio();
+  if (!pf[idx]) return;
+  const item = pf[idx];
+  const step = getAssetLotStep(item);
+  const newQty = item.qty + (deltaLots * step);
+
+  if (newQty <= 0) {
+    if (confirm(`Square off paper trade position for ${item.symbol}?`)) {
+      removePortfolioHolding(idx);
+    }
+    return;
+  }
+  item.qty = newQty;
+  localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
+  renderInvestingPortfolio();
+  showPortfolioToast(`⚡ ${item.symbol} Qty updated: ${newQty} (${Math.round(newQty / step)} Lots)`);
+}
+
+// ── Direct Inline Qty Change ──
+function updatePositionQty(idx, newQtyVal) {
+  const pf = getSavedPortfolio();
+  if (!pf[idx]) return;
+  const item = pf[idx];
+  const parsed = parseInt(newQtyVal);
+  if (isNaN(parsed) || parsed <= 0) {
+    if (confirm(`Quantity set to 0. Square off paper position ${item.symbol}?`)) {
+      removePortfolioHolding(idx);
+    } else {
+      renderInvestingPortfolio();
+    }
+    return;
+  }
+  item.qty = parsed;
+  localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
+  renderInvestingPortfolio();
+  showPortfolioToast(`⚡ ${item.symbol} Qty updated to ${parsed}`);
+}
+
+// ── Direct Inline Buy Price Change ──
+function updatePositionBuyPrice(idx, newPriceVal) {
+  const pf = getSavedPortfolio();
+  if (!pf[idx]) return;
+  const item = pf[idx];
+  const parsed = parseFloat(newPriceVal);
+  if (isNaN(parsed) || parsed <= 0) {
+    renderInvestingPortfolio();
+    return;
+  }
+  item.buyPrice = parsed;
+  localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
+  renderInvestingPortfolio();
+  showPortfolioToast(`📝 Updated Buy Price for ${item.symbol}: ₹${parsed.toFixed(2)}`);
+}
+
+// ── Position Trade Modal State ──
+let currentEditingPositionIdx = null;
+
+function openPositionTradeModal(idx) {
+  const pf = getSavedPortfolio();
+  if (!pf[idx]) return;
+  currentEditingPositionIdx = idx;
+  const item = pf[idx];
+  const sym = item.symbol.toUpperCase();
+  const cached = livePriceCache[sym];
+  const isCE = sym.endsWith(" CE") || item.optType === "CE";
+  const isPE = sym.endsWith(" PE") || item.optType === "PE";
+  const isOption = isCE || isPE;
+
+  let cmp = item.buyPrice * 1.025;
+  if (cached && cached.price) {
+    cmp = cached.price;
+  } else if (isOption) {
+    const undSym = item.underlying || sym.split(" ")[0];
+    const undCached = livePriceCache[undSym];
+    const undChg = undCached ? (undCached.p_change || 0.5) : 0.45;
+    const optMultiplier = isCE ? (1 + (undChg * 0.08)) : (1 - (undChg * 0.08));
+    cmp = Math.max(1.0, item.buyPrice * optMultiplier);
+  }
+
+  const inv = item.qty * item.buyPrice;
+  const curVal = item.qty * cmp;
+  const pnl = curVal - inv;
+  const pnlPct = inv > 0 ? ((pnl / inv) * 100) : 0;
+  const step = getAssetLotStep(item);
+
+  const modal = document.getElementById("pfPositionTradeModal");
+  if (!modal) return;
+
+  const symBadge = document.getElementById("pfEditSymbolBadge");
+  if (symBadge) symBadge.innerText = sym;
+
+  const typeBadge = document.getElementById("pfEditTypeBadge");
+  if (typeBadge) {
+    typeBadge.innerText = isCE ? "CE • CALL" : (isPE ? "PE • PUT" : "EQ • CASH");
+    typeBadge.style.background = isCE ? "rgba(16,185,129,0.25)" : (isPE ? "rgba(244,63,94,0.25)" : "rgba(56,189,248,0.2)");
+    typeBadge.style.color = isCE ? "#34d399" : (isPE ? "#fb7185" : "#38bdf8");
+  }
+
+  const curQty = document.getElementById("pfEditCurQty");
+  if (curQty) curQty.innerText = `${item.qty} (${Math.round(item.qty / step)} Lots)`;
+
+  const curBuy = document.getElementById("pfEditCurBuy");
+  if (curBuy) curBuy.innerText = `₹${Number(item.buyPrice).toFixed(2)}`;
+
+  const curCmp = document.getElementById("pfEditCurCmp");
+  if (curCmp) curCmp.innerText = `₹${Number(cmp).toFixed(2)}`;
+  
+  const pnlEl = document.getElementById("pfEditCurPnl");
+  if (pnlEl) {
+    pnlEl.innerText = `${pnl >= 0 ? '+' : ''}₹${pnl.toFixed(1)} (${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)`;
+    pnlEl.style.color = pnl >= 0 ? "#34d399" : "#fb7185";
+  }
+
+  const inputQty = document.getElementById("pfEditModalInputQty");
+  if (inputQty) inputQty.value = item.qty;
+
+  const inputPrice = document.getElementById("pfEditModalInputPrice");
+  if (inputPrice) inputPrice.value = Number(item.buyPrice).toFixed(2);
+
+  modal.classList.add("open");
+  modal.style.display = "flex";
+}
+
+function closePositionTradeModal() {
+  const modal = document.getElementById("pfPositionTradeModal");
+  if (modal) {
+    modal.classList.remove("open");
+    modal.style.display = "none";
+  }
+  currentEditingPositionIdx = null;
+}
+
+function applyModalLotDelta(delta) {
+  if (currentEditingPositionIdx === null) return;
+  const pf = getSavedPortfolio();
+  const item = pf[currentEditingPositionIdx];
+  if (!item) return;
+  const step = getAssetLotStep(item);
+  const input = document.getElementById("pfEditModalInputQty");
+  if (!input) return;
+  let cur = parseInt(input.value) || item.qty;
+  cur = Math.max(step, cur + (delta * step));
+  input.value = cur;
+}
+
+function savePositionTradeModalChanges() {
+  if (currentEditingPositionIdx === null) return;
+  const pf = getSavedPortfolio();
+  const item = pf[currentEditingPositionIdx];
+  if (!item) return;
+  
+  const newQty = parseInt(document.getElementById("pfEditModalInputQty")?.value);
+  const newPrice = parseFloat(document.getElementById("pfEditModalInputPrice")?.value);
+
+  if (isNaN(newQty) || newQty <= 0) {
+    alert("Please enter a valid Quantity greater than 0.");
+    return;
+  }
+  if (isNaN(newPrice) || newPrice <= 0) {
+    alert("Please enter a valid Entry Price greater than 0.");
+    return;
+  }
+
+  item.qty = newQty;
+  item.buyPrice = newPrice;
+  localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
+  closePositionTradeModal();
+  renderInvestingPortfolio();
+  showPortfolioToast(`✅ Saved changes for ${item.symbol}: Qty ${newQty} @ ₹${newPrice.toFixed(2)}`);
+}
+
+function squareOffFromPositionModal() {
+  if (currentEditingPositionIdx === null) return;
+  const pf = getSavedPortfolio();
+  const item = pf[currentEditingPositionIdx];
+  if (!item) return;
+  if (confirm(`Square off paper trade position for ${item.symbol}?`)) {
+    const sym = item.symbol;
+    pf.splice(currentEditingPositionIdx, 1);
+    localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
+    closePositionTradeModal();
+    renderInvestingPortfolio();
+    showPortfolioToast(`🔴 Position squared off: ${sym}`);
+  }
+}
+
+// ── Main Portfolio Renderer ──
 function renderInvestingPortfolio() {
   const panel = document.getElementById("investingPortfolioPanel");
   if (!panel) return;
+
+  // Protect active typing in inline inputs from being interrupted by background refresh
+  const activeEl = document.activeElement;
+  if (activeEl && (activeEl.classList.contains("pf-inline-qty") || activeEl.classList.contains("pf-inline-price"))) {
+    return;
+  }
+
   const pf = getSavedPortfolio();
 
   let totalInvested = 0;
@@ -2776,18 +3007,38 @@ function renderInvestingPortfolio() {
       badge = `<span style="background:rgba(244,63,94,0.25); color:#fb7185; font-size:9px; font-weight:800; padding:1px 4px; border-radius:4px; margin-left:4px;">PE</span>`;
     }
 
+    const step = getAssetLotStep(item);
+    const lotLabel = isOption ? `${Math.round(item.qty / step)}L` : `${item.qty}Q`;
+
     return `
       <tr>
-        <td style="white-space:nowrap;">
-          <strong style="color:#fde68a; cursor:pointer;" onclick="selectSymbol('${item.underlying || sym.split(" ")[0]}')">${sym}</strong>
+        <td style="white-space:nowrap; padding: 4px 6px;">
+          <strong style="color:#fde68a; cursor:pointer;" onclick="selectSymbol('${item.underlying || sym.split(" ")[0]}')" title="Click to view chart">${sym}</strong>
           ${badge}
         </td>
-        <td>${item.qty}</td>
-        <td>Rs.${Number(item.buyPrice).toFixed(2)}</td>
-        <td style="font-weight:700;">Rs.${Number(cmp).toFixed(2)}</td>
-        <td style="color:${dayClr}; font-weight:700;">${dayChg >= 0 ? '+' : ''}${Number(dayChg).toFixed(2)}%</td>
-        <td style="color:${pnlClr}; font-weight:800;">${pnl >= 0 ? '+' : ''}Rs.${pnl.toFixed(1)} (${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)</td>
-        <td><button class="pill-btn" onclick="removePortfolioHolding(${idx})" style="padding:2px 7px; font-size:10px; color:#fda4af; border-color:#f43f5e;" title="Remove">✕</button></td>
+        <td style="padding: 3px 4px; text-align:center;">
+          <div class="pf-qty-stepper">
+            <button type="button" class="pf-qty-step-btn" onclick="adjustPositionQty(${idx}, -1)" title="Reduce 1 Lot / Step">−</button>
+            <input type="number" class="pf-inline-qty" value="${item.qty}" min="1" onchange="updatePositionQty(${idx}, this.value)" title="Click to edit quantity directly" />
+            <button type="button" class="pf-qty-step-btn" onclick="adjustPositionQty(${idx}, +1)" title="Add 1 Lot / Step">+</button>
+          </div>
+          <div style="font-size:8.5px; color:#a5b4fc; font-weight:700; margin-top:1px;">${lotLabel}</div>
+        </td>
+        <td style="padding: 3px 4px;">
+          <div class="pf-price-stepper" title="Click to edit Buy / Entry Price">
+            <span style="color:#94a3b8; font-size:9px; font-weight:700;">₹</span>
+            <input type="number" step="0.05" class="pf-inline-price" value="${Number(item.buyPrice).toFixed(2)}" onchange="updatePositionBuyPrice(${idx}, this.value)" />
+          </div>
+        </td>
+        <td style="font-weight:700; padding: 4px 6px;">Rs.${Number(cmp).toFixed(2)}</td>
+        <td style="color:${dayClr}; font-weight:700; padding: 4px 6px;">${dayChg >= 0 ? '+' : ''}${Number(dayChg).toFixed(2)}%</td>
+        <td style="color:${pnlClr}; font-weight:800; padding: 4px 6px; white-space:nowrap;">${pnl >= 0 ? '+' : ''}Rs.${pnl.toFixed(1)} (${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)</td>
+        <td style="padding: 3px 4px; white-space:nowrap;">
+          <div style="display:flex; gap:3px; justify-content:center; align-items:center;">
+            <button class="pill-btn" onclick="openPositionTradeModal(${idx})" style="padding:2px 5px; font-size:9.5px; border-color:#6366f1; color:#a5b4fc; background:rgba(99,102,241,0.15); font-weight:700;" title="Edit / Trade Position">⚡ Edit</button>
+            <button class="pill-btn" onclick="removePortfolioHolding(${idx})" style="padding:2px 6px; font-size:10px; color:#fda4af; border-color:#f43f5e; background:rgba(244,63,94,0.15);" title="Square Off Position">✕</button>
+          </div>
+        </td>
       </tr>
     `;
   }).join("");
@@ -2807,18 +3058,355 @@ function renderInvestingPortfolio() {
         <thead>
           <tr style="font-size: 10px;">
             <th style="padding: 3px 5px;">Symbol</th>
-            <th style="padding: 3px 5px;">Qty</th>
-            <th style="padding: 3px 5px;">Buy</th>
+            <th style="padding: 3px 5px; text-align:center;">Qty (Lots)</th>
+            <th style="padding: 3px 5px;">Buy (₹)</th>
             <th style="padding: 3px 5px;">CMP</th>
             <th style="padding: 3px 5px;">Day</th>
             <th style="padding: 3px 5px;">P&amp;L</th>
-            <th style="padding: 3px 5px;"></th>
+            <th style="padding: 3px 5px; text-align:center;">Actions</th>
           </tr>
         </thead>
-        <tbody>${rowsHtml}</tbody>
+        <tbody>${rowsHtml || '<tr><td colspan="7" style="text-align:center; padding:15px; color:#94a3b8;">No paper trade positions yet. Use the bar above or Order Pad to add one!</td></tr>'}</tbody>
       </table>
     </div>
   `;
+}
+
+// ── Quick Order Bar & Strike Dropdown State ──
+let currentQuickType = 'CE';
+let currentQuickUnderlying = 'NIFTY';
+let currentQuickStrikesData = null;
+
+async function initPortfolioPaperTrading() {
+  await onPfQuickUnderlyingChange('NIFTY');
+}
+
+async function onPfQuickUnderlyingChange(val) {
+  const customWrap = document.getElementById("pfCustomInputWrap");
+  if (val === "CUSTOM") {
+    if (customWrap) customWrap.style.display = "inline-block";
+    document.getElementById("pfAddSym")?.focus();
+    return;
+  }
+  if (customWrap) customWrap.style.display = "none";
+  currentQuickUnderlying = val;
+
+  try {
+    const res = await fetch(`/api/portfolio/option-builder?symbol=${encodeURIComponent(val)}`);
+    if (!res.ok) throw new Error("Failed to load strikes");
+    currentQuickStrikesData = await res.json();
+    populateQuickStrikeDropdown();
+  } catch (e) {
+    console.warn("Could not load quick strikes for", val, e);
+  }
+}
+
+function setQuickInstrumentType(type) {
+  currentQuickType = type;
+  const pillCE = document.getElementById("pfPillCE");
+  const pillPE = document.getElementById("pfPillPE");
+  const pillEQ = document.getElementById("pfPillEQ");
+  const strikeWrap = document.getElementById("pfStrikeSelectWrapper");
+
+  if (pillCE) pillCE.className = type === "CE" ? "pf-type-pill active-ce" : "pf-type-pill";
+  if (pillPE) pillPE.className = type === "PE" ? "pf-type-pill active-pe" : "pf-type-pill";
+  if (pillEQ) pillEQ.className = type === "EQ" ? "pf-type-pill active-eq" : "pf-type-pill";
+
+  if (type === "EQ") {
+    if (strikeWrap) strikeWrap.style.display = "none";
+    const spot = currentQuickStrikesData ? currentQuickStrikesData.spot : (livePriceCache[currentQuickUnderlying]?.price || 1000);
+    const priceInput = document.getElementById("pfAddPrice");
+    if (priceInput) priceInput.value = Number(spot).toFixed(2);
+    const qtyInput = document.getElementById("pfAddQty");
+    if (qtyInput) qtyInput.value = 25;
+    const lotInfo = document.getElementById("pfLotInfo");
+    if (lotInfo) lotInfo.innerText = "25 Qty";
+  } else {
+    if (strikeWrap) strikeWrap.style.display = "inline-flex";
+    populateQuickStrikeDropdown();
+  }
+}
+
+function populateQuickStrikeDropdown() {
+  const select = document.getElementById("pfQuickStrikeSelect");
+  if (!select || !currentQuickStrikesData) return;
+
+  const strikes = currentQuickStrikesData.strikes || [];
+  const lot = currentQuickStrikesData.lot_size || 25;
+  const isCE = currentQuickType === "CE";
+
+  select.innerHTML = strikes.map(s => {
+    const sym = isCE ? s.ce_symbol : s.pe_symbol;
+    const price = isCE ? s.ce_price : s.pe_price;
+    const delta = isCE ? s.ce_delta : s.pe_delta;
+    const atmTag = s.is_atm ? " [ATM]" : (s.diff_from_atm > 0 ? ` (+${s.diff_from_atm})` : ` (${s.diff_from_atm})`);
+    const sel = s.is_atm ? "selected" : "";
+    return `<option value="${s.strike}" data-sym="${sym}" data-price="${price}" data-lot="${lot}" ${sel}>${s.strike}${atmTag} • ₹${price}</option>`;
+  }).join("");
+
+  onPfQuickStrikeChange();
+}
+
+function onPfQuickStrikeChange() {
+  const select = document.getElementById("pfQuickStrikeSelect");
+  if (!select) return;
+  const opt = select.options[select.selectedIndex];
+  if (!opt) return;
+
+  const price = opt.getAttribute("data-price") || 100;
+  const lot = parseInt(opt.getAttribute("data-lot") || 25);
+
+  const priceInput = document.getElementById("pfAddPrice");
+  if (priceInput) priceInput.value = Number(price).toFixed(2);
+
+  const qtyInput = document.getElementById("pfAddQty");
+  if (qtyInput && (!qtyInput.value || parseInt(qtyInput.value) <= 0 || parseInt(qtyInput.value) === 50)) {
+    qtyInput.value = lot;
+  }
+  updateQuickLotInfoLabel(lot);
+}
+
+function adjustQuickOrderQty(deltaLots) {
+  const qtyInput = document.getElementById("pfAddQty");
+  if (!qtyInput) return;
+  const lot = currentQuickStrikesData?.lot_size || (currentQuickUnderlying === "BANKNIFTY" ? 15 : 25);
+  let cur = parseInt(qtyInput.value) || lot;
+  cur = Math.max(lot, cur + (deltaLots * lot));
+  qtyInput.value = cur;
+  updateQuickLotInfoLabel(lot);
+}
+
+function onQuickOrderQtyChange(val) {
+  const lot = currentQuickStrikesData?.lot_size || 25;
+  updateQuickLotInfoLabel(lot);
+}
+
+function updateQuickLotInfoLabel(lot) {
+  const lotInfo = document.getElementById("pfLotInfo");
+  const qtyInput = document.getElementById("pfAddQty");
+  if (!lotInfo || !qtyInput) return;
+  const cur = parseInt(qtyInput.value) || lot;
+  const lotsCount = Math.round(cur / lot);
+  lotInfo.innerText = currentQuickType === "EQ" ? `${cur} Qty` : `(${lotsCount} Lot${lotsCount > 1 ? 's' : ''})`;
+}
+
+function executeQuickPaperTrade() {
+  const und = currentQuickUnderlying;
+  let sym, price, qty, optType;
+
+  if (und === "CUSTOM") {
+    sym = (document.getElementById("pfAddSym")?.value || "").trim().toUpperCase();
+    qty = parseInt(document.getElementById("pfAddQty")?.value || 25);
+    price = parseFloat(document.getElementById("pfAddPrice")?.value || 0);
+    optType = sym.endsWith(" CE") ? "CE" : (sym.endsWith(" PE") ? "PE" : "EQ");
+  } else if (currentQuickType === "EQ") {
+    sym = und;
+    qty = parseInt(document.getElementById("pfAddQty")?.value || 25);
+    price = parseFloat(document.getElementById("pfAddPrice")?.value || 0);
+    optType = "EQ";
+  } else {
+    const select = document.getElementById("pfQuickStrikeSelect");
+    const opt = select ? select.options[select.selectedIndex] : null;
+    sym = opt ? opt.getAttribute("data-sym") : `${und} ${currentQuickType}`;
+    price = parseFloat(document.getElementById("pfAddPrice")?.value || opt?.getAttribute("data-price") || 100);
+    qty = parseInt(document.getElementById("pfAddQty")?.value || 25);
+    optType = currentQuickType;
+  }
+
+  if (!sym || qty <= 0 || price <= 0) {
+    alert("Please select a valid Symbol, Strike, Quantity and Price.");
+    return;
+  }
+
+  addPortfolioHolding({
+    symbol: sym,
+    qty: qty,
+    buyPrice: price,
+    cmp: price,
+    optType: optType,
+    underlying: und === "CUSTOM" ? sym.split(" ")[0] : und
+  });
+}
+
+// ── Paper Trading Order Pad Modal ──
+let orderPadStrikesData = null;
+let currentOrderPadType = 'CE';
+
+async function openPfOrderPadModal(preselectSym = null) {
+  const modal = document.getElementById("pfOrderPadModal");
+  if (!modal) return;
+  const sel = document.getElementById("pfOrderPadUnderlying");
+  if (sel && preselectSym) {
+    sel.value = preselectSym;
+  }
+  const und = sel ? sel.value : "NIFTY";
+  await onOrderPadUnderlyingChange(und);
+  modal.classList.add("open");
+  modal.style.display = "flex";
+}
+
+function closePfOrderPadModal() {
+  const modal = document.getElementById("pfOrderPadModal");
+  if (modal) {
+    modal.classList.remove("open");
+    modal.style.display = "none";
+  }
+}
+
+async function onOrderPadUnderlyingChange(val) {
+  try {
+    const res = await fetch(`/api/portfolio/option-builder?symbol=${encodeURIComponent(val)}`);
+    if (!res.ok) throw new Error("Failed to load strikes");
+    orderPadStrikesData = await res.json();
+    
+    const spotVal = document.getElementById("pfOrderPadSpotVal");
+    if (spotVal) spotVal.innerText = `₹${Number(orderPadStrikesData.spot).toLocaleString("en-IN", {maximumFractionDigits:2})}`;
+    
+    populateOrderPadStrikes();
+  } catch (e) {
+    console.warn("Order pad strike error", e);
+  }
+}
+
+function setOrderPadType(type) {
+  currentOrderPadType = type;
+  const pillCE = document.getElementById("pfOrderPadPillCE");
+  const pillPE = document.getElementById("pfOrderPadPillPE");
+  const pillEQ = document.getElementById("pfOrderPadPillEQ");
+  const strikeWrap = document.getElementById("pfOrderPadStrikeWrap");
+
+  if (pillCE) pillCE.className = type === "CE" ? "pf-type-pill active-ce" : "pf-type-pill";
+  if (pillPE) pillPE.className = type === "PE" ? "pf-type-pill active-pe" : "pf-type-pill";
+  if (pillEQ) pillEQ.className = type === "EQ" ? "pf-type-pill active-eq" : "pf-type-pill";
+
+  if (type === "EQ") {
+    if (strikeWrap) strikeWrap.style.display = "none";
+    const spot = orderPadStrikesData ? orderPadStrikesData.spot : 1000;
+    const priceInput = document.getElementById("pfOrderPadPriceInput");
+    if (priceInput) priceInput.value = Number(spot).toFixed(2);
+    const qtyInput = document.getElementById("pfOrderPadQtyInput");
+    if (qtyInput) qtyInput.value = 25;
+    updateOrderPadMarginCalc();
+  } else {
+    if (strikeWrap) strikeWrap.style.display = "block";
+    populateOrderPadStrikes();
+  }
+}
+
+function populateOrderPadStrikes() {
+  const select = document.getElementById("pfOrderPadStrikeSelect");
+  if (!select || !orderPadStrikesData) return;
+
+  const strikes = orderPadStrikesData.strikes || [];
+  const lot = orderPadStrikesData.lot_size || 25;
+  const isCE = currentOrderPadType === "CE";
+
+  select.innerHTML = strikes.map(s => {
+    const sym = isCE ? s.ce_symbol : s.pe_symbol;
+    const price = isCE ? s.ce_price : s.pe_price;
+    const delta = isCE ? s.ce_delta : s.pe_delta;
+    const atmTag = s.is_atm ? " [ATM STRIKE]" : (s.diff_from_atm > 0 ? ` (+${s.diff_from_atm})` : ` (${s.diff_from_atm})`);
+    const sel = s.is_atm ? "selected" : "";
+    return `<option value="${s.strike}" data-sym="${sym}" data-price="${price}" data-lot="${lot}" ${sel}>${s.strike}${atmTag} • Premium: ₹${price} (Delta: ${delta})</option>`;
+  }).join("");
+
+  onOrderPadStrikeChange();
+}
+
+function onOrderPadStrikeChange() {
+  const select = document.getElementById("pfOrderPadStrikeSelect");
+  if (!select) return;
+  const opt = select.options[select.selectedIndex];
+  if (!opt) return;
+
+  const price = opt.getAttribute("data-price") || 100;
+  const lot = parseInt(opt.getAttribute("data-lot") || 25);
+
+  const priceInput = document.getElementById("pfOrderPadPriceInput");
+  if (priceInput) priceInput.value = Number(price).toFixed(2);
+
+  const qtyInput = document.getElementById("pfOrderPadQtyInput");
+  if (qtyInput && (!qtyInput.value || parseInt(qtyInput.value) <= 0)) {
+    qtyInput.value = lot;
+  }
+  updateOrderPadMarginCalc();
+}
+
+function adjustOrderPadLots(delta) {
+  const qtyInput = document.getElementById("pfOrderPadQtyInput");
+  if (!qtyInput) return;
+  const lot = orderPadStrikesData?.lot_size || 25;
+  let cur = parseInt(qtyInput.value) || lot;
+  cur = Math.max(lot, cur + (delta * lot));
+  qtyInput.value = cur;
+  updateOrderPadMarginCalc();
+}
+
+function setOrderPadExactLots(lots) {
+  const lot = orderPadStrikesData?.lot_size || 25;
+  const qtyInput = document.getElementById("pfOrderPadQtyInput");
+  if (qtyInput) {
+    qtyInput.value = lot * lots;
+    updateOrderPadMarginCalc();
+  }
+}
+
+function onOrderPadQtyChange(val) {
+  updateOrderPadMarginCalc();
+}
+
+function updateOrderPadMarginCalc() {
+  const lot = orderPadStrikesData?.lot_size || 25;
+  const qtyInput = document.getElementById("pfOrderPadQtyInput");
+  const priceInput = document.getElementById("pfOrderPadPriceInput");
+  const lotsLabel = document.getElementById("pfOrderPadLotsLabel");
+  const totalValEl = document.getElementById("pfOrderPadTotalVal");
+
+  const qty = parseInt(qtyInput?.value || lot);
+  const price = parseFloat(priceInput?.value || 0);
+  const lotsCount = Math.round(qty / lot);
+
+  if (lotsLabel) {
+    lotsLabel.innerText = currentOrderPadType === "EQ" ? `(${qty} Qty)` : `(${lotsCount} Lot${lotsCount > 1 ? 's' : ''})`;
+  }
+
+  if (totalValEl) {
+    const total = qty * price;
+    totalValEl.innerText = `₹${total.toLocaleString("en-IN", {maximumFractionDigits:2})}`;
+  }
+}
+
+function submitPaperTradeOrder() {
+  const und = document.getElementById("pfOrderPadUnderlying")?.value || "NIFTY";
+  let sym, price, qty;
+
+  if (currentOrderPadType === "EQ") {
+    sym = und;
+    price = parseFloat(document.getElementById("pfOrderPadPriceInput")?.value || 1000);
+    qty = parseInt(document.getElementById("pfOrderPadQtyInput")?.value || 25);
+  } else {
+    const select = document.getElementById("pfOrderPadStrikeSelect");
+    const opt = select ? select.options[select.selectedIndex] : null;
+    sym = opt ? opt.getAttribute("data-sym") : `${und} ${currentOrderPadType}`;
+    price = parseFloat(document.getElementById("pfOrderPadPriceInput")?.value || opt?.getAttribute("data-price") || 100);
+    qty = parseInt(document.getElementById("pfOrderPadQtyInput")?.value || 25);
+  }
+
+  if (!sym || qty <= 0 || price <= 0) {
+    alert("Please check Quantity and Price.");
+    return;
+  }
+
+  addPortfolioHolding({
+    symbol: sym,
+    qty: qty,
+    buyPrice: price,
+    cmp: price,
+    optType: currentOrderPadType,
+    underlying: und
+  });
+
+  closePfOrderPadModal();
 }
 
 // ── Portfolio Quick Autocomplete Suggestion Dropdown ──

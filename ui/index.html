@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261019_v43">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v44">
   <script>
-    window.APP_CLIENT_VERSION = "20261019_v43";
+    window.APP_CLIENT_VERSION = "20261019_v44";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -1489,20 +1489,81 @@
       </div>
 
       <!-- 4. 💼 Jyoti's Live Equity & F&O Portfolio Tracker -->
-      <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Live Equity & F&O Portfolio Tracker" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column; position: relative;">
-        <div class="card-header" style="flex-wrap:wrap; gap:4px; margin-bottom: 6px;">
-          <h2 id="title_widget_investingPortfolio" style="font-size: 12px;">💼 Portfolio Tracker</h2>
-          <div style="display:flex; gap:3px; align-items:center; flex-wrap:wrap;">
-            <button class="pill-btn" onclick="openPortfolioSearchModal()" style="padding:2px 7px; font-size:10px; background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(236,72,153,0.25)); border:1px solid #818cf8; color:#ffffff; font-weight:700; cursor:pointer;" title="Search stocks or build options">🔍 Search</button>
-            <div style="position:relative; display:inline-block;">
-              <input type="text" id="pfAddSym" placeholder="Sym/Strike" autocomplete="off" oninput="onPortfolioInputSuggest(this.value)" onfocus="onPortfolioInputSuggest(this.value)" class="select-control" style="width:72px; padding:2px 4px; font-size:10px;"/>
-              <div id="pfSuggestDropdown" style="display:none; position:absolute; top:100%; left:0; width:250px; max-height:220px; overflow-y:auto; background:#0f172a; border:1px solid rgba(99,102,241,0.6); border-radius:6px; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,0.9); font-size:11px;"></div>
-            </div>
-            <input type="number" id="pfAddQty" placeholder="Qty" value="50" class="select-control" style="width:40px; padding:2px 4px; font-size:10px;"/>
-            <input type="number" id="pfAddPrice" placeholder="Price" class="select-control" style="width:50px; padding:2px 4px; font-size:10px;"/>
-            <button class="btn-primary" onclick="addPortfolioHolding()" style="padding:2px 6px; font-size:10px;">+ Add</button>
+      <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Paper Trading & F&O Portfolio Tracker" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column; position: relative;">
+        <!-- Header -->
+        <div class="card-header" style="flex-wrap:wrap; gap:6px; margin-bottom: 6px;">
+          <h2 id="title_widget_investingPortfolio" style="font-size: 12px; display:flex; align-items:center; gap:4px;">
+            💼 Paper Trade &amp; Portfolio Tracker
+          </h2>
+          <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+            <button class="pill-btn" onclick="openPfOrderPadModal()" style="padding:2px 8px; font-size:10px; background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.25)); border:1px solid #10b981; color:#34d399; font-weight:800; cursor:pointer;" title="Open Full Paper Trading Order Pad">⚡ Order Pad</button>
+            <button class="pill-btn" onclick="openPortfolioSearchModal()" style="padding:2px 8px; font-size:10px; background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(236,72,153,0.25)); border:1px solid #818cf8; color:#ffffff; font-weight:700; cursor:pointer;" title="Search stocks or build options">🔍 Strike Ladder</button>
           </div>
         </div>
+
+        <!-- Interactive Strike & Paper Order Bar -->
+        <div id="pfQuickOrderBar" style="display:flex; align-items:center; flex-wrap:wrap; gap:5px; padding:6px 8px; background:rgba(15,23,42,0.85); border:1px solid rgba(99,102,241,0.3); border-radius:8px; margin-bottom:8px;">
+          <!-- Asset Selector -->
+          <div style="display:inline-flex; align-items:center; gap:3px;">
+            <span style="font-size:9.5px; color:#94a3b8; font-weight:700;">Asset:</span>
+            <select id="pfQuickUnderlying" onchange="onPfQuickUnderlyingChange(this.value)" class="select-control" style="font-size:10px; font-weight:800; padding:2px 4px; max-width:92px; background:#0f172a; color:#fde68a; border:1px solid #6366f1;">
+              <option value="NIFTY" selected>NIFTY</option>
+              <option value="BANKNIFTY">BANKNIFTY</option>
+              <option value="FINNIFTY">FINNIFTY</option>
+              <option value="MIDCPNIFTY">MIDCAP</option>
+              <option value="RELIANCE">RELIANCE</option>
+              <option value="TATASTEEL">TATASTEEL</option>
+              <option value="HDFCBANK">HDFCBANK</option>
+              <option value="INFY">INFY</option>
+              <option value="SBIN">SBIN</option>
+              <option value="TCS">TCS</option>
+              <option value="CUSTOM">🔍 Custom...</option>
+            </select>
+          </div>
+
+          <!-- Custom Sym Input (auto-suggest) -->
+          <div id="pfCustomInputWrap" style="display:none; position:relative;">
+            <input type="text" id="pfAddSym" placeholder="Symbol" autocomplete="off" oninput="onPortfolioInputSuggest(this.value)" onfocus="onPortfolioInputSuggest(this.value)" class="select-control" style="width:68px; padding:2px 4px; font-size:10px;"/>
+            <div id="pfSuggestDropdown" style="display:none; position:absolute; top:100%; left:0; width:220px; max-height:200px; overflow-y:auto; background:#0f172a; border:1px solid rgba(99,102,241,0.6); border-radius:6px; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,0.9); font-size:11px;"></div>
+          </div>
+
+          <!-- CE / PE / EQ Type Switcher -->
+          <div style="display:inline-flex; gap:2px; background:rgba(2,6,23,0.7); padding:1px; border-radius:5px; border:1px solid rgba(255,255,255,0.1);">
+            <button type="button" class="pf-type-pill active-ce" id="pfPillCE" onclick="setQuickInstrumentType('CE')">CE</button>
+            <button type="button" class="pf-type-pill" id="pfPillPE" onclick="setQuickInstrumentType('PE')">PE</button>
+            <button type="button" class="pf-type-pill" id="pfPillEQ" onclick="setQuickInstrumentType('EQ')">EQ</button>
+          </div>
+
+          <!-- Dynamic Strike Price Dropdown -->
+          <div id="pfStrikeSelectWrapper" style="display:inline-flex; align-items:center; gap:2px;">
+            <span style="font-size:9.5px; color:#cbd5e1; font-weight:700;">Strike:</span>
+            <select id="pfQuickStrikeSelect" onchange="onPfQuickStrikeChange()" class="select-control" style="font-size:10px; font-weight:700; padding:2px 4px; max-width:145px; background:#0f172a; border:1px solid #10b981; color:#34d399;">
+              <option value="">Loading strikes...</option>
+            </select>
+          </div>
+
+          <!-- Qty Stepper with Lot calculation -->
+          <div style="display:inline-flex; align-items:center; gap:2px;">
+            <span style="font-size:9.5px; color:#cbd5e1; font-weight:700;">Qty:</span>
+            <div class="pf-qty-stepper">
+              <button type="button" class="pf-qty-step-btn" onclick="adjustQuickOrderQty(-1)" title="Decrease 1 Lot">−</button>
+              <input type="number" id="pfAddQty" value="25" class="pf-inline-qty" onchange="onQuickOrderQtyChange(this.value)" style="width:38px;" />
+              <button type="button" class="pf-qty-step-btn" onclick="adjustQuickOrderQty(+1)" title="Increase 1 Lot">+</button>
+            </div>
+            <span id="pfLotInfo" style="font-size:9.5px; color:#a5b4fc; font-weight:700; white-space:nowrap;">1 Lot</span>
+          </div>
+
+          <!-- Buy Price Input -->
+          <div style="display:inline-flex; align-items:center; gap:2px;">
+            <span style="font-size:9.5px; color:#cbd5e1; font-weight:700;">₹</span>
+            <input type="number" step="0.05" id="pfAddPrice" placeholder="Price" class="select-control" style="width:54px; font-size:10px; padding:2px 4px; font-weight:700;" title="Entry / Buy Price" />
+          </div>
+
+          <!-- Execute Paper Trade Button -->
+          <button class="btn-primary" onclick="executeQuickPaperTrade()" style="padding:2px 8px; font-size:10px; font-weight:800; background:linear-gradient(135deg, #10b981, #059669); border:1px solid #34d399; color:#fff; border-radius:5px; cursor:pointer;" title="Execute Paper Trade">+ Paper Trade</button>
+        </div>
+
+        <!-- Portfolio Table Panel -->
         <div id="investingPortfolioPanel" style="max-height: 250px; overflow-y: auto; padding-right: 2px; flex: 1;"></div>
       </div>
     </div>
@@ -1593,6 +1654,177 @@
           </table>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- ⚡ JYOTI'S POSITION TRADE & QUANTITY ADJUSTER MODAL                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="admin-modal-backdrop" id="pfPositionTradeModal" style="display:none;">
+  <div class="admin-modal-window" style="max-width: 480px;">
+    <div class="admin-modal-header" style="background: linear-gradient(90deg, rgba(99, 102, 241, 0.25), rgba(16, 185, 129, 0.25)); border-bottom: 1px solid rgba(99, 102, 241, 0.4);">
+      <div>
+        <h2 id="pfEditModalTitle" style="font-size:15px; font-weight:800; color:#e0e7ff;">⚡ Edit Position &amp; Paper Trade</h2>
+        <p id="pfEditModalSubtitle" style="font-size:11px; color:#cbd5e1; margin-top:2px;">Adjust Quantity, Buy Price, Target or Exit Position</p>
+      </div>
+      <button class="pill-btn" onclick="closePositionTradeModal()" style="padding:4px 10px; font-size:11px; border-color:#f43f5e; color:#fda4af;">✕ Close</button>
+    </div>
+    <div class="admin-modal-body" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
+      <!-- Position Overview Card -->
+      <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 8px; padding: 10px 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span id="pfEditSymbolBadge" style="font-size: 13px; font-weight: 800; color: #fde68a;">RELIANCE</span>
+          <span id="pfEditTypeBadge" style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(56,189,248,0.2); color: #38bdf8;">EQ</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 11px;">
+          <div>
+            <div style="color: #94a3b8; font-size: 10px;">Current Qty</div>
+            <div id="pfEditCurQty" style="font-weight: 700; color: #fff;">25</div>
+          </div>
+          <div>
+            <div style="color: #94a3b8; font-size: 10px;">Buy Price</div>
+            <div id="pfEditCurBuy" style="font-weight: 700; color: #cbd5e1;">₹1155.00</div>
+          </div>
+          <div>
+            <div style="color: #94a3b8; font-size: 10px;">Live CMP</div>
+            <div id="pfEditCurCmp" style="font-weight: 800; color: #38bdf8;">₹1222.00</div>
+          </div>
+        </div>
+        <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+          <span style="color: #94a3b8;">Unrealized P&amp;L:</span>
+          <span id="pfEditCurPnl" style="font-weight: 800; font-size: 12px; color: #34d399;">+₹1675.00 (+5.8%)</span>
+        </div>
+      </div>
+
+      <!-- Quick Lot Adjust Buttons -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 6px;">⚡ Quick Lots Adjustment (Paper Trading):</label>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+          <div style="display: flex; gap: 4px;">
+            <button class="pill-btn" onclick="applyModalLotDelta(+1)" style="flex:1; padding: 6px 4px; font-size: 11px; background: rgba(16,185,129,0.15); border-color: #10b981; color: #34d399; font-weight: 700;">+ 1 Lot</button>
+            <button class="pill-btn" onclick="applyModalLotDelta(+2)" style="flex:1; padding: 6px 4px; font-size: 11px; background: rgba(16,185,129,0.15); border-color: #10b981; color: #34d399; font-weight: 700;">+ 2 Lots</button>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button class="pill-btn" onclick="applyModalLotDelta(-1)" style="flex:1; padding: 6px 4px; font-size: 11px; background: rgba(244,63,94,0.15); border-color: #f43f5e; color: #fda4af; font-weight: 700;">- 1 Lot</button>
+            <button class="pill-btn" onclick="applyModalLotDelta(-2)" style="flex:1; padding: 6px 4px; font-size: 11px; background: rgba(244,63,94,0.15); border-color: #f43f5e; color: #fda4af; font-weight: 700;">- 2 Lots</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direct Edit Inputs -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">New Quantity:</label>
+          <input type="number" id="pfEditModalInputQty" class="select-control" style="width: 100%; font-size: 12px; font-weight: 700; padding: 6px 8px;" />
+        </div>
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">Entry Price (₹):</label>
+          <input type="number" step="0.05" id="pfEditModalInputPrice" class="select-control" style="width: 100%; font-size: 12px; font-weight: 700; padding: 6px 8px;" />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; gap: 8px; margin-top: 6px;">
+        <button class="btn-primary" onclick="savePositionTradeModalChanges()" style="flex: 2; padding: 8px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #6366f1, #4f46e5);">💾 Save Changes</button>
+        <button class="pill-btn" onclick="squareOffFromPositionModal()" style="flex: 1; padding: 8px; font-size: 11.5px; font-weight: 700; border-color: #f43f5e; color: #fda4af; background: rgba(244,63,94,0.15);">🔴 Square Off</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- ⚡ JYOTI'S PAPER TRADING ORDER PAD MODAL                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="admin-modal-backdrop" id="pfOrderPadModal" style="display:none;">
+  <div class="admin-modal-window" style="max-width: 520px;">
+    <div class="admin-modal-header" style="background: linear-gradient(90deg, rgba(16, 185, 129, 0.25), rgba(99, 102, 241, 0.25)); border-bottom: 1px solid rgba(16, 185, 129, 0.4);">
+      <div>
+        <h2 style="font-size:16px; font-weight:800; color:#e0e7ff;">⚡ Paper Trading Order Pad</h2>
+        <p style="font-size:11px; color:#cbd5e1; margin-top:2px;">Select Stock or Option Strike with live pricing &amp; lot multipliers</p>
+      </div>
+      <button class="pill-btn" onclick="closePfOrderPadModal()" style="padding:4px 10px; font-size:11px; border-color:#f43f5e; color:#fda4af;">✕ Close</button>
+    </div>
+    <div class="admin-modal-body" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
+      <!-- Underlying Selector -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">1. Select Underlying / Stock:</label>
+        <div style="display: flex; gap: 8px;">
+          <select id="pfOrderPadUnderlying" onchange="onOrderPadUnderlyingChange(this.value)" class="select-control" style="flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 800; background: #0b1120; color: #fde68a; border: 1.5px solid #6366f1;">
+            <option value="NIFTY" selected>NIFTY 50 Index (Lot 25)</option>
+            <option value="BANKNIFTY">BANK NIFTY Index (Lot 15)</option>
+            <option value="FINNIFTY">FIN NIFTY Index (Lot 25)</option>
+            <option value="MIDCPNIFTY">MIDCAP NIFTY (Lot 50)</option>
+            <option value="SENSEX">BSE SENSEX (Lot 10)</option>
+            <option value="RELIANCE">RELIANCE (Lot 250)</option>
+            <option value="TATASTEEL">TATA STEEL (Lot 5500)</option>
+            <option value="HDFCBANK">HDFC BANK (Lot 550)</option>
+            <option value="INFY">INFOSYS (Lot 400)</option>
+            <option value="SBIN">STATE BANK OF INDIA (Lot 750)</option>
+            <option value="TCS">TCS (Lot 175)</option>
+            <option value="TATAMOTORS">TATA MOTORS (Lot 550)</option>
+          </select>
+          <div id="pfOrderPadSpotBadge" style="padding: 6px 10px; background: rgba(99,102,241,0.15); border: 1px solid #6366f1; border-radius: 6px; font-size: 11.5px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; white-space: nowrap;">
+            Spot: <span id="pfOrderPadSpotVal" style="margin-left: 4px; color:#fde68a;">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instrument Type: CE / PE / EQ -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">2. Instrument Type:</label>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+          <button type="button" class="pf-type-pill active-ce" id="pfOrderPadPillCE" onclick="setOrderPadType('CE')" style="padding: 7px; font-size: 12px; text-align: center;">📈 Call Option (CE)</button>
+          <button type="button" class="pf-type-pill" id="pfOrderPadPillPE" onclick="setOrderPadType('PE')" style="padding: 7px; font-size: 12px; text-align: center;">📉 Put Option (PE)</button>
+          <button type="button" class="pf-type-pill" id="pfOrderPadPillEQ" onclick="setOrderPadType('EQ')" style="padding: 7px; font-size: 12px; text-align: center;">🏢 Equity (Cash)</button>
+        </div>
+      </div>
+
+      <!-- Strike Selector (If Option) -->
+      <div id="pfOrderPadStrikeWrap">
+        <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">3. Select Strike Price (Live ATM &amp; Greeks):</label>
+        <select id="pfOrderPadStrikeSelect" onchange="onOrderPadStrikeChange()" class="select-control" style="width: 100%; padding: 7px 10px; font-size: 12px; font-weight: 700; background: #0b1120; border: 1.5px solid #10b981; color: #34d399;">
+          <option value="">Loading available strikes...</option>
+        </select>
+      </div>
+
+      <!-- Order Details: Lots, Qty & Price -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">4. Lots &amp; Quantity:</label>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div class="pf-qty-stepper" style="flex: 1;">
+              <button type="button" class="pf-qty-step-btn" onclick="adjustOrderPadLots(-1)" style="width: 28px; height: 32px; font-size: 16px;">−</button>
+              <input type="number" id="pfOrderPadQtyInput" value="25" class="pf-inline-qty" onchange="onOrderPadQtyChange(this.value)" style="width: 60px; font-size: 13px;" />
+              <button type="button" class="pf-qty-step-btn" onclick="adjustOrderPadLots(+1)" style="width: 28px; height: 32px; font-size: 16px;">+</button>
+            </div>
+            <span id="pfOrderPadLotsLabel" style="font-size: 11px; font-weight: 700; color: #a5b4fc; white-space: nowrap;">(1 Lot)</span>
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 4px;">
+            <button class="pill-btn" onclick="setOrderPadExactLots(1)" style="padding: 2px 6px; font-size: 10px;">1L</button>
+            <button class="pill-btn" onclick="setOrderPadExactLots(2)" style="padding: 2px 6px; font-size: 10px;">2L</button>
+            <button class="pill-btn" onclick="setOrderPadExactLots(5)" style="padding: 2px 6px; font-size: 10px;">5L</button>
+            <button class="pill-btn" onclick="setOrderPadExactLots(10)" style="padding: 2px 6px; font-size: 10px;">10L</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">5. Entry Price (₹):</label>
+          <input type="number" step="0.05" id="pfOrderPadPriceInput" class="select-control" style="width: 100%; padding: 7px 10px; font-size: 13px; font-weight: 800; color: #fff;" />
+          <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Estimated Premium / CMP</div>
+        </div>
+      </div>
+
+      <!-- Margin Summary -->
+      <div style="background: rgba(6, 9, 19, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px;">
+        <span style="color: #94a3b8;">Est. Capital / Order Value:</span>
+        <strong id="pfOrderPadTotalVal" style="color: #38bdf8; font-size: 13px;">₹3,619.25</strong>
+      </div>
+
+      <!-- Submit Button -->
+      <button class="btn-primary" onclick="submitPaperTradeOrder()" style="padding: 10px; font-size: 13px; font-weight: 800; background: linear-gradient(135deg, #10b981, #059669); border: 1.5px solid #34d399; box-shadow: 0 0 15px rgba(16,185,129,0.4); cursor: pointer;">
+        ⚡ Execute Paper Trade Order
+      </button>
     </div>
   </div>
 </div>
@@ -1890,6 +2122,6 @@
     }
   }
 </script>
-<script src="/static/app.js?v=20261019_v43"></script>
+<script src="/static/app.js?v=20261019_v44"></script>
 </body>
 </html>
