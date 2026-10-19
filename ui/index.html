@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261019_v42">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v43">
   <script>
-    window.APP_CLIENT_VERSION = "20261019_v42";
+    window.APP_CLIENT_VERSION = "20261019_v43";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -1119,9 +1119,12 @@
       <div class="mockup-subgrid-2col" id="leftSubRow2" style="gap: 10px; align-items: stretch; margin-bottom: 10px;">
         <!-- Col 1: 360° Fundamental & Price Range X-Ray -->
         <div class="card widget-box" id="widget_rediff360" data-widget-name="🏢 360° Fundamental & Price Range X-Ray" style="border: 1.5px solid rgba(251, 191, 36, 0.45); background: linear-gradient(145deg, rgba(251, 191, 36, 0.07), rgba(15, 23, 42, 0.92)); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
-          <div class="card-header" style="margin-bottom: 6px;">
+          <div class="card-header" style="margin-bottom: 6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
             <h2 id="title_widget_rediff360" style="font-size: 12px;">🏢 360° Fundamental &amp; Range X-Ray</h2>
-            <span class="badge warning" id="rediffSectorBadge" style="font-size: 9.5px; padding: 2px 6px;">NSE</span>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <button class="pill-btn" onclick="openAssetSearchModal('fundamentals')" style="padding:2px 7px; font-size:10px; background:linear-gradient(135deg,rgba(251,191,36,0.25),rgba(245,158,11,0.25)); border:1px solid #fbbf24; color:#ffffff; font-weight:700; cursor:pointer;" title="Search Stock/Index for 360° Fundamentals">🔍 Search</button>
+              <span class="badge warning" id="rediffSectorBadge" style="font-size: 9.5px; padding: 2px 6px;">NSE</span>
+            </div>
           </div>
           <div id="rediffCompany360Panel" style="max-height: 270px; overflow-y: auto; padding-right: 4px; font-size: 11px;">
             <div style="color:var(--text-muted); font-size:11.5px;">Loading 52W Range, P/E, Market Cap &amp; Returns...</div>
@@ -1130,9 +1133,12 @@
 
         <!-- Col 2: Multi-Timeframe Alignment & Camarilla Pivots (Same Size Box!) -->
         <div class="card widget-box" id="widget_mtfPivots" data-widget-name="⏱️ Multi-Timeframe Alignment & Pivots" style="border: 1.5px solid rgba(56, 189, 248, 0.45); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
-          <div class="card-header" style="margin-bottom: 6px;">
+          <div class="card-header" style="margin-bottom: 6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
             <h2 id="title_widget_mtfPivots" style="font-size: 12px;">⏱️ Multi-TF Alignment &amp; Pivots</h2>
-            <button class="pill-btn" onclick="triggerAnalysis(true)" style="padding:2px 7px; font-size:9.5px;">↻ Recalc</button>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <button class="pill-btn" onclick="openAssetSearchModal('mtf')" style="padding:2px 7px; font-size:10px; background:linear-gradient(135deg,rgba(56,189,248,0.25),rgba(99,102,241,0.25)); border:1px solid #38bdf8; color:#ffffff; font-weight:700; cursor:pointer;" title="Search Stock/Index for Multi-Timeframe Pivots">🔍 Search</button>
+              <button class="pill-btn" onclick="triggerAnalysis(true)" style="padding:2px 7px; font-size:9.5px;">↻ Recalc</button>
+            </div>
           </div>
           <div style="max-height: 270px; overflow-y: auto; padding-right: 2px;">
             <div style="overflow-x:auto;">
@@ -1222,9 +1228,12 @@
 
         <!-- Col 2: Live Technical Speedometer -->
         <div class="card widget-box" id="widget_investingGauge" data-widget-name="🧭 Live Technical Speedometer" style="border: 1.5px solid rgba(16, 185, 129, 0.5); margin:0;">
-          <div class="card-header">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
             <h2 id="title_widget_investingGauge">🧭 Live Technical Speedometer</h2>
-            <span class="badge success" id="invTechBadge">BUY</span>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <button class="pill-btn" onclick="openAssetSearchModal('speedometer')" style="padding:2px 7px; font-size:10px; background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(56,189,248,0.25)); border:1px solid #10b981; color:#ffffff; font-weight:700; cursor:pointer;" title="Search Stock/Index for Technical Speedometer">🔍 Search</button>
+              <span class="badge success" id="invTechBadge">BUY</span>
+            </div>
           </div>
           <div id="investingTechPanel">
             <div style="color:var(--text-muted); font-size:12px;">Calculating MA 5..200 &amp; Oscillators...</div>
@@ -1333,9 +1342,12 @@
   <!-- ═══════════════════════════════════════════════════════════════════════════ -->
   <div id="fullWidthBottomZone">
     <div class="card widget-box" id="widget_chart" data-widget-name="📊 Live Pro Candlestick Chart" style="border: 2px solid rgba(56, 189, 248, 0.55); margin-bottom: 16px; width: 100%;">
-      <div class="card-header" style="flex-wrap:wrap; gap:10px;">
-        <h2><span id="title_widget_chart">📊 Live Pro Candlestick Chart</span> <span id="chartSymbolTag" style="color: var(--accent-blue); font-size: 13.5px;">[NIFTY • 15M]</span></h2>
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div class="card-header" style="flex-wrap:wrap; gap:8px; align-items:center;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <h2><span id="title_widget_chart">📊 Live Pro Candlestick Chart</span> <span id="chartSymbolTag" style="color: var(--accent-blue); font-size: 13.5px;">[NIFTY • 15M]</span></h2>
+          <button class="pill-btn" onclick="openAssetSearchModal('chart')" style="padding:3px 9px; font-size:11px; font-weight:700; background:linear-gradient(135deg,rgba(56,189,248,0.25),rgba(99,102,241,0.3)); border:1.5px solid #38bdf8; color:#ffffff; cursor:pointer;" title="Search Any Stock or Option for Candlestick Chart">🔍 Search Stock / Option</button>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <div class="timeframe-tabs">
             <button class="tf-tab active" id="btnModeTVLight" onclick="switchChartEngine('tv_candlestick')">🕯️ Live Candles + Volume</button>
             <button class="tf-tab" id="btnModeTVWidget" onclick="switchChartEngine('tv_official')">🌐 Multi-Indicator Terminal</button>
@@ -1440,9 +1452,12 @@
 
       <!-- 2. 🔥 Live Call vs Put OI, PCR & Max Pain -->
       <div class="card widget-box" id="widget_oiPanel" data-widget-name="🔥 Live OI / PCR / Max Pain" style="border: 1.5px solid rgba(139, 92, 246, 0.45); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
-        <div class="card-header" style="margin-bottom: 6px;">
+        <div class="card-header" style="margin-bottom: 6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
           <h2 id="title_widget_oiPanel" style="font-size: 12px;">🔥 Live OI / PCR / Max Pain</h2>
-          <button class="pill-btn" onclick="refreshOI()" style="padding:2px 7px; font-size:9.5px;">↻ Refresh</button>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="pill-btn" onclick="openAssetSearchModal('oi')" style="padding:2px 7px; font-size:10px; background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(236,72,153,0.25)); border:1px solid #a78bfa; color:#ffffff; font-weight:700; cursor:pointer;" title="Search F&O Stock/Index for OI & PCR">🔍 Search</button>
+            <button class="pill-btn" onclick="refreshOI()" style="padding:2px 7px; font-size:9.5px;">↻ Refresh</button>
+          </div>
         </div>
         <div id="oiPanel" style="flex: 1; max-height: 250px; overflow-y: auto;">
           <div style="color:var(--text-muted); font-size:11.5px;">Fetching Open Interest data...</div>
@@ -1501,8 +1516,8 @@
   <div class="admin-modal-window" style="max-width: 860px;">
     <div class="admin-modal-header" style="background: linear-gradient(90deg, rgba(99, 102, 241, 0.25), rgba(236, 72, 153, 0.25)); border-bottom: 1px solid rgba(99, 102, 241, 0.4);">
       <div>
-        <h2 style="font-size:16px; font-weight:800; color:#e0e7ff;">🔍 Search &amp; Add Assets to Portfolio</h2>
-        <p style="font-size:11px; color:#cbd5e1; margin-top:2px;">Search 60+ Indian Stocks &amp; Indices or pick Call (CE) / Put (PE) Option Strikes with Live Greeks</p>
+        <h2 id="pfModalTitle" style="font-size:16px; font-weight:800; color:#e0e7ff;">🔍 Search &amp; Add Assets to Portfolio</h2>
+        <p id="pfModalSubtitle" style="font-size:11px; color:#cbd5e1; margin-top:2px;">Search 60+ Indian Stocks &amp; Indices or pick Call (CE) / Put (PE) Option Strikes with Live Greeks</p>
       </div>
       <button class="pill-btn" onclick="closePortfolioSearchModal()" style="padding:5px 12px; font-size:12px; border-color:#f43f5e; color:#fda4af;">✕ Close</button>
     </div>
@@ -1875,6 +1890,6 @@
     }
   }
 </script>
-<script src="/static/app.js?v=20261019_v42"></script>
+<script src="/static/app.js?v=20261019_v43"></script>
 </body>
 </html>

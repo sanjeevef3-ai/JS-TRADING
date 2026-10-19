@@ -2890,13 +2890,61 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// ── Interactive Portfolio Asset Search & Option Builder Modal ──
+// ── Universal Asset Search & Option Builder Modal ──
 let currentPfFilter = "ALL";
 let pfSearchDebounce = null;
+let currentSearchTarget = "portfolio";
 
-function openPortfolioSearchModal() {
+const TARGET_METADATA = {
+  'portfolio': {
+    title: "🔍 Search & Add Assets to Jyoti's Portfolio",
+    subtitle: "Search 60+ Indian Stocks & Indices or pick Call (CE) / Put (PE) Option Strikes with Live Greeks",
+    primaryBtnText: "+ 1 Lot",
+    shortName: "Portfolio"
+  },
+  'chart': {
+    title: "📊 Search Stock / Option for Live Candlestick Chart",
+    subtitle: "Search 60+ Indian Stocks & Indices to instantly load into Live Pro Candlestick Chart",
+    primaryBtnText: "🚀 View in Chart",
+    shortName: "Chart"
+  },
+  'speedometer': {
+    title: "🧭 Search Stock for Live Technical Speedometer",
+    subtitle: "Calculate Moving Averages & Oscillators for any Indian Stock or Index",
+    primaryBtnText: "🧭 Speedometer",
+    shortName: "Speedometer"
+  },
+  'mtf': {
+    title: "⏱️ Search Stock for Multi-TF Alignment & Pivots",
+    subtitle: "Calculate 5M, 15M, 1H, 1D Trends and Camarilla / Standard Pivots",
+    primaryBtnText: "⏱️ Recalc Pivots",
+    shortName: "Pivots"
+  },
+  'fundamentals': {
+    title: "🏢 Search Stock for 360° Fundamental & Range X-Ray",
+    subtitle: "Analyze 52W High/Low Range, P/E, Market Cap, Sector and Valuation",
+    primaryBtnText: "🏢 360° X-Ray",
+    shortName: "Fundamentals"
+  },
+  'oi': {
+    title: "🔥 Search F&O Underlying for Live OI / PCR / Max Pain",
+    subtitle: "Analyze Open Interest, Put-Call Ratio, and Max Pain for any F&O Index or Stock",
+    primaryBtnText: "🔥 View OI / PCR",
+    shortName: "Live OI"
+  }
+};
+
+function openAssetSearchModal(target = 'portfolio') {
+  currentSearchTarget = target;
   const modal = document.getElementById("pfSearchModal");
   if (!modal) return;
+
+  const meta = TARGET_METADATA[target] || TARGET_METADATA['portfolio'];
+  const titleEl = document.getElementById("pfModalTitle");
+  const subEl = document.getElementById("pfModalSubtitle");
+  if (titleEl) titleEl.innerText = meta.title;
+  if (subEl) subEl.innerText = meta.subtitle;
+
   modal.style.display = "flex";
   modal.classList.add("open");
   const input = document.getElementById("pfModalSearchInput");
@@ -2904,8 +2952,14 @@ function openPortfolioSearchModal() {
     input.focus();
     if (!input.value.trim()) {
       setPfSearchFilter("ALL");
+    } else {
+      loadPfSearchResults(input.value.trim(), currentPfFilter);
     }
   }
+}
+
+function openPortfolioSearchModal() {
+  openAssetSearchModal('portfolio');
 }
 
 function closePortfolioSearchModal() {
@@ -2913,6 +2967,31 @@ function closePortfolioSearchModal() {
   if (!modal) return;
   modal.style.display = "none";
   modal.classList.remove("open");
+}
+
+function applyAssetToWidget(sym, underlying = null) {
+  const cleanSym = (underlying || sym || "").split(" ")[0].trim().toUpperCase();
+  selectSymbol(cleanSym);
+  closePortfolioSearchModal();
+
+  const scrollMap = {
+    'chart': 'widget_chart',
+    'speedometer': 'widget_investingGauge',
+    'mtf': 'widget_mtfPivots',
+    'fundamentals': 'widget_rediff360',
+    'oi': 'widget_oiPanel'
+  };
+
+  const widgetId = scrollMap[currentSearchTarget];
+  const meta = TARGET_METADATA[currentSearchTarget] || TARGET_METADATA['portfolio'];
+  showPortfolioToast(`🚀 Loaded ${cleanSym} into ${meta.shortName}!`);
+
+  if (widgetId) {
+    setTimeout(() => {
+      const el = document.getElementById(widgetId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+  }
 }
 
 function setPfSearchFilter(filter) {
@@ -2993,6 +3072,9 @@ function renderPfSearchResults(items) {
     return;
   }
 
+  const isPf = (currentSearchTarget === 'portfolio');
+  const targetMeta = TARGET_METADATA[currentSearchTarget] || TARGET_METADATA['portfolio'];
+
   container.innerHTML = items.map(it => {
     const isOpt = it.type === "OPTION";
     const badgeClr = isOpt ? (it.opt_type === "CE" ? "#34d399" : "#fb7185") : "#38bdf8";
@@ -3000,12 +3082,27 @@ function renderPfSearchResults(items) {
     const badgeTxt = isOpt ? `${it.opt_type} OPTION` : (it.type || "STOCK");
     const chgClr = (it.day_change || 0) >= 0 ? "#34d399" : "#fb7185";
     const itJson = encodeURIComponent(JSON.stringify(it));
+    const cleanSym = (it.underlying || it.symbol || "").split(" ")[0];
+
+    let actionButtonsHtml = '';
+    if (isPf) {
+      actionButtonsHtml = `
+        <button class="btn-primary" onclick="addAssetFromModal('${itJson}', 1)" style="flex:1; padding:4px 8px; font-size:11px; background:linear-gradient(135deg,#10b981,#059669);" title="Add 1 Lot to Portfolio">+ 1 Lot</button>
+        <button class="pill-btn" onclick="applyAssetToWidget('${it.symbol}', '${cleanSym}')" style="padding:4px 8px; font-size:10.5px; border-color:#38bdf8; color:#7dd3fc;" title="Analyze in Terminal">🚀 Chart</button>
+        <button class="pill-btn" onclick="customizeAssetFromModal('${itJson}')" style="padding:4px 8px; font-size:10.5px;" title="Fill Qty and Price in tracker">Edit</button>
+      `;
+    } else {
+      actionButtonsHtml = `
+        <button class="btn-primary" onclick="applyAssetToWidget('${it.symbol}', '${cleanSym}')" style="flex:1; padding:5px 8px; font-size:11px; background:linear-gradient(135deg,#0284c7,#6366f1); font-weight:700;" title="Load into ${targetMeta.title}">${targetMeta.primaryBtnText}</button>
+        <button class="pill-btn" onclick="addAssetFromModal('${itJson}', 1)" style="padding:4px 8px; font-size:10.5px; border-color:#10b981; color:#34d399;" title="Also Add to Portfolio Tracker">+ Portfolio</button>
+      `;
+    }
 
     return `
       <div class="pf-search-card">
         <div>
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <strong style="color:#fde68a; font-size:13px;">${it.symbol}</strong>
+            <strong style="color:#fde68a; font-size:13px; cursor:pointer;" onclick="applyAssetToWidget('${it.symbol}', '${cleanSym}')">${it.symbol}</strong>
             <span style="background:${badgeBg}; color:${badgeClr}; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px;">${badgeTxt}</span>
           </div>
           <div style="font-size:11px; color:#cbd5e1; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${it.display_name || it.symbol}</div>
@@ -3017,8 +3114,7 @@ function renderPfSearchResults(items) {
           <div style="font-size:10px; color:#94a3b8; margin-top:2px;">Lot Size: <strong style="color:#e2e8f0;">${it.lot_size}</strong> ${it.sector ? `• ${it.sector}` : ''}</div>
         </div>
         <div style="display:flex; gap:6px; margin-top:4px;">
-          <button class="btn-primary" onclick="addAssetFromModal('${itJson}', 1)" style="flex:1; padding:4px 8px; font-size:11px; background:linear-gradient(135deg,#10b981,#059669);" title="Add 1 Lot instantly">+ 1 Lot</button>
-          <button class="pill-btn" onclick="customizeAssetFromModal('${itJson}')" style="padding:4px 8px; font-size:11px;" title="Fill Qty and Price in tracker">Customize</button>
+          ${actionButtonsHtml}
         </div>
       </div>
     `;
@@ -3095,7 +3191,10 @@ function renderPfOptionBuilder(data) {
           Rs.${s.ce_price} <span style="font-size:9.5px; color:#94a3b8;">(Δ ${s.ce_delta})</span>
         </td>
         <td style="padding:5px 8px;">
-          <button class="pill-btn" onclick="addOptionContractFromBuilder('${s.ce_symbol}', 'CE', ${s.strike}, ${s.ce_price}, ${lot}, '${und}')" style="padding:3px 7px; font-size:10px; background:rgba(16,185,129,0.2); border-color:#10b981; color:#34d399;">+ Add CE</button>
+          <div style="display:flex; gap:3px; justify-content:center;">
+            <button class="pill-btn" onclick="addOptionContractFromBuilder('${s.ce_symbol}', 'CE', ${s.strike}, ${s.ce_price}, ${lot}, '${und}')" style="padding:3px 6px; font-size:10px; background:rgba(16,185,129,0.2); border-color:#10b981; color:#34d399;" title="Add CE to Portfolio">+ CE</button>
+            <button class="pill-btn" onclick="applyAssetToWidget('${s.ce_symbol}', '${und}')" style="padding:3px 6px; font-size:10px; border-color:#38bdf8; color:#7dd3fc;" title="Analyze ${und} in Chart">🚀 Chart</button>
+          </div>
         </td>
 
         <!-- STRIKE -->
@@ -3108,7 +3207,10 @@ function renderPfOptionBuilder(data) {
           Rs.${s.pe_price} <span style="font-size:9.5px; color:#94a3b8;">(Δ ${s.pe_delta})</span>
         </td>
         <td style="padding:5px 8px;">
-          <button class="pill-btn" onclick="addOptionContractFromBuilder('${s.pe_symbol}', 'PE', ${s.strike}, ${s.pe_price}, ${lot}, '${und}')" style="padding:3px 7px; font-size:10px; background:rgba(244,63,94,0.2); border-color:#f43f5e; color:#fb7185;">+ Add PE</button>
+          <div style="display:flex; gap:3px; justify-content:center;">
+            <button class="pill-btn" onclick="addOptionContractFromBuilder('${s.pe_symbol}', 'PE', ${s.strike}, ${s.pe_price}, ${lot}, '${und}')" style="padding:3px 6px; font-size:10px; background:rgba(244,63,94,0.2); border-color:#f43f5e; color:#fb7185;" title="Add PE to Portfolio">+ PE</button>
+            <button class="pill-btn" onclick="applyAssetToWidget('${s.pe_symbol}', '${und}')" style="padding:3px 6px; font-size:10px; border-color:#38bdf8; color:#7dd3fc;" title="Analyze ${und} in Chart">🚀 Chart</button>
+          </div>
         </td>
       </tr>
     `;
