@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261019_v44">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v45">
   <script>
-    window.APP_CLIENT_VERSION = "20261019_v44";
+    window.APP_CLIENT_VERSION = "20261019_v45";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -1489,82 +1489,42 @@
       </div>
 
       <!-- 4. 💼 Jyoti's Live Equity & F&O Portfolio Tracker -->
-      <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Paper Trading & F&O Portfolio Tracker" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column; position: relative;">
+      <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Paper Trading & Live Portfolio" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 12px 14px; height: 100%; display: flex; flex-direction: column; position: relative;">
         <!-- Header -->
-        <div class="card-header" style="flex-wrap:wrap; gap:6px; margin-bottom: 6px;">
-          <h2 id="title_widget_investingPortfolio" style="font-size: 12px; display:flex; align-items:center; gap:4px;">
-            💼 Paper Trade &amp; Portfolio Tracker
-          </h2>
-          <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
-            <button class="pill-btn" onclick="openPfOrderPadModal()" style="padding:2px 8px; font-size:10px; background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.25)); border:1px solid #10b981; color:#34d399; font-weight:800; cursor:pointer;" title="Open Full Paper Trading Order Pad">⚡ Order Pad</button>
-            <button class="pill-btn" onclick="openPortfolioSearchModal()" style="padding:2px 8px; font-size:10px; background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(236,72,153,0.25)); border:1px solid #818cf8; color:#ffffff; font-weight:700; cursor:pointer;" title="Search stocks or build options">🔍 Strike Ladder</button>
+        <div class="card-header" style="flex-wrap:wrap; gap:8px; margin-bottom: 8px; justify-content: space-between; align-items: center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <h2 id="title_widget_investingPortfolio" style="font-size: 13px; font-weight: 800; color:#fde68a; display:flex; align-items:center; gap:5px;">
+              💼 Paper Trading &amp; Portfolio Tracker
+            </h2>
+            <span style="background:rgba(16,185,129,0.2); color:#34d399; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px; border:1px solid #10b981;">LIVE VIRTUAL</span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button class="btn-primary" onclick="openPfOrderPadModal()" style="padding:4px 12px; font-size:11px; background:linear-gradient(135deg,#10b981,#059669); border:1.5px solid #34d399; color:#ffffff; font-weight:800; cursor:pointer; box-shadow:0 0 12px rgba(16,185,129,0.4); border-radius:6px;" title="Open Professional Paper Trading Order Pad">
+              ⚡ + New Paper Trade (Stock/Option)
+            </button>
+            <button class="pill-btn" onclick="openPortfolioSearchModal()" style="padding:4px 10px; font-size:10.5px; background:rgba(99,102,241,0.2); border:1px solid #818cf8; color:#cbd5e1; font-weight:700; cursor:pointer; border-radius:6px;" title="Search stocks or build option strikes">
+              🔍 Strike Ladder
+            </button>
+            <button class="pill-btn" onclick="resetDemoPaperPortfolio()" style="padding:4px 8px; font-size:10px; background:rgba(251,191,36,0.15); border:1px solid #f59e0b; color:#fde68a; font-weight:700; cursor:pointer; border-radius:6px;" title="Reset ₹10 Lakhs Virtual Capital">
+              🔄 Reset ₹10L
+            </button>
           </div>
         </div>
 
-        <!-- Interactive Strike & Paper Order Bar -->
-        <div id="pfQuickOrderBar" style="display:flex; align-items:center; flex-wrap:wrap; gap:5px; padding:6px 8px; background:rgba(15,23,42,0.85); border:1px solid rgba(99,102,241,0.3); border-radius:8px; margin-bottom:8px;">
-          <!-- Asset Selector -->
-          <div style="display:inline-flex; align-items:center; gap:3px;">
-            <span style="font-size:9.5px; color:#94a3b8; font-weight:700;">Asset:</span>
-            <select id="pfQuickUnderlying" onchange="onPfQuickUnderlyingChange(this.value)" class="select-control" style="font-size:10px; font-weight:800; padding:2px 4px; max-width:92px; background:#0f172a; color:#fde68a; border:1px solid #6366f1;">
-              <option value="NIFTY" selected>NIFTY</option>
-              <option value="BANKNIFTY">BANKNIFTY</option>
-              <option value="FINNIFTY">FINNIFTY</option>
-              <option value="MIDCPNIFTY">MIDCAP</option>
-              <option value="RELIANCE">RELIANCE</option>
-              <option value="TATASTEEL">TATASTEEL</option>
-              <option value="HDFCBANK">HDFCBANK</option>
-              <option value="INFY">INFY</option>
-              <option value="SBIN">SBIN</option>
-              <option value="TCS">TCS</option>
-              <option value="CUSTOM">🔍 Custom...</option>
-            </select>
+        <!-- Segmented Navigation Tabs -->
+        <div style="display:flex; gap:6px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:6px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="pf-tab-btn active" id="pfTabAll" onclick="setPortfolioTabFilter('ALL')" style="padding:3px 8px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid #6366f1; background:#4f46e5; color:#fff; cursor:pointer;">🌟 All Positions (<span id="pfCountAll">6</span>)</button>
+            <button class="pf-tab-btn" id="pfTabFno" onclick="setPortfolioTabFilter('FNO')" style="padding:3px 8px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid rgba(255,255,255,0.15); background:rgba(15,23,42,0.8); color:#cbd5e1; cursor:pointer;">⚡ F&amp;O Paper Trades (<span id="pfCountFno">2</span>)</button>
+            <button class="pf-tab-btn" id="pfTabEquity" onclick="setPortfolioTabFilter('EQUITY')" style="padding:3px 8px; font-size:10.5px; font-weight:700; border-radius:5px; border:1px solid rgba(255,255,255,0.15); background:rgba(15,23,42,0.8); color:#cbd5e1; cursor:pointer;">📈 Equity Portfolio (<span id="pfCountEq">4</span>)</button>
           </div>
-
-          <!-- Custom Sym Input (auto-suggest) -->
-          <div id="pfCustomInputWrap" style="display:none; position:relative;">
-            <input type="text" id="pfAddSym" placeholder="Symbol" autocomplete="off" oninput="onPortfolioInputSuggest(this.value)" onfocus="onPortfolioInputSuggest(this.value)" class="select-control" style="width:68px; padding:2px 4px; font-size:10px;"/>
-            <div id="pfSuggestDropdown" style="display:none; position:absolute; top:100%; left:0; width:220px; max-height:200px; overflow-y:auto; background:#0f172a; border:1px solid rgba(99,102,241,0.6); border-radius:6px; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,0.9); font-size:11px;"></div>
+          <div style="font-size:10px; color:#94a3b8;">
+            Virtual Capital: <strong style="color:#38bdf8;">₹10,00,000</strong>
           </div>
-
-          <!-- CE / PE / EQ Type Switcher -->
-          <div style="display:inline-flex; gap:2px; background:rgba(2,6,23,0.7); padding:1px; border-radius:5px; border:1px solid rgba(255,255,255,0.1);">
-            <button type="button" class="pf-type-pill active-ce" id="pfPillCE" onclick="setQuickInstrumentType('CE')">CE</button>
-            <button type="button" class="pf-type-pill" id="pfPillPE" onclick="setQuickInstrumentType('PE')">PE</button>
-            <button type="button" class="pf-type-pill" id="pfPillEQ" onclick="setQuickInstrumentType('EQ')">EQ</button>
-          </div>
-
-          <!-- Dynamic Strike Price Dropdown -->
-          <div id="pfStrikeSelectWrapper" style="display:inline-flex; align-items:center; gap:2px;">
-            <span style="font-size:9.5px; color:#cbd5e1; font-weight:700;">Strike:</span>
-            <select id="pfQuickStrikeSelect" onchange="onPfQuickStrikeChange()" class="select-control" style="font-size:10px; font-weight:700; padding:2px 4px; max-width:145px; background:#0f172a; border:1px solid #10b981; color:#34d399;">
-              <option value="">Loading strikes...</option>
-            </select>
-          </div>
-
-          <!-- Qty Stepper with Lot calculation -->
-          <div style="display:inline-flex; align-items:center; gap:2px;">
-            <span style="font-size:9.5px; color:#cbd5e1; font-weight:700;">Qty:</span>
-            <div class="pf-qty-stepper">
-              <button type="button" class="pf-qty-step-btn" onclick="adjustQuickOrderQty(-1)" title="Decrease 1 Lot">−</button>
-              <input type="number" id="pfAddQty" value="25" class="pf-inline-qty" onchange="onQuickOrderQtyChange(this.value)" style="width:38px;" />
-              <button type="button" class="pf-qty-step-btn" onclick="adjustQuickOrderQty(+1)" title="Increase 1 Lot">+</button>
-            </div>
-            <span id="pfLotInfo" style="font-size:9.5px; color:#a5b4fc; font-weight:700; white-space:nowrap;">1 Lot</span>
-          </div>
-
-          <!-- Buy Price Input -->
-          <div style="display:inline-flex; align-items:center; gap:2px;">
-            <span style="font-size:9.5px; color:#cbd5e1; font-weight:700;">₹</span>
-            <input type="number" step="0.05" id="pfAddPrice" placeholder="Price" class="select-control" style="width:54px; font-size:10px; padding:2px 4px; font-weight:700;" title="Entry / Buy Price" />
-          </div>
-
-          <!-- Execute Paper Trade Button -->
-          <button class="btn-primary" onclick="executeQuickPaperTrade()" style="padding:2px 8px; font-size:10px; font-weight:800; background:linear-gradient(135deg, #10b981, #059669); border:1px solid #34d399; color:#fff; border-radius:5px; cursor:pointer;" title="Execute Paper Trade">+ Paper Trade</button>
         </div>
 
-        <!-- Portfolio Table Panel -->
-        <div id="investingPortfolioPanel" style="max-height: 250px; overflow-y: auto; padding-right: 2px; flex: 1;"></div>
+        <!-- Portfolio Table & Metrics Panel -->
+        <div id="investingPortfolioPanel" style="max-height: 280px; overflow-y: auto; padding-right: 2px; flex: 1;"></div>
       </div>
     </div>
   </div>
@@ -2122,6 +2082,6 @@
     }
   }
 </script>
-<script src="/static/app.js?v=20261019_v44"></script>
+<script src="/static/app.js?v=20261019_v45"></script>
 </body>
 </html>
