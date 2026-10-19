@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261017_v41">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v42">
   <script>
-    window.APP_CLIENT_VERSION = "20261017_v41";
+    window.APP_CLIENT_VERSION = "20261019_v42";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -1474,17 +1474,109 @@
       </div>
 
       <!-- 4. 💼 Jyoti's Live Equity & F&O Portfolio Tracker -->
-      <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Live Equity & F&O Portfolio Tracker" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
+      <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Live Equity & F&O Portfolio Tracker" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column; position: relative;">
         <div class="card-header" style="flex-wrap:wrap; gap:4px; margin-bottom: 6px;">
           <h2 id="title_widget_investingPortfolio" style="font-size: 12px;">💼 Portfolio Tracker</h2>
           <div style="display:flex; gap:3px; align-items:center; flex-wrap:wrap;">
-            <input type="text" id="pfAddSym" placeholder="Sym" class="select-control" style="width:55px; padding:2px 4px; font-size:10px;"/>
+            <button class="pill-btn" onclick="openPortfolioSearchModal()" style="padding:2px 7px; font-size:10px; background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(236,72,153,0.25)); border:1px solid #818cf8; color:#ffffff; font-weight:700; cursor:pointer;" title="Search stocks or build options">🔍 Search</button>
+            <div style="position:relative; display:inline-block;">
+              <input type="text" id="pfAddSym" placeholder="Sym/Strike" autocomplete="off" oninput="onPortfolioInputSuggest(this.value)" onfocus="onPortfolioInputSuggest(this.value)" class="select-control" style="width:72px; padding:2px 4px; font-size:10px;"/>
+              <div id="pfSuggestDropdown" style="display:none; position:absolute; top:100%; left:0; width:250px; max-height:220px; overflow-y:auto; background:#0f172a; border:1px solid rgba(99,102,241,0.6); border-radius:6px; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,0.9); font-size:11px;"></div>
+            </div>
             <input type="number" id="pfAddQty" placeholder="Qty" value="50" class="select-control" style="width:40px; padding:2px 4px; font-size:10px;"/>
             <input type="number" id="pfAddPrice" placeholder="Price" class="select-control" style="width:50px; padding:2px 4px; font-size:10px;"/>
             <button class="btn-primary" onclick="addPortfolioHolding()" style="padding:2px 6px; font-size:10px;">+ Add</button>
           </div>
         </div>
         <div id="investingPortfolioPanel" style="max-height: 250px; overflow-y: auto; padding-right: 2px; flex: 1;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🔍 JYOTI'S PORTFOLIO ASSET SEARCH & OPTION BUILDER MODAL                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="admin-modal-backdrop" id="pfSearchModal" style="display:none;">
+  <div class="admin-modal-window" style="max-width: 860px;">
+    <div class="admin-modal-header" style="background: linear-gradient(90deg, rgba(99, 102, 241, 0.25), rgba(236, 72, 153, 0.25)); border-bottom: 1px solid rgba(99, 102, 241, 0.4);">
+      <div>
+        <h2 style="font-size:16px; font-weight:800; color:#e0e7ff;">🔍 Search &amp; Add Assets to Portfolio</h2>
+        <p style="font-size:11px; color:#cbd5e1; margin-top:2px;">Search 60+ Indian Stocks &amp; Indices or pick Call (CE) / Put (PE) Option Strikes with Live Greeks</p>
+      </div>
+      <button class="pill-btn" onclick="closePortfolioSearchModal()" style="padding:5px 12px; font-size:12px; border-color:#f43f5e; color:#fda4af;">✕ Close</button>
+    </div>
+
+    <!-- Search Bar & Filters -->
+    <div style="padding: 10px 14px; background: rgba(6, 9, 19, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; gap: 8px;">
+      <div style="position: relative; display: flex; gap: 8px;">
+        <input type="text" id="pfModalSearchInput" placeholder="🔍 Type Stock name or Strike (e.g. RELIANCE, NIFTY 25000 CE, TATASTEEL, BANKNIFTY 52000 PE)..." 
+               oninput="onPfModalSearchInput(this.value)" 
+               class="select-control" style="flex: 1; padding: 7px 12px; font-size: 12.5px; border-radius: 8px; border: 1.5px solid #6366f1; background: #0b1120; color: #fff;" />
+        <button class="pill-btn" onclick="clearPfModalSearch()" style="padding: 6px 12px; font-size: 11.5px;">Clear</button>
+      </div>
+
+      <!-- Quick Filter Pills -->
+      <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+        <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">Filters:</span>
+        <button class="pf-filter-btn active" id="pfTab_ALL" onclick="setPfSearchFilter('ALL')">🌟 All Assets</button>
+        <button class="pf-filter-btn" id="pfTab_STOCK" onclick="setPfSearchFilter('STOCK')">📈 Stocks (60+)</button>
+        <button class="pf-filter-btn" id="pfTab_NIFTY" onclick="setPfSearchFilter('NIFTY')">⚡ NIFTY Options</button>
+        <button class="pf-filter-btn" id="pfTab_BANKNIFTY" onclick="setPfSearchFilter('BANKNIFTY')">🏦 BANK NIFTY Options</button>
+        <button class="pf-filter-btn" id="pfTab_BUILDER" onclick="setPfSearchFilter('BUILDER')">🎯 Strike Ladder Builder</button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="admin-modal-body" style="padding: 12px 14px; max-height: 60vh; overflow-y: auto;">
+      <!-- Standard Search Results Grid -->
+      <div id="pfSearchResultsContainer">
+        <div id="pfSearchResultsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px;"></div>
+      </div>
+
+      <!-- Option Strike Ladder Builder View -->
+      <div id="pfOptionBuilderContainer" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; padding: 8px 12px; background: rgba(99, 102, 241, 0.12); border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.3);">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <label style="font-size: 11.5px; font-weight: 700; color: #cbd5e1;">Select Underlying:</label>
+            <select id="pfBuilderUnderlyingSelect" onchange="onPfBuilderUnderlyingChange(this.value)" class="select-control" style="padding: 4px 8px; font-size: 11.5px; font-weight: 700;">
+              <option value="NIFTY">NIFTY 50 Index (Lot 25)</option>
+              <option value="BANKNIFTY">BANK NIFTY Index (Lot 15)</option>
+              <option value="FINNIFTY">FIN NIFTY Index (Lot 25)</option>
+              <option value="MIDCPNIFTY">MIDCAP NIFTY (Lot 50)</option>
+              <option value="SENSEX">BSE SENSEX (Lot 10)</option>
+              <option value="RELIANCE">RELIANCE (Lot 250)</option>
+              <option value="TCS">TCS (Lot 175)</option>
+              <option value="HDFCBANK">HDFCBANK (Lot 550)</option>
+              <option value="INFY">INFOSYS (Lot 400)</option>
+              <option value="TATAMOTORS">TATA MOTORS (Lot 550)</option>
+              <option value="SBIN">STATE BANK OF INDIA (Lot 750)</option>
+            </select>
+          </div>
+          <div id="pfBuilderSpotBadge" style="font-size: 12px; font-weight: 800; color: #fde68a;">
+            Spot: <span id="pfBuilderSpotVal">--</span>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table" style="font-size: 11px; text-align: center; width: 100%;">
+            <thead>
+              <tr style="background: rgba(15, 23, 42, 0.9);">
+                <th colspan="2" style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 5px;">CALL OPTION (CE)</th>
+                <th style="background: rgba(251, 191, 36, 0.15); color: #fde68a; padding: 5px;">STRIKE</th>
+                <th colspan="2" style="background: rgba(244, 63, 94, 0.15); color: #fb7185; padding: 5px;">PUT OPTION (PE)</th>
+              </tr>
+              <tr style="font-size: 10px;">
+                <th style="padding: 4px;">Premium (CMP)</th>
+                <th style="padding: 4px;">Action</th>
+                <th style="padding: 4px;">Strike Price</th>
+                <th style="padding: 4px;">Premium (CMP)</th>
+                <th style="padding: 4px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="pfOptionBuilderTableBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -1783,6 +1875,6 @@
     }
   }
 </script>
-<script src="/static/app.js?v=20261017_v41"></script>
+<script src="/static/app.js?v=20261019_v42"></script>
 </body>
 </html>

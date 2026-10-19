@@ -26,7 +26,7 @@ app = FastAPI(
 
 from starlette.middleware.base import BaseHTTPMiddleware
 
-APP_BUILD_VERSION = "20261017_v41"
+APP_BUILD_VERSION = "20261019_v42"
 
 class NoCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -237,6 +237,39 @@ def get_option_chain(symbol: str = Query("NIFTY")):
     spot = quote.get("current_price", 22500.0)
     chain = options_engine.generate_option_chain(spot)
     return {"symbol": clean_name, "spot": spot, "chain": chain}
+
+from indian_market.stock_catalog import search_portfolio_assets, get_option_builder_data
+
+@app.get("/api/portfolio/search")
+def search_portfolio(
+    q: str = Query("", description="Search query for stocks, indices, or option contracts"),
+    type: str = Query("ALL", description="Filter type: ALL, STOCK, OPTION")
+):
+    """Searches stock catalog, indices, and generates live option contracts (CE/PE)."""
+    live_cache = {}
+    try:
+        for sym, tkr in [("NIFTY", "^NSEI"), ("BANKNIFTY", "^NSEBANK"), ("FINNIFTY", "NIFTY_FIN_SERVICE.NS"), ("RELIANCE", "RELIANCE.NS"), ("TCS", "TCS.NS"), ("HDFCBANK", "HDFCBANK.NS")]:
+            q_data = engine.fetcher.get_live_quote(tkr)
+            if q_data and q_data.get("current_price"):
+                live_cache[sym] = {"price": q_data.get("current_price"), "p_change": q_data.get("change_pct", 0.0)}
+    except Exception:
+        pass
+    results = search_portfolio_assets(query=q, filter_type=type, live_cache=live_cache)
+    return {"query": q, "filter_type": type, "count": len(results), "results": results}
+
+@app.get("/api/portfolio/option-builder")
+def get_option_builder(symbol: str = Query("NIFTY", description="Underlying symbol e.g. NIFTY, BANKNIFTY, FINNIFTY, RELIANCE")):
+    """Returns strike ladder and Black-Scholes CE/PE pricing for interactive Option Builder."""
+    live_cache = {}
+    clean_name, ticker = resolve_symbol(symbol)
+    try:
+        q_data = engine.fetcher.get_live_quote(ticker)
+        if q_data and q_data.get("current_price"):
+            live_cache[clean_name] = {"price": q_data.get("current_price"), "p_change": q_data.get("change_pct", 0.0)}
+    except Exception:
+        pass
+    data = get_option_builder_data(underlying_sym=symbol, live_cache=live_cache)
+    return data
 
 from indian_market.live_oi_tracker import LiveOITracker
 from indian_market.heavyweights import HeavyweightTracker

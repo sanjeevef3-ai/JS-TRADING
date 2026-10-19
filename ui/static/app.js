@@ -2634,13 +2634,15 @@ function renderMoneycontrolPulse(mc) {
   `;
 }
 
-// 4. Investing.com Style Personal Multi-Asset Portfolio & Watchlist Manager
+// ═══════════════════════════════════════════════════════════════════════════
+// 4. JYOTI'S INVESTING EQUITY & F&O PORTFOLIO TRACKER & ASSET SEARCH
+// ═══════════════════════════════════════════════════════════════════════════
 const DEFAULT_PORTFOLIO = [
-  { symbol: "INTELLECT", qty: 50, buyPrice: 890.00 },
-  { symbol: "RELIANCE", qty: 25, buyPrice: 1155.00 },
-  { symbol: "HDFCBANK", qty: 40, buyPrice: 690.00 },
-  { symbol: "TATASTEEL", qty: 200, buyPrice: 168.50 },
-  { symbol: "TCS", qty: 15, buyPrice: 2080.00 }
+  { symbol: "INTELLECT", qty: 50, buyPrice: 890.00, optType: "EQ", underlying: "INTELLECT" },
+  { symbol: "RELIANCE", qty: 25, buyPrice: 1155.00, optType: "EQ", underlying: "RELIANCE" },
+  { symbol: "HDFCBANK", qty: 40, buyPrice: 690.00, optType: "EQ", underlying: "HDFCBANK" },
+  { symbol: "TATASTEEL", qty: 200, buyPrice: 168.50, optType: "EQ", underlying: "TATASTEEL" },
+  { symbol: "TCS", qty: 15, buyPrice: 2080.00, optType: "EQ", underlying: "TCS" }
 ];
 
 function getSavedPortfolio() {
@@ -2651,21 +2653,72 @@ function getSavedPortfolio() {
   return DEFAULT_PORTFOLIO;
 }
 
-function addPortfolioHolding() {
-  const sym = (document.getElementById("pfAddSym")?.value || "").trim().toUpperCase();
-  const qty = parseFloat(document.getElementById("pfAddQty")?.value || 0);
-  const bp = parseFloat(document.getElementById("pfAddPrice")?.value || 0);
+function showPortfolioToast(msg) {
+  let toast = document.getElementById("portfolioToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "portfolioToast";
+    toast.style.position = "fixed";
+    toast.style.bottom = "24px";
+    toast.style.right = "24px";
+    toast.style.background = "linear-gradient(135deg, #059669, #10b981)";
+    toast.style.color = "#ffffff";
+    toast.style.padding = "10px 18px";
+    toast.style.borderRadius = "8px";
+    toast.style.boxShadow = "0 10px 30px rgba(0,0,0,0.6)";
+    toast.style.fontSize = "12px";
+    toast.style.fontWeight = "700";
+    toast.style.zIndex = "99999";
+    toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+    toast.style.pointerEvents = "none";
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = msg;
+  toast.style.opacity = "1";
+  toast.style.transform = "translateY(0)";
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(10px)";
+  }, 3200);
+}
+
+function addPortfolioHolding(customItem = null) {
+  let sym, qty, bp, optType = null, underlying = null, fallbackCmp = 500;
+  if (customItem) {
+    sym = (customItem.symbol || "").trim().toUpperCase();
+    qty = parseFloat(customItem.qty || 1);
+    bp = parseFloat(customItem.buyPrice || customItem.cmp || 0);
+    optType = customItem.optType || customItem.type || (sym.endsWith(" CE") ? "CE" : (sym.endsWith(" PE") ? "PE" : "EQ"));
+    underlying = customItem.underlying || sym.split(" ")[0];
+    fallbackCmp = customItem.cmp || bp;
+  } else {
+    sym = (document.getElementById("pfAddSym")?.value || "").trim().toUpperCase();
+    qty = parseFloat(document.getElementById("pfAddQty")?.value || 0);
+    bp = parseFloat(document.getElementById("pfAddPrice")?.value || 0);
+    optType = sym.endsWith(" CE") ? "CE" : (sym.endsWith(" PE") ? "PE" : "EQ");
+    underlying = sym.split(" ")[0];
+  }
   if (!sym || qty <= 0) {
     alert("Please enter Symbol and Quantity.");
     return;
   }
   const pf = getSavedPortfolio();
-  const fallbackCmp = livePriceCache[sym]?.price || 500;
-  pf.unshift({ symbol: sym, qty: qty, buyPrice: bp > 0 ? bp : fallbackCmp });
+  const cachedCmp = livePriceCache[sym]?.price || fallbackCmp;
+  const finalBuyPrice = bp > 0 ? bp : cachedCmp;
+
+  pf.unshift({
+    symbol: sym,
+    qty: qty,
+    buyPrice: finalBuyPrice,
+    optType: optType,
+    underlying: underlying
+  });
   localStorage.setItem("jyoti_investing_portfolio_v1", JSON.stringify(pf));
-  document.getElementById("pfAddSym").value = "";
-  document.getElementById("pfAddPrice").value = "";
+  if (document.getElementById("pfAddSym")) document.getElementById("pfAddSym").value = "";
+  if (document.getElementById("pfAddPrice")) document.getElementById("pfAddPrice").value = "";
   renderInvestingPortfolio();
+  showPortfolioToast(`✅ Added ${sym} (${qty} Qty @ Rs.${Number(finalBuyPrice).toFixed(2)})`);
 }
 
 function removePortfolioHolding(idx) {
@@ -2686,8 +2739,25 @@ function renderInvestingPortfolio() {
   const rowsHtml = pf.map((item, idx) => {
     const sym = item.symbol.toUpperCase();
     const cached = livePriceCache[sym];
-    const cmp = cached ? cached.price : item.buyPrice * 1.035;
-    const dayChg = cached ? cached.p_change : 1.25;
+    const isCE = sym.endsWith(" CE") || item.optType === "CE";
+    const isPE = sym.endsWith(" PE") || item.optType === "PE";
+    const isOption = isCE || isPE;
+
+    let cmp = item.buyPrice * 1.025;
+    let dayChg = 0.85;
+
+    if (cached && cached.price) {
+      cmp = cached.price;
+      dayChg = cached.p_change || 0.0;
+    } else if (isOption) {
+      const undSym = item.underlying || sym.split(" ")[0];
+      const undCached = livePriceCache[undSym];
+      const undChg = undCached ? (undCached.p_change || 0.5) : 0.45;
+      const optMultiplier = isCE ? (1 + (undChg * 0.08)) : (1 - (undChg * 0.08));
+      cmp = Math.max(1.0, item.buyPrice * optMultiplier);
+      dayChg = isCE ? (undChg * 4.5) : (-undChg * 4.5);
+    }
+
     const inv = item.qty * item.buyPrice;
     const curVal = item.qty * cmp;
     const pnl = curVal - inv;
@@ -2699,15 +2769,25 @@ function renderInvestingPortfolio() {
     const pnlClr = pnl >= 0 ? "#34d399" : "#fb7185";
     const dayClr = dayChg >= 0 ? "#34d399" : "#fb7185";
 
+    let badge = `<span style="background:rgba(56,189,248,0.15); color:#38bdf8; font-size:9px; font-weight:700; padding:1px 4px; border-radius:4px; margin-left:4px;">EQ</span>`;
+    if (isCE) {
+      badge = `<span style="background:rgba(16,185,129,0.25); color:#34d399; font-size:9px; font-weight:800; padding:1px 4px; border-radius:4px; margin-left:4px;">CE</span>`;
+    } else if (isPE) {
+      badge = `<span style="background:rgba(244,63,94,0.25); color:#fb7185; font-size:9px; font-weight:800; padding:1px 4px; border-radius:4px; margin-left:4px;">PE</span>`;
+    }
+
     return `
       <tr>
-        <td><strong style="color:#fde68a; cursor:pointer;" onclick="selectSymbol('${sym}')">${sym}</strong></td>
+        <td style="white-space:nowrap;">
+          <strong style="color:#fde68a; cursor:pointer;" onclick="selectSymbol('${item.underlying || sym.split(" ")[0]}')">${sym}</strong>
+          ${badge}
+        </td>
         <td>${item.qty}</td>
         <td>Rs.${Number(item.buyPrice).toFixed(2)}</td>
         <td style="font-weight:700;">Rs.${Number(cmp).toFixed(2)}</td>
         <td style="color:${dayClr}; font-weight:700;">${dayChg >= 0 ? '+' : ''}${Number(dayChg).toFixed(2)}%</td>
         <td style="color:${pnlClr}; font-weight:800;">${pnl >= 0 ? '+' : ''}Rs.${pnl.toFixed(1)} (${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)</td>
-        <td><button class="pill-btn" onclick="removePortfolioHolding(${idx})" style="padding:2px 7px; font-size:10px; color:#fda4af; border-color:#f43f5e;">✕</button></td>
+        <td><button class="pill-btn" onclick="removePortfolioHolding(${idx})" style="padding:2px 7px; font-size:10px; color:#fda4af; border-color:#f43f5e;" title="Remove">✕</button></td>
       </tr>
     `;
   }).join("");
@@ -2739,6 +2819,312 @@ function renderInvestingPortfolio() {
       </table>
     </div>
   `;
+}
+
+// ── Portfolio Quick Autocomplete Suggestion Dropdown ──
+let pfSuggestDebounce = null;
+
+function onPortfolioInputSuggest(val) {
+  clearTimeout(pfSuggestDebounce);
+  const q = (val || "").trim();
+  const dropdown = document.getElementById("pfSuggestDropdown");
+  if (!dropdown) return;
+  if (!q) {
+    dropdown.style.display = "none";
+    return;
+  }
+  pfSuggestDebounce = setTimeout(async () => {
+    try {
+      const res = await fetch(`/api/portfolio/search?q=${encodeURIComponent(q)}&type=ALL`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const items = data.results || [];
+      if (!items.length) {
+        dropdown.innerHTML = `<div style="padding:8px 10px; color:#94a3b8; font-size:11px;">No assets found for "${q}"</div>`;
+        dropdown.style.display = "block";
+        return;
+      }
+      dropdown.innerHTML = items.slice(0, 8).map(it => {
+        const isOpt = it.type === "OPTION";
+        const badgeClr = isOpt ? (it.opt_type === "CE" ? "#34d399" : "#fb7185") : "#38bdf8";
+        const badgeBg = isOpt ? (it.opt_type === "CE" ? "rgba(16,185,129,0.2)" : "rgba(244,63,94,0.2)") : "rgba(56,189,248,0.15)";
+        const badgeTxt = isOpt ? it.opt_type : "EQ";
+        const itJson = encodeURIComponent(JSON.stringify(it));
+        return `
+          <div class="pf-suggest-item" onclick="selectPfSuggestItem('${itJson}')">
+            <div>
+              <div style="font-weight:700; color:#fde68a;">${it.symbol} <span style="background:${badgeBg}; color:${badgeClr}; font-size:9px; padding:1px 4px; border-radius:3px;">${badgeTxt}</span></div>
+              <div style="font-size:9.5px; color:#cbd5e1;">${it.display_name || it.symbol}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700; color:#ffffff;">Rs.${it.cmp}</div>
+              <div style="font-size:9px; color:#94a3b8;">Lot: ${it.lot_size}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      dropdown.style.display = "block";
+    } catch (e) {
+      console.error("PF suggest error:", e);
+    }
+  }, 200);
+}
+
+function selectPfSuggestItem(encodedJson) {
+  try {
+    const item = JSON.parse(decodeURIComponent(encodedJson));
+    if (document.getElementById("pfAddSym")) document.getElementById("pfAddSym").value = item.symbol;
+    if (document.getElementById("pfAddQty")) document.getElementById("pfAddQty").value = item.lot_size || 1;
+    if (document.getElementById("pfAddPrice")) document.getElementById("pfAddPrice").value = item.cmp || "";
+    const dropdown = document.getElementById("pfSuggestDropdown");
+    if (dropdown) dropdown.style.display = "none";
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const dropdown = document.getElementById("pfSuggestDropdown");
+  if (dropdown && !e.target.closest("#pfSuggestDropdown") && e.target.id !== "pfAddSym") {
+    dropdown.style.display = "none";
+  }
+});
+
+// ── Interactive Portfolio Asset Search & Option Builder Modal ──
+let currentPfFilter = "ALL";
+let pfSearchDebounce = null;
+
+function openPortfolioSearchModal() {
+  const modal = document.getElementById("pfSearchModal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  modal.classList.add("open");
+  const input = document.getElementById("pfModalSearchInput");
+  if (input) {
+    input.focus();
+    if (!input.value.trim()) {
+      setPfSearchFilter("ALL");
+    }
+  }
+}
+
+function closePortfolioSearchModal() {
+  const modal = document.getElementById("pfSearchModal");
+  if (!modal) return;
+  modal.style.display = "none";
+  modal.classList.remove("open");
+}
+
+function setPfSearchFilter(filter) {
+  currentPfFilter = filter;
+  ["ALL", "STOCK", "NIFTY", "BANKNIFTY", "BUILDER"].forEach(f => {
+    const btn = document.getElementById(`pfTab_${f}`);
+    if (btn) {
+      if (f === filter) btn.classList.add("active");
+      else btn.classList.remove("active");
+    }
+  });
+
+  const searchBox = document.getElementById("pfSearchResultsContainer");
+  const builderBox = document.getElementById("pfOptionBuilderContainer");
+
+  if (filter === "BUILDER") {
+    if (searchBox) searchBox.style.display = "none";
+    if (builderBox) builderBox.style.display = "block";
+    const curUnderlying = document.getElementById("pfBuilderUnderlyingSelect")?.value || "NIFTY";
+    loadPfOptionBuilder(curUnderlying);
+  } else {
+    if (searchBox) searchBox.style.display = "block";
+    if (builderBox) builderBox.style.display = "none";
+    const q = (document.getElementById("pfModalSearchInput")?.value || "").trim();
+    loadPfSearchResults(q, filter);
+  }
+}
+
+function onPfModalSearchInput(val) {
+  clearTimeout(pfSearchDebounce);
+  pfSearchDebounce = setTimeout(() => {
+    if (currentPfFilter === "BUILDER") {
+      setPfSearchFilter("ALL");
+    }
+    loadPfSearchResults(val, currentPfFilter);
+  }, 250);
+}
+
+function clearPfModalSearch() {
+  const input = document.getElementById("pfModalSearchInput");
+  if (input) {
+    input.value = "";
+    input.focus();
+  }
+  loadPfSearchResults("", currentPfFilter);
+}
+
+async function loadPfSearchResults(query, filter) {
+  const container = document.getElementById("pfSearchResultsList");
+  if (!container) return;
+  container.innerHTML = `<div style="grid-column: 1 / -1; padding:20px; text-align:center; color:#94a3b8;"><span class="spinner-border" style="display:inline-block; width:16px; height:16px; border:2px solid #6366f1; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></span> Searching Indian stocks &amp; options...</div>`;
+
+  try {
+    let apiType = filter;
+    let queryParam = query || "";
+    if (filter === "NIFTY") {
+      apiType = "OPTION";
+      if (!queryParam) queryParam = "NIFTY";
+    } else if (filter === "BANKNIFTY") {
+      apiType = "OPTION";
+      if (!queryParam) queryParam = "BANKNIFTY";
+    }
+
+    const res = await fetch(`/api/portfolio/search?q=${encodeURIComponent(queryParam)}&type=${encodeURIComponent(apiType)}`);
+    if (!res.ok) throw new Error("Search failed");
+    const data = await res.json();
+    renderPfSearchResults(data.results || []);
+  } catch (e) {
+    container.innerHTML = `<div style="grid-column: 1 / -1; padding:20px; text-align:center; color:#fb7185;">Error searching assets: ${e.message}</div>`;
+  }
+}
+
+function renderPfSearchResults(items) {
+  const container = document.getElementById("pfSearchResultsList");
+  if (!container) return;
+  if (!items.length) {
+    container.innerHTML = `<div style="grid-column: 1 / -1; padding:24px; text-align:center; color:#94a3b8;">No matching stocks or options found. Try searching for "NIFTY", "RELIANCE", or "25000 CE".</div>`;
+    return;
+  }
+
+  container.innerHTML = items.map(it => {
+    const isOpt = it.type === "OPTION";
+    const badgeClr = isOpt ? (it.opt_type === "CE" ? "#34d399" : "#fb7185") : "#38bdf8";
+    const badgeBg = isOpt ? (it.opt_type === "CE" ? "rgba(16,185,129,0.2)" : "rgba(244,63,94,0.2)") : "rgba(56,189,248,0.15)";
+    const badgeTxt = isOpt ? `${it.opt_type} OPTION` : (it.type || "STOCK");
+    const chgClr = (it.day_change || 0) >= 0 ? "#34d399" : "#fb7185";
+    const itJson = encodeURIComponent(JSON.stringify(it));
+
+    return `
+      <div class="pf-search-card">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <strong style="color:#fde68a; font-size:13px;">${it.symbol}</strong>
+            <span style="background:${badgeBg}; color:${badgeClr}; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px;">${badgeTxt}</span>
+          </div>
+          <div style="font-size:11px; color:#cbd5e1; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${it.display_name || it.symbol}</div>
+          ${it.hindi ? `<div style="font-size:10px; color:#94a3b8;">${it.hindi}</div>` : ''}
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:6px;">
+            <span style="font-size:13px; font-weight:800; color:#ffffff;">Rs.${Number(it.cmp).toFixed(2)}</span>
+            <span style="font-size:11px; font-weight:700; color:${chgClr};">${(it.day_change || 0) >= 0 ? '+' : ''}${it.day_change}%</span>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:2px;">Lot Size: <strong style="color:#e2e8f0;">${it.lot_size}</strong> ${it.sector ? `• ${it.sector}` : ''}</div>
+        </div>
+        <div style="display:flex; gap:6px; margin-top:4px;">
+          <button class="btn-primary" onclick="addAssetFromModal('${itJson}', 1)" style="flex:1; padding:4px 8px; font-size:11px; background:linear-gradient(135deg,#10b981,#059669);" title="Add 1 Lot instantly">+ 1 Lot</button>
+          <button class="pill-btn" onclick="customizeAssetFromModal('${itJson}')" style="padding:4px 8px; font-size:11px;" title="Fill Qty and Price in tracker">Customize</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function addAssetFromModal(encodedJson, multiplier = 1) {
+  try {
+    const it = JSON.parse(decodeURIComponent(encodedJson));
+    const qty = (it.lot_size || 1) * multiplier;
+    addPortfolioHolding({
+      symbol: it.symbol,
+      qty: qty,
+      buyPrice: it.cmp,
+      cmp: it.cmp,
+      optType: it.opt_type || (it.symbol.endsWith(" CE") ? "CE" : (it.symbol.endsWith(" PE") ? "PE" : "EQ")),
+      underlying: it.underlying || it.symbol.split(" ")[0]
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function customizeAssetFromModal(encodedJson) {
+  try {
+    const it = JSON.parse(decodeURIComponent(encodedJson));
+    if (document.getElementById("pfAddSym")) document.getElementById("pfAddSym").value = it.symbol;
+    if (document.getElementById("pfAddQty")) document.getElementById("pfAddQty").value = it.lot_size || 1;
+    if (document.getElementById("pfAddPrice")) document.getElementById("pfAddPrice").value = it.cmp;
+    closePortfolioSearchModal();
+    document.getElementById("pfAddQty")?.focus();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ── Option Strike Ladder Builder ──
+async function loadPfOptionBuilder(underlying) {
+  const tbody = document.getElementById("pfOptionBuilderTableBody");
+  const spotSpan = document.getElementById("pfBuilderSpotVal");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="5" style="padding:18px; color:#94a3b8; text-align:center;">Calculating Black-Scholes Greeks and Strike Ladder...</td></tr>`;
+
+  try {
+    const res = await fetch(`/api/portfolio/option-builder?symbol=${encodeURIComponent(underlying)}`);
+    if (!res.ok) throw new Error("Option builder request failed");
+    const data = await res.json();
+    if (spotSpan) spotSpan.innerText = `Rs.${Number(data.spot).toLocaleString("en-IN", {maximumFractionDigits:2})}`;
+    renderPfOptionBuilder(data);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="padding:18px; color:#fb7185; text-align:center;">Error loading strikes: ${e.message}</td></tr>`;
+  }
+}
+
+function onPfBuilderUnderlyingChange(val) {
+  loadPfOptionBuilder(val);
+}
+
+function renderPfOptionBuilder(data) {
+  const tbody = document.getElementById("pfOptionBuilderTableBody");
+  if (!tbody) return;
+  const strikes = data.strikes || [];
+  const lot = data.lot_size || 25;
+  const und = data.underlying;
+
+  tbody.innerHTML = strikes.map(s => {
+    const atmBg = s.is_atm ? "background:rgba(251,191,36,0.18); font-weight:800; border-top:1.5px solid #f59e0b; border-bottom:1.5px solid #f59e0b;" : "";
+    const atmTag = s.is_atm ? `<span style="background:#f59e0b; color:#000; font-size:9px; padding:1px 3px; border-radius:3px; margin-left:3px; font-weight:800;">ATM</span>` : "";
+
+    return `
+      <tr style="${atmBg}">
+        <!-- CALL (CE) -->
+        <td style="padding:5px 8px; color:#34d399; font-weight:700;">
+          Rs.${s.ce_price} <span style="font-size:9.5px; color:#94a3b8;">(Δ ${s.ce_delta})</span>
+        </td>
+        <td style="padding:5px 8px;">
+          <button class="pill-btn" onclick="addOptionContractFromBuilder('${s.ce_symbol}', 'CE', ${s.strike}, ${s.ce_price}, ${lot}, '${und}')" style="padding:3px 7px; font-size:10px; background:rgba(16,185,129,0.2); border-color:#10b981; color:#34d399;">+ Add CE</button>
+        </td>
+
+        <!-- STRIKE -->
+        <td style="padding:5px 8px; font-weight:800; color:#fde68a; font-size:12px;">
+          ${s.strike} ${atmTag}
+        </td>
+
+        <!-- PUT (PE) -->
+        <td style="padding:5px 8px; color:#fb7185; font-weight:700;">
+          Rs.${s.pe_price} <span style="font-size:9.5px; color:#94a3b8;">(Δ ${s.pe_delta})</span>
+        </td>
+        <td style="padding:5px 8px;">
+          <button class="pill-btn" onclick="addOptionContractFromBuilder('${s.pe_symbol}', 'PE', ${s.strike}, ${s.pe_price}, ${lot}, '${und}')" style="padding:3px 7px; font-size:10px; background:rgba(244,63,94,0.2); border-color:#f43f5e; color:#fb7185;">+ Add PE</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function addOptionContractFromBuilder(symbol, optType, strike, premium, lotSize, underlying) {
+  addPortfolioHolding({
+    symbol: symbol,
+    qty: lotSize,
+    buyPrice: premium,
+    cmp: premium,
+    optType: optType,
+    strike: strike,
+    underlying: underlying
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
