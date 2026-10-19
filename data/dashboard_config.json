@@ -204,6 +204,18 @@
       "visible": true
     },
     {
+      "id": "widget_autoPilot",
+      "title": "🤖 Jyoti's Autonomous AI Auto-Pilot Suite",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
+      "id": "widget_orderFlow",
+      "title": "🔬 Level-3 Order Flow & Footprint Delta Suite",
+      "zone": "supplementaryDockZone",
+      "visible": true
+    },
+    {
       "id": "widget_heavyweights",
       "title": "🏋️ Top 10 Heavyweights Pulse",
       "zone": "rightSubRow3",
@@ -314,6 +326,16 @@
       "freeY": 0
     },
     "widget_dailyOutcomes": {
+      "fullWidth": true,
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_autoPilot": {
+      "fullWidth": true,
+      "freeX": 0,
+      "freeY": 0
+    },
+    "widget_orderFlow": {
       "fullWidth": true,
       "freeX": 0,
       "freeY": 0

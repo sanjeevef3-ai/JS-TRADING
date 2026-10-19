@@ -1,10 +1,10 @@
 {
-  "generation": 535,
-  "total_evaluations": 362,
-  "verified_wins": 219,
-  "verified_losses": 143,
-  "overall_accuracy_pct": 60.5,
-  "last_learned_at": "2026-10-17 16:09:19",
+  "generation": 767,
+  "total_evaluations": 8,
+  "verified_wins": 5,
+  "verified_losses": 3,
+  "overall_accuracy_pct": 62.5,
+  "last_learned_at": "2026-10-19 12:45:09",
   "regime_weights": {
     "FAST_MOMENTUM_BUY_CE_PE": 1.18,
     "PRE_BREAKOUT_SQUEEZE": 1.22,
@@ -19,6 +19,10 @@
     "Kavita (Risk Sentinel)": 1.25
   },
   "recent_lessons": [
+    "[Gen #586] Verified NIFTY 50 at Rs.23048.75: +0 Target Hits / 12 SL Hits -> Accuracy 16.8%",
+    "[Gen #583] Verified NIFTY 50 at Rs.23071.15: +0 Target Hits / 16 SL Hits -> Accuracy 17.1%",
+    "[Gen #581] Verified NIFTY 50 at Rs.23095.9: +0 Target Hits / 233 SL Hits -> Accuracy 41.4%",
+    "[Gen #558] Verified NIFTY 50 at Rs.23162.05: +8 Target Hits / 0 SL Hits -> Accuracy 61.4%",
     "Boosted Pre-Breakout Squeeze + RSI > 58 weight after high NIFTY/BANKNIFTY continuation accuracy.",
     "Penalized counter-trend option buying when 15m & 1H Supertrend conflict (Chop Filter active).",
     "Calibrated Stop-Loss buffer using ATR volatility to prevent premature wick stop-outs."

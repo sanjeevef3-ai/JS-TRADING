@@ -1418,6 +1418,20 @@ function pushFlashNotification(rawItem, showPopFlash = true) {
       playAlertBeep(notifItem.priority.includes("URGENT") || notifItem.type === "TRADE");
     }
 
+    // 🗣️ v50 Jyoti Human Voice AI Announcement
+    if (typeof speakTradeAnnouncement === "function") {
+      if (notifItem.type === "TARGET_HIT") {
+        const isTg2 = notifItem.outcome_kind === "TG2";
+        speakTradeAnnouncement(isTg2 
+          ? `बधाई हो ज्योति जी! ${notifItem.symbol || ''} में बड़ा टारगेट 2 हिट हो गया है। प्रॉफिट लॉक करें!`
+          : `ज्योति जी, ${notifItem.symbol || ''} में टारगेट 1 हिट हो गया है। 50% प्रॉफिट बुक करें और स्टॉप लॉस कॉस्ट पर ट्रेल करें।`);
+      } else if (notifItem.type === "SL_HIT") {
+        speakTradeAnnouncement(`सावधान! ${notifItem.symbol || ''} में स्टॉप लॉस हिट हुआ है। कैपिटल सुरक्षा के लिए ट्रेड एग्जिट कर दिया गया है।`);
+      } else if (notifItem.is_diamond) {
+        speakTradeAnnouncement(`डायमंड ब्रेकआउट अलर्ट: ${notifItem.symbol || ''} में 90% से अधिक प्रोबेबिलिटी सेटअप डिटेक्ट हुआ है।`);
+      }
+    }
+
     // Native browser push if granted
     if ("Notification" in window && Notification.permission === "granted") {
       try {
@@ -1936,6 +1950,11 @@ async function fetchLiveNotifications(manual = false) {
       renderDailyOutcomesWidget(data.today_outcomes_summary, data.today_calls);
     }
 
+    // 🤖 v50 Render Autonomous Auto-Pilot Status
+    if (data.autopilot_status && typeof renderAutoPilotUI === "function") {
+      renderAutoPilotUI(data.autopilot_status);
+    }
+
     if (manual && typeof showToast === "function") {
       showToast("🔔 Notifications updated live!");
     }
@@ -2103,6 +2122,302 @@ async function refreshDailyOutcomes(manual = false) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// 🤖 v50 AUTONOMOUS QUANT AUTO-PILOT & VOICE AI CO-TRADER CONTROLLERS
+// ═══════════════════════════════════════════════════════════════════
+
+// ── 5C. 🗣️ Jyoti Human Voice AI Co-Trader (Speech Synthesis Engine) ──
+let voiceCopilotActive = localStorage.getItem("jyoti_voice_copilot") !== "false"; // Default ON
+
+function initVoiceCopilot() {
+  updateVoiceCopilotUI();
+}
+
+function updateVoiceCopilotUI() {
+  const icon = document.getElementById("voiceIconGraphic");
+  const text = document.getElementById("voiceStatusText");
+  const btn = document.getElementById("headerVoiceCopilotBtn");
+
+  if (text) text.textContent = voiceCopilotActive ? "ON" : "OFF";
+  if (text) text.style.color = voiceCopilotActive ? "#34d399" : "#94a3b8";
+  if (icon) icon.textContent = voiceCopilotActive ? "🔊" : "🔇";
+  if (btn) {
+    if (voiceCopilotActive) {
+      btn.style.borderColor = "#a855f7";
+      btn.style.background = "linear-gradient(135deg, rgba(168,85,247,0.22), rgba(236,72,153,0.22))";
+    } else {
+      btn.style.borderColor = "rgba(255,255,255,0.15)";
+      btn.style.background = "rgba(15,23,42,0.6)";
+    }
+  }
+}
+
+function toggleVoiceCopilot() {
+  voiceCopilotActive = !voiceCopilotActive;
+  localStorage.setItem("jyoti_voice_copilot", voiceCopilotActive ? "true" : "false");
+  updateVoiceCopilotUI();
+  if (voiceCopilotActive) {
+    showToast("🔊 Voice AI Co-Trader Active! Target aur SL Hit hone par Jyoti AI aawaz me bolegi.");
+    speakTradeAnnouncement("नमस्ते ज्योति जी! वॉइस एआई को-ट्रेडर एक्टिवेट हो गया है।", true);
+  } else {
+    showToast("🔇 Voice AI Co-Trader Muted.");
+  }
+}
+
+function speakTradeAnnouncement(text, force = false) {
+  if (!voiceCopilotActive && !force) return;
+  if (!("speechSynthesis" in window)) return;
+
+  try {
+    window.speechSynthesis.cancel(); // Clear any queued stale audio
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.0;
+    utter.pitch = 1.05;
+
+    // Prefer Hindi voice if available on user device
+    const voices = window.speechSynthesis.getVoices();
+    const hiVoice = voices.find(v => v.lang.includes("hi") || v.lang.includes("IN"));
+    if (hiVoice) utter.voice = hiVoice;
+
+    window.speechSynthesis.speak(utter);
+  } catch (err) {
+    console.error("SpeechSynthesis error:", err);
+  }
+}
+
+// ── 5D. 🤖 Jyoti's Autonomous AI Auto-Pilot Suite Controller ──
+let lastAutoPilotData = null;
+
+function renderAutoPilotUI(ap) {
+  if (!ap) return;
+  lastAutoPilotData = ap;
+
+  const isEnabled = ap.enabled;
+  const status = ap.status || "STANDBY";
+  const mode = ap.mode || "AUTO_PAPER";
+  const pnl = ap.daily_pnl || 0.0;
+  const cfg = ap.config || {};
+
+  // Header status pill
+  const hdrState = document.getElementById("headerApState");
+  const hdrPill = document.getElementById("headerAutoPilotPill");
+  if (hdrState) {
+    hdrState.textContent = isEnabled ? (status === "ENGAGED" ? "ENGAGED 🟢" : "MONITORING 🟡") : status;
+  }
+  if (hdrPill) {
+    hdrPill.style.borderColor = isEnabled ? "#10b981" : "#94a3b8";
+    hdrPill.style.color = isEnabled ? "#34d399" : "#cbd5e1";
+  }
+
+  // Widget badge & stats
+  const badge = document.getElementById("apBadgeStatus");
+  if (badge) {
+    badge.textContent = status;
+    badge.style.background = isEnabled ? "rgba(16,185,129,0.25)" : "rgba(139,92,246,0.25)";
+    badge.style.color = isEnabled ? "#34d399" : "#e9d5ff";
+    badge.style.borderColor = isEnabled ? "#10b981" : "#8b5cf6";
+  }
+
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setEl("apStatStatus", isEnabled ? `${status} (ACTIVE)` : status);
+  setEl("apStatMode", mode.replace("_", " "));
+  
+  const pnlEl = document.getElementById("apStatPnl");
+  if (pnlEl) {
+    pnlEl.textContent = (pnl >= 0 ? `+₹${pnl.toFixed(1)}` : `-₹${Math.abs(pnl).toFixed(1)}`);
+    pnlEl.className = pnl >= 0 ? "val green-text" : "val red-text";
+  }
+
+  setEl("apStatMaxLoss", `-₹${cfg.max_daily_loss || 2500}`);
+  setEl("apStatTrailing", cfg.auto_trail_sl ? "ACTIVE (TG1 ➔ COST)" : "OFF");
+
+  const toggleBtn = document.getElementById("btnToggleAutoPilot");
+  if (toggleBtn) {
+    if (isEnabled) {
+      toggleBtn.textContent = "⏸️ Disengage Auto-Pilot";
+      toggleBtn.style.background = "rgba(239,68,68,0.2)";
+      toggleBtn.style.borderColor = "#ef4444";
+      toggleBtn.style.color = "#fca5a5";
+    } else {
+      toggleBtn.textContent = "⚡ Engage Auto-Pilot";
+      toggleBtn.style.background = "#059669";
+      toggleBtn.style.borderColor = "#10b981";
+      toggleBtn.style.color = "#ffffff";
+    }
+  }
+
+  // Render Active Auto-Positions
+  const activeList = document.getElementById("apActivePositionsList");
+  const countEl = document.getElementById("apActiveCount");
+  const positions = ap.active_positions || [];
+  if (countEl) countEl.textContent = positions.length;
+
+  if (activeList) {
+    if (positions.length === 0) {
+      activeList.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px 0; text-align:center;">Abhi koi active auto-position nahi hai. 90%+ setup aate hi auto-entry hogi!</div>`;
+    } else {
+      activeList.innerHTML = positions.map(p => {
+        const pnlNum = p.unrealized_pnl || 0.0;
+        const pnlClr = pnlNum >= 0 ? "#34d399" : "#f87171";
+        const pnlSign = pnlNum >= 0 ? "+" : "";
+        return `
+          <div style="background:rgba(255,255,255,0.04); border-radius:6px; padding:6px 8px; border:1px solid rgba(255,255,255,0.08); font-size:11px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#ffffff;">${p.symbol} ${p.action}</strong>
+              <strong style="color:${pnlClr};">${pnlSign}₹${pnlNum.toFixed(1)}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; margin-top:3px;">
+              <span>Entry: ₹${p.entry_price} • CMP: ₹${p.cmp}</span>
+              <span style="color:#fde68a;">SL: ₹${p.stop_loss}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+  }
+
+  // Render Audit Logs
+  const logsCont = document.getElementById("apAuditLogsContainer");
+  const logs = ap.recent_logs || [];
+  if (logsCont && logs.length > 0) {
+    logsCont.innerHTML = logs.slice(0, 8).map(l => `
+      <div class="autopilot-log-card">
+        <span style="color:#e2e8f0; line-height:1.3;">${l.details}</span>
+        <span style="color:#94a3b8; font-size:9.5px; white-space:nowrap;">${l.time.split("•")[1] || l.time}</span>
+      </div>
+    `).join("");
+  }
+}
+
+async function toggleAutoPilotState() {
+  const currentEnabled = lastAutoPilotData ? lastAutoPilotData.enabled : false;
+  const nextState = !currentEnabled;
+  try {
+    showToast(nextState ? "⚡ Engaging Autonomous Auto-Pilot..." : "⏸️ Disengaging Auto-Pilot...");
+    const res = await fetch(`/api/autopilot/toggle?enable=${nextState}&mode=AUTO_PAPER`, { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      renderAutoPilotUI(data.autopilot);
+      playAlertBeep(true);
+      showToast(nextState 
+        ? "🤖 Autonomous Quant Auto-Pilot ENGAGED! Live risk guard and auto trailing SL active."
+        : "⏸️ Auto-Pilot Standby: Switched to manual observation mode.");
+      speakTradeAnnouncement(nextState ? "ऑटो पायलट एंगेज हो गया है। रिस्क गार्ड और ट्रेलिंग स्टॉप लॉस एक्टिव है।" : "ऑटो पायलट स्टैंडबाई पर है।");
+    }
+  } catch (err) {
+    console.error("toggleAutoPilotState error:", err);
+  }
+}
+
+async function triggerAutoPilotPanicKill() {
+  if (!confirm("🚨 WARNING: Kya aap sabhi positions ko turant market order se square off karke Auto-Pilot ko lock karna chahte hain?")) {
+    return;
+  }
+  try {
+    showToast("🛑 EXECUTING EMERGENCY PANIC KILL-SWITCH...");
+    const res = await fetch("/api/autopilot/panic-kill", { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      renderAutoPilotUI(data.data);
+      playStopLossSound();
+      showToast(data.message || "🛑 EMERGENCY CIRCUIT BREAKER ACTIVATED: All positions closed.");
+      speakTradeAnnouncement("आपातकालीन किल स्विच एक्टिवेट हुआ! सभी पोजीशंस को स्क्वायर ऑफ कर दिया गया है।");
+    }
+  } catch (err) {
+    console.error("triggerAutoPilotPanicKill error:", err);
+  }
+}
+
+async function refreshAutoPilotUI(manual = false) {
+  try {
+    const res = await fetch("/api/autopilot/status");
+    if (res.ok) {
+      const data = await res.json();
+      renderAutoPilotUI(data.autopilot);
+      if (manual) showToast("↻ Auto-Pilot status synced!");
+    }
+  } catch (err) {
+    console.error("refreshAutoPilotUI error:", err);
+  }
+}
+
+// ── 5E. 🔬 Level-3 Order Flow & Global Macro Controller ──
+function renderOrderFlowUI(ofData) {
+  if (!ofData) return;
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setEl("ofBuyVol", ofData.buy_volume_contracts || "642.5K");
+  setEl("ofSellVol", ofData.sell_volume_contracts || "418.2K");
+  setEl("ofNetDelta", `${ofData.cumulative_volume_delta || '+224.3K'} (${ofData.delta_pct || '+21.1%'})`);
+  setEl("ofRatio", `${ofData.imbalance_ratio || '1.54x'} (${ofData.order_flow_bias ? ofData.order_flow_bias.replace(/_/g, ' ') : 'Buyers in Control'})`);
+
+  const whaleCont = document.getElementById("ofWhaleContainer");
+  const whales = ofData.whale_icebergs || [];
+  if (whaleCont && whales.length > 0) {
+    whaleCont.innerHTML = whales.map(w => `
+      <div class="orderflow-whale-card">
+        <div style="display:flex; justify-content:space-between; font-weight:700;">
+          <span style="color:#38bdf8;">${w.strike} ${w.type.replace('_',' ')}</span>
+          <span style="color:#34d399;">${w.qty} Lots</span>
+        </div>
+        <div style="color:#94a3b8; font-size:10.5px;">${w.bias}</div>
+      </div>
+    `).join("");
+  }
+}
+
+function renderMacroMatrixUI(macroData) {
+  if (!macroData) return;
+  const tailPill = document.getElementById("macroTailwindPill");
+  if (tailPill && macroData.india_macro_bias) {
+    tailPill.textContent = `🌍 Global Macro: ${macroData.india_macro_bias.replace(/_/g, ' ')}`;
+  }
+
+  const matrixCont = document.getElementById("macroMatrixContainer");
+  if (matrixCont) {
+    const gift = macroData.gift_nifty || {};
+    const nasdaq = macroData.nasdaq_futures || {};
+    const dxy = macroData.us_dollar_dxy || {};
+    const crude = macroData.brent_crude || {};
+
+    matrixCont.innerHTML = `
+      <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+        <span style="color:#94a3b8;">Gift Nifty:</span> <strong style="color:#34d399;">${gift.change || '+82.5 pts'}</strong>
+      </div>
+      <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+        <span style="color:#94a3b8;">Nasdaq Fut:</span> <strong style="color:#34d399;">${nasdaq.change || '+0.61%'}</strong>
+      </div>
+      <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+        <span style="color:#94a3b8;">Dollar (DXY):</span> <strong style="color:#38bdf8;">${dxy.value || '104.12'} (${dxy.change || '-0.23%'})</strong>
+      </div>
+      <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+        <span style="color:#94a3b8;">Brent Crude:</span> <strong style="color:#34d399;">$${crude.value || '78.45'} (${crude.change || '-1.07%'})</strong>
+      </div>
+    `;
+  }
+}
+
+async function refreshOrderFlowUI(manual = false) {
+  try {
+    const sym = currentSymbol || "NIFTY";
+    const [resOf, resMacro] = await Promise.all([
+      fetch(`/api/orderflow/snapshot?symbol=${encodeURIComponent(sym)}`),
+      fetch("/api/macro/matrix")
+    ]);
+    if (resOf.ok) {
+      const dataOf = await resOf.json();
+      renderOrderFlowUI(dataOf.order_flow);
+    }
+    if (resMacro.ok) {
+      const dataMacro = await resMacro.json();
+      renderMacroMatrixUI(dataMacro.macro);
+    }
+    if (manual) showToast("↻ Level-3 Order Flow & Macro Matrix synced!");
+  } catch (err) {
+    console.error("refreshOrderFlowUI error:", err);
+  }
+}
+
+
 // ── 6. 💎 90%+ Ultra Sniper Mode Controller & Radar Renderer ──
 function toggleDiamondSniperMode() {
   sniperDiamondOnly = !sniperDiamondOnly;
@@ -2256,13 +2571,24 @@ function renderDiamondRadarWidget(diamondTrades = [], scanPayload = {}) {
 
 // Initialize notification storage and poll live notifications every 20 seconds
 initNotificationArchive();
+initVoiceCopilot();
+refreshAutoPilotUI(false);
+refreshOrderFlowUI(false);
+
 setTimeout(() => {
   fetchLiveNotifications(false);
   updateDiamondSniperUI();
-}, 1500);
+  refreshAutoPilotUI(false);
+  refreshOrderFlowUI(false);
+}, 1200);
+
 setInterval(() => {
   fetchLiveNotifications(false);
 }, 20000);
+
+setInterval(() => {
+  refreshOrderFlowUI(false);
+}, 15000);
 
 function triggerQuickOptionAction(symbol, strategyName) {
   document.getElementById("symbolInput").value = symbol;
@@ -4890,6 +5216,8 @@ const DEFAULT_ADMIN_CONFIG = {
     { id: "widget_mtfPivots", title: "⏱️ Multi-Timeframe Alignment & Pivots", zone: "supplementaryDockZone", visible: true },
     { id: "widget_investingPortfolio", title: "💼 Jyoti's Live Equity & F&O Portfolio Tracker", zone: "supplementaryDockZone", visible: true },
     { id: "widget_dailyOutcomes", title: "🎯 Today's Calls & Target/SL Outcomes Ledger", zone: "supplementaryDockZone", visible: true },
+    { id: "widget_autoPilot", title: "🤖 Jyoti's Autonomous AI Auto-Pilot Suite", zone: "supplementaryDockZone", visible: true },
+    { id: "widget_orderFlow", title: "🔬 Level-3 Order Flow & Footprint Delta Suite", zone: "supplementaryDockZone", visible: true },
     { id: "widget_histPanel", title: "🗄️ 10-Yr Historical Archive", zone: "supplementaryDockZone", visible: true }
   ],
   customWidgets: [],

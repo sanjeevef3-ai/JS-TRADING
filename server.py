@@ -26,8 +26,9 @@ app = FastAPI(
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from indian_market.trade_call_tracker import trade_call_tracker
+from indian_market.autonomous_autopilot import autopilot_engine, order_flow_engine, global_macro_engine
 
-APP_BUILD_VERSION = "20261019_v48"
+APP_BUILD_VERSION = "20261019_v50"
 
 class NoCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -359,8 +360,32 @@ def get_live_notifications():
 
     outcome_notifs = trade_call_tracker.evaluate_all_active_calls(live_prices)
 
-    # Combine all: Outcome alerts (TG Hit / SL Hit) ALWAYS take HIGHEST PRIORITY at top!
+    # 🤖 v50 Autonomous Auto-Pilot Live Evaluation
+    ap_actions = []
+    try:
+        candidate_signals = mom_data.get("diamond_trades", []) + mom_data.get("fast_movers", [])
+        ap_actions = autopilot_engine.evaluate_live_market(candidate_signals, live_prices)
+    except Exception as e:
+        print(f"[AutoPilot evaluation error]: {e}")
+
+    ap_notifs = []
+    for act in ap_actions:
+        ap_notifs.append({
+            "id": f"AP_NOTIF_{int(time.time()*1000)}",
+            "type": "TARGET_HIT" if "TG" in act.get("type", "") else ("SL_HIT" if "SL" in act.get("type", "") else "TRADE"),
+            "priority": "DIAMOND_90_URGENT",
+            "is_important": True,
+            "is_outcome": True,
+            "symbol": act.get("symbol", "NIFTY"),
+            "title": f"🤖 AUTOPILOT: {act.get('type')}",
+            "message": act.get("message", ""),
+            "timestamp": cur_datetime_str,
+            "sound": "target_hit" if "TG" in act.get("type", "") else "sl_hit"
+        })
+
+    # Combine all: Outcome alerts (TG Hit / SL Hit / Auto-Pilot) ALWAYS take HIGHEST PRIORITY at top!
     all_notifs = []
+    all_notifs.extend(ap_notifs)
     all_notifs.extend(outcome_notifs)
     all_notifs.extend(trade_notifications)
     all_notifs.extend(vix_notifs)
@@ -380,6 +405,7 @@ def get_live_notifications():
         "diamond_count": mom_data.get("diamond_count", 0),
         "today_outcomes_summary": today_summary,
         "today_calls": today_calls,
+        "autopilot_status": autopilot_engine.get_status(),
         "global_regime": mom_data.get("global_regime", "BALANCED REGIME"),
         "global_advice": mom_data.get("global_advice", "")
     }
@@ -398,6 +424,45 @@ def simulate_trade_outcome(call_id: str = Query(""), outcome_type: str = Query("
     """Simulates TG1, TG2, or SL hit for testing audio chimes and pop-flash notifications."""
     res = trade_call_tracker.simulate_outcome(call_id, outcome_type)
     return res
+
+# ═══════════════════════════════════════════════════════════════════════
+# 🤖 v50 AUTONOMOUS QUANT AUTO-PILOT & INSTITUTIONAL SUITE REST ENDPOINTS
+# ═══════════════════════════════════════════════════════════════════════
+
+@app.get("/api/autopilot/status")
+def get_autopilot_status():
+    """Returns real-time status, active positions, trailing SL state, and audit logs of Auto-Pilot."""
+    return {
+        "status": "success",
+        "autopilot": autopilot_engine.get_status()
+    }
+
+@app.post("/api/autopilot/toggle")
+def toggle_autopilot_state(enable: bool = Query(True), mode: str = Query("AUTO_PAPER")):
+    """Engages or disengages the Autonomous Auto-Pilot."""
+    res = autopilot_engine.toggle(enable, mode)
+    return {"status": "success", "autopilot": res}
+
+@app.post("/api/autopilot/panic-kill")
+def panic_kill_switch():
+    """Emergency circuit breaker: squares off all auto positions instantly and locks Auto-Pilot."""
+    return autopilot_engine.panic_kill_all()
+
+@app.get("/api/orderflow/snapshot")
+def get_order_flow_snapshot(symbol: str = Query("NIFTY")):
+    """Returns Level-3 Bid x Ask Order Flow Delta, CVD, and Big Whale Iceberg clusters."""
+    return {
+        "status": "success",
+        "order_flow": order_flow_engine.get_order_flow_snapshot(symbol)
+    }
+
+@app.get("/api/macro/matrix")
+def get_global_macro_matrix():
+    """Returns US Futures, DXY, Crude Oil, 10Y Yields, and Gift Nifty gap prediction."""
+    return {
+        "status": "success",
+        "macro": global_macro_engine.get_macro_matrix()
+    }
 
 @app.get("/api/options/oi")
 def get_live_oi_data(symbol: str = Query("NIFTY")):

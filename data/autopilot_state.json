@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-19",
+  "enabled": true,
+  "mode": "AUTO_PAPER",
+  "status": "ENGAGED",
+  "daily_pnl": 0.0,
+  "config": {
+    "min_conviction_pct": 88.0,
+    "max_daily_loss": 2500.0,
+    "max_daily_profit_target": 7500.0,
+    "max_concurrent_positions": 2,
+    "lot_size": 1,
+    "auto_trail_sl": true,
+    "voice_copilot_enabled": true,
+    "panic_kill_switch_active": false
+  },
+  "active_positions": [],
+  "closed_trades": [],
+  "logs": [
+    {
+      "time": "19 Oct 2026 \u2022 01:36:50 PM",
+      "action": "AUTOPILOT_TOGGLE",
+      "details": "Auto-Pilot engaged in mode: AUTO_PAPER"
+    }
+  ]
+}

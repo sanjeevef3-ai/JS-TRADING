@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261019_v48_2">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v50">
   <script>
-    window.APP_CLIENT_VERSION = "20261019_v48";
+    window.APP_CLIENT_VERSION = "20261019_v50";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -671,6 +671,18 @@
       <button type="button" class="pill-btn" id="pwaInstallBtn" onclick="triggerPwaInstall()" style="padding: 5px 11px; font-weight: 800; font-size: 11px; border: 1.5px solid #38bdf8; background: linear-gradient(135deg, rgba(2,132,199,0.25), rgba(56,189,248,0.2)); color: #7dd3fc; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;" title="1-Click Install App on Android Mobile or PC">
         <span>📲</span>
         <span>Install App</span>
+      </button>
+
+      <!-- 🤖 v50 AUTONOMOUS AUTO-PILOT QUICK STATUS PILL -->
+      <button type="button" class="pill-btn" id="headerAutoPilotPill" onclick="document.getElementById('widget_autoPilot')?.scrollIntoView({behavior:'smooth',block:'center'})" style="padding: 5px 11px; font-weight: 800; font-size: 11px; border: 1.5px solid #10b981; background: rgba(16,185,129,0.18); color: #34d399; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;" title="Jyoti Autonomous Quant Auto-Pilot (Hands-Free)">
+        <span>🤖 Auto-Pilot:</span>
+        <span id="headerApState">STANDBY</span>
+      </button>
+
+      <!-- 🗣️ v50 HUMAN VOICE AI CO-TRADER TOGGLE -->
+      <button type="button" class="pill-btn voice-copilot-btn" id="headerVoiceCopilotBtn" onclick="toggleVoiceCopilot()" style="padding: 5px 11px; font-weight: 800; font-size: 11px; border: 1.5px solid #a855f7; background: linear-gradient(135deg, rgba(168,85,247,0.22), rgba(236,72,153,0.22)); color: #e9d5ff; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;" title="Jyoti Human Voice Co-Trader (Speech Alerts)">
+        <span id="voiceIconGraphic">🔊</span>
+        <span>Voice AI: <strong id="voiceStatusText" style="color:#f472b6;">ON</strong></span>
       </button>
 
       <!-- 1. LIVE INDIA VIX BADGE -->
@@ -1630,6 +1642,163 @@
           <!-- Dynamically filled by app.js -->
         </div>
       </div>
+
+      <!-- 6. 🤖 Jyoti's Autonomous AI Auto-Pilot Suite (Hedge-Fund Auto-Trader) -->
+      <div class="card widget-box" id="widget_autoPilot" data-widget-name="🤖 Autonomous AI Auto-Pilot Suite" style="border: 1.5px solid rgba(139, 92, 246, 0.55); margin:0; padding: 12px 14px; width: 100%; display: flex; flex-direction: column; position: relative;">
+        <!-- Header -->
+        <div class="card-header" style="flex-wrap:wrap; gap:8px; margin-bottom: 8px; justify-content: space-between; align-items: center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <h2 id="title_widget_autoPilot" style="font-size: 13.5px; font-weight: 800; color:#c4b5fd; display:flex; align-items:center; gap:5px;">
+              🤖 Autonomous AI Auto-Pilot (ऑटो-पायलट क्वांट रोबोट)
+            </h2>
+            <span class="badge" id="apBadgeStatus" style="font-size:9.5px; font-weight:800; padding:2px 6px; background:rgba(139,92,246,0.25); border:1px solid #8b5cf6; color:#e9d5ff;">STANDBY</span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="pill-btn" id="btnToggleAutoPilot" onclick="toggleAutoPilotState()" style="padding:4px 12px; font-size:11px; background:#059669; border-color:#10b981; color:#fff; font-weight:800; cursor:pointer;">
+              ⚡ Engage Auto-Pilot
+            </button>
+            <button type="button" class="pill-btn panic-kill-btn" onclick="triggerAutoPilotPanicKill()" style="padding:4px 12px; font-size:11px;" title="Square off everything immediately & Lock Auto-Pilot">
+              🛑 PANIC KILL-SWITCH
+            </button>
+            <button type="button" class="pill-btn" onclick="refreshAutoPilotUI(true)" style="padding:3px 8px; font-size:10px;">
+              ↻ Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Auto-Pilot Metrics Ribbon -->
+        <div class="autopilot-hud-ribbon">
+          <div class="autopilot-stat-box" style="border-color:rgba(139,92,246,0.4);">
+            <span class="label">🤖 System Status</span>
+            <span class="val" id="apStatStatus" style="color:#c4b5fd;">STANDBY</span>
+          </div>
+          <div class="autopilot-stat-box">
+            <span class="label">💼 Mode</span>
+            <span class="val" id="apStatMode" style="color:#38bdf8;">AUTO PAPER</span>
+          </div>
+          <div class="autopilot-stat-box" style="border-color:rgba(16,185,129,0.4);">
+            <span class="label">💰 Today Realized P&amp;L</span>
+            <span class="val green-text" id="apStatPnl">₹0.0</span>
+          </div>
+          <div class="autopilot-stat-box">
+            <span class="label">🛡️ Hard Daily Loss Guard</span>
+            <span class="val red-text" id="apStatMaxLoss">-₹2,500</span>
+          </div>
+          <div class="autopilot-stat-box">
+            <span class="label">🎯 Trailing SL to Breakeven</span>
+            <span class="val" id="apStatTrailing" style="color:#fde68a;">ACTIVE (TG1)</span>
+          </div>
+        </div>
+
+        <!-- Active Positions & Audit Logs Tabs -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
+          <!-- Left: Active Managed Positions -->
+          <div style="background:rgba(0,0,0,0.22); border-radius:8px; padding:8px 10px; border:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:11.5px; font-weight:800; color:#cbd5e1; margin-bottom:6px; display:flex; justify-content:space-between;">
+              <span>📦 Active Auto-Positions (<span id="apActiveCount">0</span>)</span>
+              <span style="font-size:10px; color:#94a3b8;">Max 2 Concurrent</span>
+            </div>
+            <div id="apActivePositionsList" style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto;">
+              <div style="font-size:11px; color:#94a3b8; padding:8px 0; text-align:center;">Abhi koi active auto-position nahi hai.</div>
+            </div>
+          </div>
+
+          <!-- Right: Audit Logs -->
+          <div style="background:rgba(0,0,0,0.22); border-radius:8px; padding:8px 10px; border:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:11.5px; font-weight:800; color:#cbd5e1; margin-bottom:6px; display:flex; justify-content:space-between;">
+              <span>📋 Auto-Pilot Decision Audit Trail</span>
+              <span style="font-size:10px; color:#34d399;">● Live AI Guard</span>
+            </div>
+            <div id="apAuditLogsContainer" style="display:flex; flex-direction:column; gap:5px; max-height:160px; overflow-y:auto;">
+              <div class="autopilot-log-card">
+                <span style="color:#cbd5e1;">🤖 Auto-Pilot Engine standby mode initialized.</span>
+                <span style="color:#94a3b8; font-size:10px;">Ready</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. 🔬 Level-3 Order Flow & Footprint Delta Suite -->
+      <div class="card widget-box" id="widget_orderFlow" data-widget-name="🔬 Level-3 Order Flow & Footprint Delta Suite" style="border: 1.5px solid rgba(56, 189, 248, 0.45); margin:0; padding: 12px 14px; width: 100%; display: flex; flex-direction: column;">
+        <div class="card-header" style="flex-wrap:wrap; gap:8px; margin-bottom: 8px; justify-content: space-between; align-items: center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <h2 id="title_widget_orderFlow" style="font-size: 13.5px; font-weight: 800; color:#38bdf8; display:flex; align-items:center; gap:5px;">
+              🔬 Level-3 Order Flow &amp; Cumulative Volume Delta (ऑर्डर फ्लो)
+            </h2>
+            <span class="badge" style="font-size:9.5px; font-weight:800; padding:2px 6px; background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#7dd3fc;">INSTITUTIONAL TAPE</span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span class="macro-tail-pill" id="macroTailwindPill">🌍 Global Macro: STRONG TAILWIND</span>
+            <button type="button" class="pill-btn" onclick="refreshOrderFlowUI(true)" style="padding:3px 8px; font-size:10px;">
+              ↻ Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Delta Meters Grid -->
+        <div class="orderflow-meter-grid">
+          <div class="autopilot-stat-box" style="border-color:rgba(16,185,129,0.35);">
+            <span class="label">🟢 Aggressive Buyers</span>
+            <span class="val green-text" id="ofBuyVol">642.5K</span>
+          </div>
+          <div class="autopilot-stat-box" style="border-color:rgba(239,68,68,0.35);">
+            <span class="label">🔴 Aggressive Sellers</span>
+            <span class="val red-text" id="ofSellVol">418.2K</span>
+          </div>
+          <div class="autopilot-stat-box">
+            <span class="label">📊 Cumulative Delta (CVD)</span>
+            <span class="val" id="ofNetDelta" style="color:#38bdf8;">+224.3K (+21.1%)</span>
+          </div>
+          <div class="autopilot-stat-box">
+            <span class="label">⚖️ Imbalance Ratio</span>
+            <span class="val" id="ofRatio" style="color:#fde68a;">1.54x (Buyers in Control)</span>
+          </div>
+        </div>
+
+        <!-- Whale Orders & Macro Gap Matrix -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
+          <!-- Whale Icebergs -->
+          <div style="background:rgba(0,0,0,0.22); border-radius:8px; padding:8px 10px; border:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:11.5px; font-weight:800; color:#cbd5e1; margin-bottom:6px;">
+              🐋 Big Whale Iceberg Clusters &amp; Absorption Zones
+            </div>
+            <div id="ofWhaleContainer" style="display:flex; flex-direction:column; gap:5px;">
+              <div class="orderflow-whale-card">
+                <div style="display:flex; justify-content:space-between; font-weight:700;">
+                  <span style="color:#38bdf8;">22900 CE Absorption</span>
+                  <span style="color:#34d399;">85,000 Lots</span>
+                </div>
+                <div style="color:#94a3b8; font-size:10.5px;">Institutional smart limit buyer support confirmed at spot.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Global Macro Correlation -->
+          <div style="background:rgba(0,0,0,0.22); border-radius:8px; padding:8px 10px; border:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:11.5px; font-weight:800; color:#cbd5e1; margin-bottom:6px;">
+              🌍 Intermarket &amp; Global Macro Matrix
+            </div>
+            <div id="macroMatrixContainer" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:11px;">
+              <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+                <span style="color:#94a3b8;">Gift Nifty:</span> <strong style="color:#34d399;">+82.5 pts</strong>
+              </div>
+              <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+                <span style="color:#94a3b8;">Nasdaq Fut:</span> <strong style="color:#34d399;">+0.61%</strong>
+              </div>
+              <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+                <span style="color:#94a3b8;">Dollar (DXY):</span> <strong style="color:#38bdf8;">104.12 (-0.23%)</strong>
+              </div>
+              <div style="padding:4px 6px; background:rgba(255,255,255,0.04); border-radius:4px;">
+                <span style="color:#94a3b8;">Brent Crude:</span> <strong style="color:#34d399;">$78.45 (-1.07%)</strong>
+              </div>
+            </div>
+            <div style="margin-top:6px; font-size:10.5px; color:#fde68a;">
+              💡 <strong>Forecast:</strong> High probability of morning Gap-Up (+60 to +85 pts) supported by soft crude &amp; falling DXY.
+            </div>
+          </div>
+        </div>
+      </div>
   </div>
 </div>
 
@@ -2213,6 +2382,6 @@
     }
   }
 </script>
-<script src="/static/app.js?v=20261019_v48_2"></script>
+<script src="/static/app.js?v=20261019_v50"></script>
 </body>
 </html>
