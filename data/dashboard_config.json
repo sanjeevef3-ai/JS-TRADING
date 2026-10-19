@@ -97,28 +97,28 @@
   "tvChannels": [
     {
       "id": "cnbc_awaaz_hls",
-      "name": "📺 बिज़नेस चैनल 1 (हिंदी 1080p HD)",
+      "name": "📺 चैनल 1 (CNBC आवाज़ 1080p)",
       "type": "hls",
       "quality": "1080p Full HD • 2.8 Mbps",
       "stream_url": "https://n18syndication.akamaized.net/bpk-tv/CNBC_Awaaz_NW18_MOB/output01/CNBC_Awaaz_NW18_MOB-audio_98835_hin=98800-video=2293600.m3u8"
     },
     {
       "id": "zee_business_yt",
-      "name": "📺 बिज़नेस चैनल 2 (हिंदी HD)",
+      "name": "📺 चैनल 2 (ज़ी बिज़नेस HD)",
       "type": "hls",
       "quality": "High-Bitrate HD • 1.8 Mbps",
       "stream_url": "https://dwby15d04agvq.cloudfront.net/index_5.m3u8"
     },
     {
       "id": "cnbc_tv18_hls",
-      "name": "📺 बिज़नेस चैनल 3 (CNBC-TV18 HD)",
+      "name": "📺 चैनल 3 (CNBC-TV18 HD)",
       "type": "hls",
       "quality": "1080p Full HD • 2.8 Mbps",
       "stream_url": "https://n18syndication.akamaized.net/bpk-tv/CNBC_TV18_NW18_MOB/output01/CNBC_TV18_NW18_MOB-audio_98835_hin=98800-video=2293600.m3u8"
     },
     {
       "id": "ndtv_profit_hls",
-      "name": "📺 मार्केट चैनल 4 (NDTV प्रॉफिट HD)",
+      "name": "📺 चैनल 4 (NDTV प्रॉफिट HD)",
       "type": "hls",
       "quality": "HD Stream • Max Level",
       "stream_url": "https://ndtvprofit.akamaized.net/hls/live/2107404/ndtvprofit/chunklist_5.m3u8"
@@ -138,57 +138,15 @@
       "visible": true
     },
     {
-      "id": "widget_heavyweights",
-      "title": "🏋️ Top 10 Heavyweights Pulse",
+      "id": "widget_liveTv",
+      "title": "मेरा टीवी",
       "zone": "rightSubRow1",
-      "visible": true
-    },
-    {
-      "id": "widget_investingGauge",
-      "title": "🧭 Live Technical Speedometer",
-      "zone": "rightSubRow1",
-      "visible": true
-    },
-    {
-      "id": "widget_swarmPanel",
-      "title": "🧠 AI Swarm & Pattern Radar",
-      "zone": "rightSubRow3",
-      "visible": true
-    },
-    {
-      "id": "widget_vixPanel",
-      "title": "📈 India VIX Volatility Meter",
-      "zone": "rightSubRow3",
       "visible": true
     },
     {
       "id": "widget_dhanAccount",
       "title": "👑 Jyoti's Live Trading Account",
       "zone": "rightSubRow3",
-      "visible": true
-    },
-    {
-      "id": "widget_sniperPlan",
-      "title": "🎯 Jyoti's Sniper Trade Plan",
-      "zone": "supplementaryDockZone",
-      "visible": true
-    },
-    {
-      "id": "widget_oiPanel",
-      "title": "🔥 Live OI / PCR / Max Pain",
-      "zone": "supplementaryDockZone",
-      "visible": true
-    },
-    {
-      "id": "widget_calculator",
-      "title": "🧮 Jyoti's Position Size & SL Guard",
-      "zone": "supplementaryDockZone",
-      "visible": true
-    },
-    {
-      "id": "widget_chart",
-      "title": "📊 Live Pro Candlestick Chart",
-      "zone": "supplementaryDockZone",
       "visible": true
     },
     {
@@ -222,21 +180,63 @@
       "visible": true
     },
     {
+      "id": "widget_sniperPlan",
+      "title": "🎯 Jyoti's Sniper Trade Plan",
+      "zone": "leftSubRow2",
+      "visible": true
+    },
+    {
+      "id": "widget_alertBanner",
+      "title": "🚨 Pre-Breakout Alert Banner",
+      "zone": "fullWidthBottomZone",
+      "visible": false
+    },
+    {
       "id": "widget_investingPortfolio",
       "title": "💼 Jyoti's Live Equity & F&O Portfolio Tracker",
       "zone": "leftSubRow2",
       "visible": true
     },
     {
-      "id": "widget_liveTv",
-      "title": "मेरा टीवी",
-      "zone": "heroRightCol",
+      "id": "widget_heavyweights",
+      "title": "🏋️ Top 10 Heavyweights Pulse",
+      "zone": "rightSubRow3",
       "visible": true
     },
     {
-      "id": "widget_alertBanner",
-      "title": "🚨 Pre-Breakout Alert Banner",
-      "zone": "leftSubRow2",
+      "id": "widget_vixPanel",
+      "title": "📈 India VIX Volatility Meter",
+      "zone": "rightSubRow3",
+      "visible": true
+    },
+    {
+      "id": "widget_swarmPanel",
+      "title": "🧠 AI Swarm & Pattern Radar",
+      "zone": "rightSubRow3",
+      "visible": true
+    },
+    {
+      "id": "widget_investingGauge",
+      "title": "🧭 Live Technical Speedometer",
+      "zone": "rightSubRow3",
+      "visible": true
+    },
+    {
+      "id": "widget_oiPanel",
+      "title": "🔥 Live OI / PCR / Max Pain",
+      "zone": "oiRiskSuiteRow",
+      "visible": true
+    },
+    {
+      "id": "widget_calculator",
+      "title": "🧮 Jyoti's Position Size & SL Guard",
+      "zone": "oiRiskSuiteRow",
+      "visible": true
+    },
+    {
+      "id": "widget_chart",
+      "title": "📊 Live Pro Candlestick Chart",
+      "zone": "fullWidthBottomZone",
       "visible": true
     }
   ],
@@ -260,7 +260,8 @@
     },
     "widget_investingGauge": {
       "freeX": 0,
-      "freeY": 0
+      "freeY": 0,
+      "fullWidth": false
     },
     "widget_sniperPlan": {
       "fullWidth": false,
@@ -278,7 +279,7 @@
       "fullWidth": false
     },
     "widget_investingPortfolio": {
-      "fullWidth": false,
+      "fullWidth": true,
       "freeX": 0,
       "freeY": 0
     },
@@ -300,8 +301,13 @@
       "fullWidth": false,
       "freeX": 0,
       "freeY": 0
+    },
+    "widget_calculator": {
+      "fullWidth": false,
+      "freeX": 0,
+      "freeY": 0
     }
   },
-  "layoutPackedVersion": 5,
+  "layoutPackedVersion": 6,
   "configured": true
 }

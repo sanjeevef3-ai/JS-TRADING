@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-title" content="Jyoti Trading">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/style.css?v=20261019_v46">
+  <link rel="stylesheet" href="/static/style.css?v=20261019_v47">
   <script>
-    window.APP_CLIENT_VERSION = "20261019_v46";
+    window.APP_CLIENT_VERSION = "20261019_v47";
     // ⚡ Real-Time Zero-Touch Auto-Updater (Mobile APK & PC Desktop)
     (function setupLiveAutoUpdater() {
       let isChecking = false;
@@ -1411,8 +1411,7 @@
       </button>
     </div>
 
-    <!-- 🌟 ROW B: 4 PRO SUITE BOXES IN 1 SINGLE LINE (SAME BOX SIZE!) -->
-    <div class="pro-quad-suite-grid" id="proQuadSuiteRow">
+    <!-- 🎯 Pro Suite Widgets -->
       <!-- 1. 🎯 Jyoti's Sniper Trade Plan -->
       <div class="card widget-box" id="widget_sniperPlan" data-widget-name="🎯 Jyoti's Sniper Trade Plan" style="border: 1.5px solid rgba(16, 185, 129, 0.45); background: linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(15, 23, 42, 0.92)); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
         <div class="card-header" style="margin-bottom: 6px;">
@@ -1450,13 +1449,15 @@
         </div>
       </div>
 
-      <!-- 2. 🔥 Live Call vs Put OI, PCR & Max Pain -->
-      <div class="card widget-box" id="widget_oiPanel" data-widget-name="🔥 Live OI / PCR / Max Pain" style="border: 1.5px solid rgba(139, 92, 246, 0.45); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
-        <div class="card-header" style="margin-bottom: 6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-          <h2 id="title_widget_oiPanel" style="font-size: 12px;">🔥 Live OI / PCR / Max Pain</h2>
-          <div style="display:flex; gap:4px; align-items:center;">
-            <button class="pill-btn" onclick="openAssetSearchModal('oi')" style="padding:2px 7px; font-size:10px; background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(236,72,153,0.25)); border:1px solid #a78bfa; color:#ffffff; font-weight:700; cursor:pointer;" title="Search F&O Stock/Index for OI & PCR">🔍 Search</button>
-            <button class="pill-btn" onclick="refreshOI()" style="padding:2px 7px; font-size:9.5px;">↻ Refresh</button>
+    <!-- ⚖️ ROW: LIVE OI & POSITION SIZING SUITE (50-50 SYMMETRICAL TWIN PAIR!) -->
+    <div class="mockup-subgrid-2col" id="oiRiskSuiteRow" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; width: 100%; align-items: stretch;">
+      <!-- Left Box: 🔥 Live Call vs Put OI, PCR & Max Pain -->
+      <div class="card widget-box" id="widget_oiPanel" data-widget-name="🔥 Live OI / PCR / Max Pain" style="border: 1.5px solid rgba(139, 92, 246, 0.45); background: linear-gradient(145deg, rgba(139, 92, 246, 0.05), rgba(15, 23, 42, 0.95)); margin:0; padding: 12px 14px; height: 100%; display: flex; flex-direction: column;">
+        <div class="card-header" style="margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+          <h2 id="title_widget_oiPanel" style="font-size: 13px; font-weight: 800; color:#c4b5fd;">🔥 Live OI / PCR / Max Pain</h2>
+          <div style="display:flex; gap:5px; align-items:center;">
+            <button class="pill-btn" onclick="openAssetSearchModal('oi')" style="padding:2px 8px; font-size:10px; background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(236,72,153,0.25)); border:1px solid #a78bfa; color:#ffffff; font-weight:700; cursor:pointer;" title="Search F&O Stock/Index for OI & PCR">🔍 Search</button>
+            <button class="pill-btn" onclick="refreshOI()" style="padding:2px 8px; font-size:10px;">↻ Refresh</button>
           </div>
         </div>
         <div id="oiPanel" style="flex: 1; max-height: 250px; overflow-y: auto;">
@@ -1464,29 +1465,62 @@
         </div>
       </div>
 
-      <!-- 3. 🧮 Jyoti's Position Size & SL Guard -->
-      <div class="card widget-box" id="widget_calculator" data-widget-name="🧮 Position Size & SL Guard" style="border: 1.5px solid rgba(251, 191, 36, 0.4); margin:0; padding: 10px 12px; height: 100%; display: flex; flex-direction: column;">
-        <div class="card-header" style="margin-bottom: 6px;">
-          <h2 id="title_widget_calculator" style="font-size: 12px;">🧮 Position Size &amp; SL Guard</h2>
-          <span class="badge warning" style="font-size: 9.5px; padding: 2px 6px;">Max 3% Risk</span>
+      <!-- Right Box: 🧮 Jyoti's Position Size & SL Guard -->
+      <div class="card widget-box" id="widget_calculator" data-widget-name="🧮 Position Size & SL Guard" style="border: 1.5px solid rgba(251, 191, 36, 0.4); background: linear-gradient(145deg, rgba(251, 191, 36, 0.05), rgba(15, 23, 42, 0.95)); margin:0; padding: 12px 14px; height: 100%; display: flex; flex-direction: column;">
+        <div class="card-header" style="margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center;">
+          <h2 id="title_widget_calculator" style="font-size: 13px; font-weight: 800; color:#fde68a;">🧮 Position Size &amp; SL Guard</h2>
+          <span class="badge warning" style="font-size: 10px; padding: 2px 8px; font-weight: 800;">🛡️ Max 3% Risk</span>
         </div>
-        <div style="font-size: 11px; display: flex; flex-direction: column; gap: 5px; flex: 1;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--text-muted);">Capital (Rs.):</span>
-            <input type="number" id="calcCapital" value="25000" oninput="updateRiskCalc()" class="select-control" style="width:90px; padding:3px 6px; text-align:right; font-size: 10.5px;" />
+        
+        <!-- Preset Capital Buttons -->
+        <div style="display:flex; gap:5px; margin-bottom:8px; align-items:center;">
+          <span style="font-size:10.5px; color:#94a3b8;">Quick Capital:</span>
+          <button type="button" class="pill-btn" onclick="setCalcPresetCapital(25000)" style="padding:2px 7px; font-size:10px;">₹25K</button>
+          <button type="button" class="pill-btn" onclick="setCalcPresetCapital(50000)" style="padding:2px 7px; font-size:10px;">₹50K</button>
+          <button type="button" class="pill-btn" onclick="setCalcPresetCapital(100000)" style="padding:2px 7px; font-size:10px;">₹1L</button>
+          <button type="button" class="pill-btn" onclick="setCalcPresetCapital(200000)" style="padding:2px 7px; font-size:10px;">₹2L</button>
+          <button type="button" class="pill-btn" onclick="setCalcPresetCapital(500000)" style="padding:2px 7px; font-size:10px;">₹5L</button>
+        </div>
+
+        <div style="font-size: 11.5px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;">
+              <span style="color:#94a3b8; font-size:10.5px; display:block; margin-bottom:2px;">Account Capital (₹):</span>
+              <input type="number" id="calcCapital" value="25000" oninput="updateRiskCalc()" class="select-control" style="width:100%; padding:4px 8px; font-size: 12px; font-weight:800; color:#fff;" />
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;">
+              <span style="color:#94a3b8; font-size:10.5px; display:block; margin-bottom:2px;">Option Premium / CMP (₹):</span>
+              <input type="number" id="calcPremium" value="120" oninput="updateRiskCalc()" class="select-control" style="width:100%; padding:4px 8px; font-size: 12px; font-weight:800; color:#38bdf8;" />
+            </div>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--text-muted);">Premium (Rs.):</span>
-            <input type="number" id="calcPremium" value="120" oninput="updateRiskCalc()" class="select-control" style="width:90px; padding:3px 6px; text-align:right; font-size: 10.5px;" />
+
+          <!-- Risk & Sizing Result Box -->
+          <div id="riskCalcResult" style="padding:10px 12px; border-radius:8px; background:rgba(251,191,36,0.08); border:1.5px solid rgba(251,191,36,0.3); display:flex; flex-direction:column; gap:6px; font-size: 11.5px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#cbd5e1;">🎯 Max Allowed Risk (3%):</span>
+              <strong class="red-text" style="font-size:12.5px;">₹750</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#cbd5e1;">📦 Safe Sizing (Recommended):</span>
+              <strong class="green-text" style="font-size:12.5px;">1 Lot (25 Qty)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#cbd5e1;">🛑 Strict Stop-Loss:</span>
+              <strong class="yellow-text" style="font-size:12.5px;">₹90.0 (-30 pts)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#cbd5e1;">🚀 Recommended Target (1:2):</span>
+              <strong class="green-text" style="font-size:12.5px;">₹180.0 (+60 pts)</strong>
+            </div>
           </div>
-          <div id="riskCalcResult" style="padding:6px 8px; border-radius:6px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); line-height:1.45; font-size: 10.5px;">
-            <div>🎯 <strong>Max Risk (3%):</strong> <span class="red-text">Rs.750</span></div>
-            <div>📦 <strong>Safe Lot (NIFTY):</strong> <span class="green-text">1 Lot (25 Qty)</span></div>
-            <div>🛑 <strong>Stop-Loss:</strong> <span class="yellow-text">Rs.90 (-30 pts)</span></div>
-            <div>🚀 <strong>Target (1:2):</strong> <span class="green-text">Rs.180 (+60 pts)</span></div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:4px;">
+            <span style="font-size:10px; color:#94a3b8;">💡 Jyoti's Capital Protection Rule: Never risk &gt;3% on a single strike</span>
+            <button type="button" class="btn-primary" onclick="openPfOrderPadModal()" style="padding:3px 10px; font-size:10.5px; background:linear-gradient(135deg,#10b981,#059669);">⚡ Trade This</button>
           </div>
         </div>
       </div>
+    </div>
 
       <!-- 4. 💼 Jyoti's Live Equity & F&O Portfolio Tracker -->
       <div class="card widget-box" id="widget_investingPortfolio" data-widget-name="💼 Jyoti's Paper Trading & Live Portfolio" style="border: 1.5px solid rgba(99, 102, 241, 0.5); margin:0; padding: 12px 14px; height: 100%; display: flex; flex-direction: column; position: relative;">
@@ -1526,7 +1560,6 @@
         <!-- Portfolio Table & Metrics Panel -->
         <div id="investingPortfolioPanel" style="max-height: 280px; overflow-y: auto; padding-right: 2px; flex: 1;"></div>
       </div>
-    </div>
   </div>
 </div>
 
@@ -2101,7 +2134,15 @@
       `;
     }
   }
+
+  function setCalcPresetCapital(amt) {
+    const cap = document.getElementById("calcCapital");
+    if (cap) {
+      cap.value = amt;
+      updateRiskCalc();
+    }
+  }
 </script>
-<script src="/static/app.js?v=20261019_v46"></script>
+<script src="/static/app.js?v=20261019_v47"></script>
 </body>
 </html>

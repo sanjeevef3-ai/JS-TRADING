@@ -4599,8 +4599,8 @@ const DEFAULT_ADMIN_CONFIG = {
     { id: "widget_chart", title: "📊 Live Pro Candlestick Chart", zone: "fullWidthBottomZone", visible: true },
     { id: "widget_heroStats", title: "📊 4 Hero Summary Cards", zone: "supplementaryDockZone", visible: true },
     { id: "widget_sniperPlan", title: "🎯 Jyoti's Sniper Trade Plan", zone: "supplementaryDockZone", visible: true },
-    { id: "widget_oiPanel", title: "🔥 Live OI / PCR / Max Pain", zone: "supplementaryDockZone", visible: true },
-    { id: "widget_calculator", title: "🧮 Jyoti's Position Size & SL Guard", zone: "supplementaryDockZone", visible: true },
+    { id: "widget_oiPanel", title: "🔥 Live OI / PCR / Max Pain", zone: "oiRiskSuiteRow", visible: true },
+    { id: "widget_calculator", title: "🧮 Jyoti's Position Size & SL Guard", zone: "oiRiskSuiteRow", visible: true },
     { id: "widget_mtfPivots", title: "⏱️ Multi-Timeframe Alignment & Pivots", zone: "supplementaryDockZone", visible: true },
     { id: "widget_investingPortfolio", title: "💼 Jyoti's Live Equity & F&O Portfolio Tracker", zone: "supplementaryDockZone", visible: true },
     { id: "widget_histPanel", title: "🗄️ 10-Yr Historical Archive", zone: "supplementaryDockZone", visible: true }
@@ -4788,8 +4788,14 @@ function sanitizeTvChannelsConfig(cfg) {
       const newMcIdx = cfg.widgets.findIndex(w => w.id === "widget_moneycontrolPulse");
       cfg.widgets.splice(newMcIdx + 1, 0, rdWidget);
     }
+
+    // Ensure Live OI / PCR / Max Pain and Position Size & SL Guard sit strictly side-by-side in dedicated 50-50 suite!
+    const oiWidget = cfg.widgets.find(w => w.id === "widget_oiPanel");
+    const calcWidget = cfg.widgets.find(w => w.id === "widget_calculator");
+    if (oiWidget) oiWidget.zone = "oiRiskSuiteRow";
+    if (calcWidget) calcWidget.zone = "oiRiskSuiteRow";
   }
-  cfg.layoutPackedVersion = 5;
+  cfg.layoutPackedVersion = 6;
 }
 
 async function initDynamicBackPanel() {
@@ -5025,7 +5031,7 @@ function autoPackAllGridZones() {
       "leftSubRow1", "leftSubRow2", "leftSubRow3",
       "rightSubRow1", "rightSubRow2", "rightSubRow3",
       "heroLeftCol", "heroRightCol", "fullWidthBottomZone",
-      "supplementaryDockZone", "proQuadSuiteRow"
+      "supplementaryDockZone", "proQuadSuiteRow", "oiRiskSuiteRow"
     ];
     allZoneIds.forEach(zId => {
       const el = document.getElementById(zId);
@@ -5160,6 +5166,27 @@ function autoPackAllGridZones() {
       }
     }
   }
+
+  // D. 2-Column Dedicated Twin Suite (#oiRiskSuiteRow):
+  // Keeps Live OI / PCR / Max Pain and Position Size & SL Guard strictly side-by-side (50% - 50%)
+  const oiRisk = document.getElementById("oiRiskSuiteRow");
+  if (oiRisk) {
+    oiRisk.style.gridColumn = "1 / -1";
+    oiRisk.style.width = "100%";
+    const visBoxes = Array.from(oiRisk.querySelectorAll(":scope > .widget-box")).filter(b => b.style.display !== "none");
+    if (visBoxes.length === 0 && !isEditMode) {
+      oiRisk.style.display = "none";
+    } else {
+      oiRisk.style.display = "grid";
+      oiRisk.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+      oiRisk.style.gap = "12px";
+      oiRisk.style.alignItems = "stretch";
+      visBoxes.forEach(b => {
+        b.style.gridColumn = "";
+        b.classList.remove("widget-span-full");
+      });
+    }
+  }
 }
 window.addEventListener("resize", () => autoPackAllGridZones());
 
@@ -5217,6 +5244,7 @@ const ALL_DROP_ZONES = [
   { id: "rightSubRow1", label: "👉 Right Top Row (Khali Jagah)" },
   { id: "heroRightCol", label: "👉 Right Column / TV Area (Khali Jagah)" },
   { id: "rightSubRow3", label: "👉 Right 3-Col Row (Khali Jagah)" },
+  { id: "oiRiskSuiteRow", label: "⚖️ Live OI & Position Size Twin Suite (50-50)" },
   { id: "fullWidthBottomZone", label: "⬛ Full-Width Center/Bottom (Khali Jagah)" },
   { id: "supplementaryDockZone", label: "📊 Bottom Analytics Dock (Khali Jagah)" }
 ];
@@ -5868,6 +5896,7 @@ function renderAdminBackPanelUI() {
       { val: "rightSubRow1", label: "👉 Right Half — Top Row" },
       { val: "heroRightCol", label: "👉 Right Half — Middle (TV Row)" },
       { val: "rightSubRow3", label: "👉 Right Half — Bottom 3-Col" },
+      { val: "oiRiskSuiteRow", label: "⚖️ Live OI & Position Size Twin Suite (50-50)" },
       { val: "fullWidthBottomZone", label: "⬛ Bottom 100% Full-Width" },
       { val: "supplementaryDockZone", label: "📊 Pro Analytics Dock" }
     ];

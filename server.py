@@ -26,7 +26,7 @@ app = FastAPI(
 
 from starlette.middleware.base import BaseHTTPMiddleware
 
-APP_BUILD_VERSION = "20261019_v46"
+APP_BUILD_VERSION = "20261019_v47"
 
 class NoCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
